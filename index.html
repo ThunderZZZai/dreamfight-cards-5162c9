@@ -546,6 +546,19 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 .vl-bar i{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:inherit;background:linear-gradient(90deg,var(--red),var(--gold),var(--blue));transition:width .3s ease}
 .vl-row{display:flex;align-items:center;gap:12px}
 .vdo-load.failed .vl-txt{color:var(--bad)}
+/* นาฬิกาแมตช์ (ตี้ 2026-10-21): มุมซ้ายล่างของพื้นที่เล่น เล็ก ๆ เดินตลอดเกม — อยู่ต่อแม้ตอนเก็บ UI ลงระหว่าง VDO · รู้ผู้ชนะแล้วหยุด (สีทอง) */
+.match-clock{position:absolute;left:298px;bottom:12px;z-index:20;display:flex;align-items:center;gap:7px;padding:3px 12px 3px 10px;border-radius:999px;background:rgba(5,7,11,.62);border:1px solid var(--line);font-family:var(--font-disp);pointer-events:none}
+.match-clock[hidden]{display:none}
+.match-clock svg{width:17px;height:17px;fill:none;stroke:var(--muted);stroke-width:1.7;stroke-linecap:round}
+.match-clock.done svg{stroke:var(--gold)}
+.match-clock b{font-size:22px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.match-clock.done b{color:var(--gold)}
+.win-time{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 32px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.wt-main{display:flex;align-items:baseline;gap:14px;font-family:var(--font-disp)}
+.wt-main small{font-size:18px;font-weight:600;letter-spacing:.2em;color:var(--muted)}
+.wt-main b{font-size:46px;font-weight:700;line-height:1.1;color:var(--gold);font-variant-numeric:tabular-nums}
+.wt-sub{font-size:19px;color:#c3cad6;font-variant-numeric:tabular-nums}
+.wt-rounds{font-size:17px;color:var(--muted);font-variant-numeric:tabular-nums}
 @keyframes quakeHard{10%{transform:translate(-18px,9px) rotate(-.5deg)}20%{transform:translate(16px,-9px) rotate(.5deg)}32%{transform:translate(-13px,-6px)}44%{transform:translate(11px,6px)}58%{transform:translate(-7px,3px)}72%{transform:translate(4px,-2px)}86%{transform:translate(-2px,0)}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
@@ -668,6 +681,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
         <div class="drawer-body" id="rulesMini"></div>
       </aside>
       <div id="winner" class="win-layer" hidden></div>
+      <div class="match-clock" id="matchClock" role="timer" aria-label="เวลาที่ใช้ในแมตช์นี้" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="9.2" r="5.6"/><path d="M6.2 1.6h3.6M8 1.6v2M8 9.2V6.4M12.4 4.2l1.1-1.1"/></svg><b>00:00</b></div>
       <div class="vdo-bar" id="vdoBar" hidden><span class="vdo-lane" id="vdoLane"></span><button type="button" class="vdo-skip" data-act="vdoSkip">SKIP <i>▶▶</i></button></div>
     </div>
     <div id="fxLayer" class="fx-layer"></div>
@@ -2219,6 +2233,7 @@ async function laneVdo(i, clips, gid, showResult) {
     if (!gone()) showResult();
   };
   ui.vdo = lv;
+  const v0 = Date.now();
   $('#vdoLane').textContent = `ช่อง ${i + 1}`;
   $('#vdoBar').hidden = false;
   vdoBg.sync(false);
@@ -2256,6 +2271,7 @@ async function laneVdo(i, clips, gid, showResult) {
     W.classList.remove('vdo-fight', 'vdo-full', 'vdo-hp');
     $('#vdoBar').hidden = true;
     ui.vdo = null;
+    clock.vdoMs += Date.now() - v0;
     duckMusic(false);
   }
 }
@@ -2269,6 +2285,43 @@ function renderVdoLoad() {
   box.querySelector('i').style.width = `${vdo.pct}%`;
   box.querySelector('.vl-txt').textContent = failed ? `โหลด VDO ไม่สำเร็จ (${vdo.mb})` : `กำลังโหลด VDO ฉากต่อสู้ ${vdo.mb} · ต้องโหลดครบก่อนเริ่มเกม`;
   box.querySelector('[data-act="vdoRetry"]').hidden = !failed;
+}
+
+/* ───────── นาฬิกาแมตช์ (ตี้ 2026-10-21: "อยากรู้ว่ากว่าจะได้ผู้ชนะใช้เวลาเท่าไหร่ · สรุปเวลาตอนท้าย · ให้มีเวลาขึ้นตลอด ซ้ายล่างเล็ก ๆ") ─────────
+   เวลาจริงตั้งแต่เริ่มแมตช์จนรู้ผู้ชนะ (รวมเวลาดู VDO) · เก็บเวลาเริ่มแต่ละรอบ + เวลาที่อยู่ใน VDO ไว้สรุปในหน้าผู้ชนะ
+   ผู้ชมที่เข้ากลางเกม: นับจาก t0 ที่ผู้เล่นประกาศใน presence (ไม่มี = นับจากตอนเข้าดู แล้วสรุปว่า "ตั้งแต่เข้าดู") */
+const clock = { t0: 0, end: 0, vdoMs: 0, rounds: [], partial: false };
+function clockStart(t0 = Date.now(), partial = false) { Object.assign(clock, { t0, end: 0, vdoMs: 0, rounds: [], partial }); }
+const clockMs = () => (clock.t0 ? (clock.end || Date.now()) - clock.t0 : 0);
+const fmtDur = ms => {
+  const s = Math.max(0, Math.floor(ms / 1000)), h = Math.floor(s / 3600), mm = String(Math.floor(s / 60) % 60).padStart(2, '0'), ss = String(s % 60).padStart(2, '0');
+  return h ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
+};
+// รู้ผู้ชนะ → หยุดนาฬิกา (ครั้งเดียว) + จดลงบันทึก
+function clockStop() {
+  if (!clock.t0 || clock.end) return;
+  clock.end = Date.now();
+  addLog(`เวลา · ${clock.partial ? 'ตั้งแต่เข้าดู' : 'ทั้งแมตช์'} ${fmtDur(clockMs())} · ${ui.g ? ui.g.round : '?'} รอบ${clock.vdoMs ? ` · ดู VDO ${fmtDur(clock.vdoMs)}` : ''}`, 'sys');
+}
+function clockTick() {
+  const el = $('#matchClock'), on = ui.screen === 'game' && !!clock.t0;
+  if (el.hidden !== !on) el.hidden = !on;
+  if (!on) return;
+  const t = fmtDur(clockMs()), b = el.lastChild;
+  if (b.textContent !== t) b.textContent = t;
+  el.classList.toggle('done', !!clock.end);
+}
+// สรุปในหน้าผู้ชนะ: เวลารวม · จำนวนรอบ + เฉลี่ย · แยกเวลาดู VDO / เวลาเล่น · เวลาแต่ละรอบ (เมื่อมีครบทุกรอบ)
+function clockSummaryHTML() {
+  if (!clock.t0) return '';
+  const total = clockMs(), n = ui.g ? ui.g.round : 0;
+  const bits = [`${n} รอบ`];
+  if (n && !clock.partial) bits.push(`เฉลี่ย ${fmtDur(total / n)} ต่อรอบ`);
+  if (clock.vdoMs) bits.push(`ดู VDO ${fmtDur(clock.vdoMs)}`, `เล่น ${fmtDur(total - clock.vdoMs)}`);
+  const R = clock.rounds, end = clock.end || Date.now();
+  const rounds = !clock.partial && R.length === n && n > 1
+    ? `<span class="wt-rounds">${R.map((t, k) => `R${k + 1} ${fmtDur((R[k + 1] || end) - t)}`).join(' · ')}</span>` : '';
+  return `<div class="win-time"><span class="wt-main"><small>${clock.partial ? 'ดูไป' : 'ใช้เวลา'}</small><b>${fmtDur(total)}</b></span><span class="wt-sub">${bits.join(' · ')}</span>${rounds}</div>`;
 }
 
 function addLog(html, cls = '') {
@@ -2308,6 +2361,8 @@ async function startGame(opt = { mode: 'arcade' }) {
   setRand(pvp ? seededRand(opt.seed) : null); // PVP: ตัวสุ่มชุดเดียวกันทั้งสองเครื่อง ต้องตั้งก่อนสร้างเกม
   ui.pvp = pvp ? { mid: opt.mid, oppPeer: opt.oppPeer, oppNick: opt.oppNick || 'ผู้เล่น', phaseKey: null } : null;
   ui.g = newGame(addLog);
+  clockStart();
+  if (pvp) presence({ t0: clock.t0 }); // ผู้ชมที่เข้ากลางเกมนับเวลาจากจุดเดียวกับผู้เล่น
   // เปิดเกม: Overlay + แผง CARD ORDER เลื่อนเข้า แถบ HP ชาร์จ 0 → 100 แล้วค่อยเริ่มจั่ว
   Object.assign(ui, { screen: 'game', intro: true, phase: null, winner: null, busy: true, peek: false, drawer: null, hpShown: { RED: 0, BLUE: 0 }, hpStart: { RED: HP_MAX, BLUE: HP_MAX },
     results: [], shown: -1, detail: null, pending: null, ko: null, picks: [], place: [], undo: [], pickShown: false, oppHidden: 0 }); // ล้างผลของเกมก่อน
@@ -2326,6 +2381,7 @@ async function startGame(opt = { mode: 'arcade' }) {
 }
 async function beginRound(gid) {
   const g = ui.g;
+  clock.rounds.push(Date.now());
   Object.assign(ui, { phase: 'draw', busy: true, picks: [], undo: [], pickShown: false, place: [], shown: -1, results: [], detail: null, pending: null, ko: null });
   const res = doDraw(g);
   for (const s of SIDES) noteGain(s, res[s]);
@@ -3311,6 +3367,7 @@ function renderWinner() {
     <div class="win-title" id="winTitle">${w === 'DRAW' ? 'DRAW' : `${w} WIN`}</div>
     <p>${line}</p>
     <div class="win-stats"><span class="t-red">RED ${g.p.RED.hp} HP</span><span class="t-blue">BLUE ${g.p.BLUE.hp} HP</span><span>${g.round} รอบ</span></div>
+    ${clockSummaryHTML()}
     <div class="win-btns">${ui.mode === 'pvp' || ui.mode === 'spec' ? '<button type="button" class="btn primary big" data-act="toPvp">กลับห้อง PVP</button>' : '<button type="button" class="btn primary big" data-act="toLobby">กลับ LOBBY</button>'}<button type="button" class="btn ghost" data-act="peek">ดูกระดานรอบสุดท้าย</button></div>
   </div>`;
 }
@@ -3340,6 +3397,8 @@ function render() {
   $('#hexLabel').textContent = inGame ? 'ROUND' : '';
   $('#hexNum').textContent = inGame ? ui.g.round || 1 : 'VS';
   renderHud('RED'); renderHud('BLUE'); renderOrders();
+  if (inGame && ui.winner) clockStop();
+  clockTick();
   if (inGame && !ui.intro) { renderStrip(); renderOppHand(); renderMain(); renderHand(); renderControls(); renderWinner(); }
   else $('#winner').hidden = true;
   renderDrawer();
@@ -3476,6 +3535,7 @@ document.addEventListener('keydown', e => {
    presence ของเรา: { v, nick, nonce, seat: 'RED'|'BLUE'|null, at, mid, over, inp: { '<รอบ>p': เก็บ, '<รอบ>a': วาง, '<รอบ>n': พร้อมรอบถัดไป } }
    mid = รหัสแมตช์ (nonce + เวลากด READY ของทั้งสองฝั่ง → ไม่ซ้ำทุกครั้งที่นั่งใหม่) · over = mid ของแมตช์ที่เราตัดสินว่าอีกฝ่ายหลุด
    vdo = รอบที่เรากำลังดู VDO ฉากปะทะอยู่ (อีกฝ่ายหยุดนับเวลารอ) — ไม่มี = ไม่ได้ดู
+   t0 = เวลาเริ่มแมตช์ (Date.now ของเรา) — ผู้ชมที่เข้ากลางเกมใช้ตั้งนาฬิกาแมตช์ · แสดงผลเท่านั้น
    inp เก็บทั้งแมตช์ (ผู้ชมที่เข้ากลางเกมย้อนคำนวณจากรอบ 1) · ผู้ชม: { watch: mid } อย่างเดียว ไม่ส่งอะไรให้ผู้เล่น */
 const PVP_V = 4; // เปลี่ยนกติกา/เอนจินเมื่อไหร่ต้องเพิ่มเลขนี้ — คนละเวอร์ชันจะไม่ถูกจับคู่ (เล่นคนละกติกา = ผลเพี้ยน) · 4 = Fight Phase เป็น VDO (ยาวขึ้นมาก + presence.vdo)
 const PVP_SEC = 60, PVP_CUT = 30, PVP_GONE_MS = 8000, PVP_NEXT_MS = 10000, PVP_WAIT_MS = 90000, VDO_HOLD_MS = 240000;
@@ -3531,6 +3591,7 @@ function cleanPresence(p) {
   if (p.seat === 'RED' || p.seat === 'BLUE') o.seat = p.seat;
   if (Number.isFinite(p.at)) o.at = p.at;
   if (Number.isInteger(p.vdo) && p.vdo > 0 && p.vdo < 1000) o.vdo = p.vdo;
+  if (Number.isFinite(p.t0)) o.t0 = p.t0;
   o.inp = {};
   if (p.inp && typeof p.inp === 'object' && !Array.isArray(p.inp)) {
     for (const [k, v] of Object.entries(p.inp).slice(0, 200)) if (/^\d{1,3}[pan]$/.test(k) && v != null && (typeof v === 'object' || v === 1)) o.inp[k] = v;
@@ -4055,6 +4116,8 @@ function specStart() {
   setSides('RED');
   setRand(seededRand(hashStr(mid))); // seed เดียวกับผู้เล่น → การ์ดและผลทอยตรงกันทุกใบ
   ui.g = newGame(addLog);
+  const now = Date.now(), t0s = SIDES.map(s => h[s].presence.t0).filter(t => Number.isFinite(t) && t <= now && now - t < 6 * 3600e3);
+  if (t0s.length) clockStart(Math.min(...t0s)); else clockStart(now, true);
   Object.assign(ui, { screen: 'game', intro: false, phase: null, winner: null, busy: false, peek: false, drawer: null, results: [], shown: -1, detail: null, pending: null, ko: null,
     picks: [], place: [], undo: [], pickShown: false, oppHidden: 0 });
   $('#log').innerHTML = '';
@@ -4322,6 +4385,7 @@ $('#stFlow').innerHTML = [
 ].map(([b, t]) => `<li><b>${b}</b><span>${t}</span></li>`).join('');
 $('#rulesMini').innerHTML = `${rulesCompactHTML()}<p style="margin-top:18px">กติกาเต็มพร้อมตัวอย่าง: <a href="${MANUAL_URL}" target="_blank" rel="noopener">คู่มือฉบับภาพ DreamFight Cards ↗</a></p>`;
 addEventListener('resize', fitStage);
+setInterval(clockTick, 250);
 fitStage();
 // ลายนิ้วมือสถานะเกม (ทดสอบว่า PVP สองเครื่องตรงกัน) — ลำดับการ์ดในมือตามอาร์เรย์ (ส่วนที่กระทบผลสุ่ม)
 const stateHash = () => { const g = ui.g; return g ? JSON.stringify({ r: g.round, hp: SIDES.map(s => g.p[s].hp), h: SIDES.map(s => g.p[s].hand.map(c => `${c.id}${c.type[0]}${c.lv}`).join(',')), d: g.deck.length, m: g.market.map(c => c.type[0]).join('') }) : null; };
