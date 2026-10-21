@@ -248,6 +248,7 @@ body:not(.portrait) #rotateHint{display:none}
 /* ปุ่มมุมล่าง */
 .tools{position:absolute;top:976px;width:268px;display:flex;flex-wrap:wrap;gap:8px}
 .tools.left{left:16px} .tools.right{left:1636px;justify-content:flex-end}
+.tools.left .pill{padding:0 10px;gap:6px} /* เสียง · เพลง · VDO แถวบน / เร่งความเร็ว · ออกจากเกม แถวล่าง — 2 แถวพอดีกรอบ */
 .pill{display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line-2);background:rgba(10,13,19,.75);color:var(--ink);font-size:17px;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap}
 .pill input{width:18px;height:18px;margin:0;accent-color:var(--gold)}
 .pill:hover{border-color:var(--ink)}
@@ -512,6 +513,39 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 #flash.on{animation:flash calc(.55s*var(--spd)) calc(.22s*var(--spd)) ease-out}
 @keyframes flash{0%{opacity:0}14%{opacity:.8}100%{opacity:0}}
 #world.quake-hard{animation:quakeHard calc(.75s*var(--spd)) calc(.22s*var(--spd)) ease}
+
+/* VDO (ตี้ 2026-10-21): Pick up / Action = Idle วนเป็นพื้นหลัง (หรี่ให้อ่าน UI ออก) · Fight = VDO ของคู่การ์ดในช่อง
+   เปิด VDO → การ์ดสองฝั่งขึ้นบน VDO → เก็บ UI ลง (.vdo-full) → ก่อน VDO จบ แถบ HP กลับลงมาโชว์ผล (.vdo-hp) */
+#vdoLayer{position:absolute;inset:0;z-index:0;pointer-events:none;background:#000;opacity:0;transition:opacity .6s ease}
+#vdoLayer video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s ease}
+#vdoLayer video.on{opacity:1}
+#vdoLayer::after{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(7,9,14,.5) 0%,rgba(7,9,14,.62) 45%,rgba(7,9,14,.8) 100%);transition:opacity .6s ease}
+#world.has-vdo #vdoLayer{opacity:1}
+#world.has-vdo::before{opacity:0}
+#world.vdo-fight #vdoLayer::after{opacity:.55}
+#world.vdo-full #vdoLayer::after{opacity:0}
+#strip,#main,#controls,#hand,.tools,.fs-btn{transition:transform calc(.6s*var(--spd)) cubic-bezier(.2,.9,.25,1),opacity calc(.4s*var(--spd)) ease}
+#world.vdo-full #hud{transform:translateY(-240px);opacity:0}
+#world.vdo-full.vdo-hp #hud{transform:none;opacity:1}
+#world.vdo-full .order.red{transform:translateX(-340px);opacity:0}
+#world.vdo-full .order.blue{transform:translateX(340px);opacity:0}
+#world.vdo-full #strip,#world.vdo-full #main{transform:translateY(-60px);opacity:0;pointer-events:none}
+#world.vdo-full #controls,#world.vdo-full #hand{transform:translateY(420px);opacity:0;pointer-events:none}
+#world.vdo-full .tools,#world.vdo-full .fs-btn,#world.vdo-full .order{opacity:0;pointer-events:none}
+#world.vdo-fight .tools{opacity:0;pointer-events:none} /* ปุ่มมุมจอหลบตั้งแต่เปิด VDO — ที่ตรงนั้นเป็นของ SKIP */
+.vdo-bar{position:absolute;right:40px;bottom:34px;z-index:30;display:flex;align-items:center;gap:14px}
+.vdo-bar[hidden]{display:none}
+.vdo-lane{padding:8px 20px;border-radius:999px;background:rgba(5,7,11,.62);border:1px solid rgba(255,255,255,.22);color:#dfe5ee;font-family:var(--font-disp);font-weight:700;font-size:22px;letter-spacing:.1em}
+.vdo-skip{display:inline-flex;align-items:center;gap:10px;height:56px;padding:0 28px;border-radius:999px;border:2px solid rgba(255,255,255,.6);background:rgba(5,7,11,.62);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:26px;letter-spacing:.14em;cursor:pointer}
+.vdo-skip:hover{background:rgba(255,255,255,.16);border-color:#fff}
+.vdo-skip i{font-style:normal;letter-spacing:-.12em}
+/* หน้าเริ่ม: โหลด VDO ให้ครบก่อนเริ่มเกม */
+.vdo-load{display:flex;flex-direction:column;align-items:center;gap:8px;width:640px;margin-top:-4px;font-size:17px;color:var(--muted);text-transform:none}
+.vdo-load[hidden]{display:none}
+.vl-bar{position:relative;width:100%;height:10px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;border:1px solid var(--line-2)}
+.vl-bar i{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:inherit;background:linear-gradient(90deg,var(--red),var(--gold),var(--blue));transition:width .3s ease}
+.vl-row{display:flex;align-items:center;gap:12px}
+.vdo-load.failed .vl-txt{color:var(--bad)}
 @keyframes quakeHard{10%{transform:translate(-18px,9px) rotate(-.5deg)}20%{transform:translate(16px,-9px) rotate(.5deg)}32%{transform:translate(-13px,-6px)}44%{transform:translate(11px,6px)}58%{transform:translate(-7px,3px)}72%{transform:translate(4px,-2px)}86%{transform:translate(-2px,0)}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
@@ -520,6 +554,11 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
   <div id="rotateHint" role="note">↻ หมุนมือถือเป็นแนวนอนเพื่อเล่นเต็มจอ</div>
   <div id="stage">
     <div id="world">
+      <div id="vdoLayer" aria-hidden="true">
+        <video id="vdoBgA" muted playsinline preload="auto" disablepictureinpicture></video>
+        <video id="vdoBgB" muted playsinline preload="auto" disablepictureinpicture></video>
+        <video id="vdoFight" playsinline preload="auto" disablepictureinpicture></video>
+      </div>
       <div id="hud">
       <img class="ov-top" src="assets/overlay-top.webp" alt="" draggable="false">
       <div class="tab red">RED <small>คุณ</small></div>
@@ -560,6 +599,12 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
         <div class="st-cta">
           <button type="button" class="btn primary big" data-act="start">START GAME</button>
           <a class="btn ghost" href="https://claude.ai/artifact/RyoEv1zJa1owvBABJAgrrA" target="_blank" rel="noopener">คู่มือวิธีเล่น ↗</a>
+        </div>
+        <div class="vdo-load" id="vdoLoad" role="status" hidden>
+          <div class="vl-bar"><i></i></div>
+          <div class="vl-row"><span class="vl-txt"></span>
+            <button type="button" class="btn sm ghost" data-act="vdoRetry" hidden>ลองใหม่</button>
+            <button type="button" class="btn sm ghost" data-act="vdoOff">เล่นแบบไม่มี VDO</button></div>
         </div>
         <ol class="st-flow" id="stFlow" aria-label="ลำดับเฟสใน 1 รอบ"></ol>
       </section>
@@ -602,6 +647,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
       <div class="tools left">
         <label class="pill" for="sound"><input type="checkbox" id="sound"> เสียง</label>
         <label class="pill" for="music"><input type="checkbox" id="music"> เพลง</label>
+        <label class="pill" for="vdoOn"><input type="checkbox" id="vdoOn"> VDO</label>
         <label class="pill" for="fast"><input type="checkbox" id="fast"> เร่งความเร็ว</label>
         <button type="button" class="pill" id="quit" data-act="quit" hidden>ออกจากเกม</button>
       </div>
@@ -622,6 +668,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
         <div class="drawer-body" id="rulesMini"></div>
       </aside>
       <div id="winner" class="win-layer" hidden></div>
+      <div class="vdo-bar" id="vdoBar" hidden><span class="vdo-lane" id="vdoLane"></span><button type="button" class="vdo-skip" data-act="vdoSkip">SKIP <i>▶▶</i></button></div>
     </div>
     <div id="fxLayer" class="fx-layer"></div>
     <div id="flash" aria-hidden="true"></div>
@@ -2007,6 +2054,223 @@ const bgm = (() => {
   };
 })();
 
+/* ───────── VDO ฉากปะทะ (ตี้ 2026-10-21) ─────────
+   ต้นฉบับ = โฟลเดอร์ "Video" ใน Drive (หน้าดูรวม claude.ai/artifact/HQa5w3L9…) → vdo-src/build_vdo.py บีบเป็น assets/vdo/<ชื่อ>.mp4 + ตาราง VDO_FILES ด้านล่าง
+   โหลดครบทุกไฟล์ก่อนเริ่มเกม (เก็บเป็น blob — ระหว่างเล่นไม่ต้องรอเน็ต · มี Cache Storage ก็จำไว้ เปิดครั้งหน้าไม่ต้องโหลดใหม่)
+   ปุ่ม VDO มุมซ้ายล่างปิดได้ — ปิด = เปิดปะทะด้วยแอนิเมชันการ์ดแบบเดิม */
+const VDO_DIR = 'assets/vdo/', VDO_CACHE = 'df-vdo-1';
+// ชื่อ: [ไบต์, วินาที] — สร้างด้วย python3 vdo-src/build_vdo.py --js
+const VDO_FILES = {"atk1-blue":[2784391,14.38],"atk1-red":[2274480,12.31],"atk2-blue":[3841758,17.39],"atk2-red":[3624140,15.81],"atk3-blue":[4266115,17.68],"atk3-red":[4204064,18.18],"def-atk1-blue":[2642941,14.06],"def-atk1-red":[3288671,14.06],"def-atk2-blue":[3234334,16.9],"def-atk2-red":[3439380,16.9],"def-atk3-blue":[4312138,20.14],"def-atk3-red":[3663390,16.55],"def-ult1-blue":[5126350,19.05],"def-ult1-red":[4979010,19.05],"def-ult2-blue":[4131356,19.84],"def-ult2-red":[4479200,19.84],"def-ult3-blue":[4293736,18.05],"def-ult3-red":[4831034,18.05],"dod-atk1-blue":[2479584,13.46],"dod-atk1-red":[3285123,17.09],"dod-atk2-blue":[2595384,14.34],"dod-atk2-red":[2333567,14.34],"dod-atk3-blue":[3388210,16.55],"dod-atk3-red":[3360603,18.0],"dod-ult1-blue":[3842048,18.0],"dod-ult1-red":[3598827,18.0],"dod-ult2-blue":[3694462,18.0],"dod-ult2-red":[3581419,18.0],"dod-ult3-blue":[5184227,19.52],"dod-ult3-red":[4242115,19.52],"idle-blue":[1553975,15.02],"idle-red":[1582345,15.02],"taunt-blue":[2994883,18.08],"taunt-red":[2334424,18.08],"ult1-blue":[2908848,15.47],"ult1-red":[4085286,17.68],"ult2-blue":[3808362,17.39],"ult2-red":[3820167,17.51],"ult3-blue":[3859138,18.18],"ult3-red":[4740295,21.46]};
+const VDO_REVEAL_MS = 2000; // เปิด VDO แล้วโชว์การ์ดสองฝั่งก่อนเก็บ UI ลง
+const VDO_HP_LEAD = 3;      // แถบ HP กลับลงมาโชว์ผลก่อน VDO จบกี่วินาที
+const VDO_DUCK = 0.15;      // ระหว่าง VDO เพลงประกอบเบาลงเหลือเท่านี้ (เสียงใน VDO นำ)
+const vdo = (() => {
+  const urls = {}, names = Object.keys(VDO_FILES), total = names.reduce((a, k) => a + VDO_FILES[k][0], 0);
+  let state = 'idle', got = 0, on = true, error = null, lastPing = 0;
+  try { on = localStorage.getItem('df-vdo') !== '0'; } catch (e) { /* ข้ามได้ */ }
+  const ping = (force = false) => {
+    const now = Date.now();
+    if (!force && now - lastPing < 150) return;
+    lastPing = now;
+    renderVdoLoad();
+    if (force) render(); // โหลดครบ → Idle เริ่มเล่นได้ทันทีถ้าอยู่ในเกม
+  };
+  async function one(name, add) {
+    const url = VDO_DIR + name + '.mp4', want = VDO_FILES[name][0];
+    let cache = null, res = null;
+    try { cache = await caches.open(VDO_CACHE); res = await cache.match(url); } catch (e) { cache = null; }
+    if (res) {
+      const b = await res.blob();
+      if (b.size === want) { add(b.size); return b; }
+    }
+    res = await fetch(url);
+    if (!res.ok || !res.body) throw new Error(`${name}: HTTP ${res.status}`);
+    const reader = res.body.getReader(), parts = [];
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      parts.push(value);
+      add(value.length);
+    }
+    const blob = new Blob(parts, { type: 'video/mp4' });
+    if (blob.size !== want) throw new Error(`${name}: ได้ ${blob.size} ไบต์ จาก ${want}`);
+    if (cache) cache.put(url, new Response(blob, { headers: { 'Content-Type': 'video/mp4' } })).catch(() => {});
+    return blob;
+  }
+  async function load() {
+    if (state === 'loading' || state === 'ready') return;
+    state = 'loading'; error = null;
+    got = names.filter(k => urls[k]).reduce((a, k) => a + VDO_FILES[k][0], 0);
+    const queue = names.filter(k => !urls[k]).sort((a, b) => b.startsWith('idle') - a.startsWith('idle')); // Idle มาก่อน
+    ping(true);
+    const worker = async () => {
+      while (queue.length && state === 'loading') {
+        const name = queue.shift();
+        let mine = 0;
+        try {
+          const b = await one(name, n => { mine += n; got += n; ping(); });
+          urls[name] = URL.createObjectURL(b);
+        } catch (e) {
+          got -= mine;
+          if (state === 'loading') { state = 'failed'; error = e.message; }
+        }
+      }
+    };
+    await Promise.all([worker(), worker(), worker(), worker()]);
+    if (state === 'loading') state = names.every(k => urls[k]) ? 'ready' : 'failed';
+    ping(true);
+  }
+  return {
+    load,
+    url: name => urls[name] || null,
+    get state() { return state; },
+    get error() { return error; },
+    get ready() { return on && state === 'ready'; },
+    get pct() { return Math.floor((got / total) * 100); },
+    get mb() { return `${Math.round(got / 1e6)} / ${Math.round(total / 1e6)} MB`; },
+    get on() { return on; },
+    set on(v) {
+      on = v;
+      try { localStorage.setItem('df-vdo', v ? '1' : '0'); } catch (e) { /* ข้ามได้ */ }
+      if (v && (state === 'idle' || state === 'failed')) load();
+    },
+  };
+})();
+const vdoNeed = () => vdo.on && vdo.state !== 'ready';
+// เลือก VDO ของช่องนี้ (ชื่อตามไฟล์ใน Drive): ATKn/ULTn-<ฝั่งที่ตี> · Def|Dod ATKn/ULTn-<ฝั่งที่กัน/หลบ> (เลข = เลเวลการ์ดที่ตีเข้ามา)
+// ตีกันทั้งคู่ = 2 VDO ต่อกัน เลเวลต่ำก่อน Ultimate ไว้ท้าย (เท่ากัน RED ก่อน) · หลบไม่พ้น = VDO ของฝั่งที่ตี (โดนเต็ม ๆ)
+// ไม่มีใครตี = Taunt ของฝั่งที่ใช้การ์ดป้องกัน (ใช้ทั้งคู่ = RED ก่อน) · ว่างทั้งคู่ = ไม่มี VDO
+const HIT_VDO = { ATK: 'atk', ULT: 'ult' };
+function vdoClips(r) {
+  const tag = s => s.toLowerCase(), mv = c => HIT_VDO[c.type] + c.lv;
+  const hitters = SIDES.filter(s => r[s].card && HIT_VDO[r[s].card.type]);
+  if (hitters.length === 2) {
+    const rank = s => (r[s].card.type === 'ULT' ? 10 : 0) + r[s].card.lv;
+    return hitters.slice().sort((a, b) => rank(a) - rank(b)).map(s => `${mv(r[s].card)}-${tag(s)}`);
+  }
+  if (hitters.length === 1) {
+    const s = hitters[0], t = FOE[s], c = r[s].card, d = r[t].card;
+    if (d && d.type === 'DEF') return [`def-${mv(c)}-${tag(t)}`];
+    if (d && d.type === 'DODGE' && r[t].evaded) return [`dod-${mv(c)}-${tag(t)}`];
+    return [`${mv(c)}-${tag(s)}`];
+  }
+  return SIDES.filter(s => r[s].card).map(s => `taunt-${tag(s)}`);
+}
+// Idle วนเป็นพื้นหลัง (ไม่มีเสียง): ฝั่งเรา → อีกฝั่ง → … สลับด้วยครอสเฟดระหว่าง <video> 2 ตัว
+const vdoBg = (() => {
+  const els = [$('#vdoBgA'), $('#vdoBgB')];
+  let on = false, cur = 0, n = 0;
+  const name = () => `idle-${(n % 2 ? OPP : ME).toLowerCase()}`;
+  const run = el => { el.src = vdo.url(name()); el.currentTime = 0; el.play().catch(() => {}); };
+  const swap = k => {
+    const el = els[k];
+    if (!on || k !== cur || el._swap) return;
+    el._swap = true; n++; cur = 1 - k;
+    run(els[cur]); els[cur].classList.add('on'); el.classList.remove('on');
+    setTimeout(() => { el.pause(); el._swap = false; }, 700);
+  };
+  els.forEach((el, k) => {
+    el.addEventListener('timeupdate', () => { if (el.duration > 1 && el.duration - el.currentTime < 0.6) swap(k); });
+    el.addEventListener('ended', () => swap(k));
+  });
+  return {
+    sync(want) {
+      if (want === on) return;
+      on = want;
+      const el = els[cur];
+      if (on) { if (el.getAttribute('src')) el.play().catch(() => {}); else run(el); el.classList.add('on'); }
+      else for (const e of els) { e.classList.remove('on'); e.pause(); }
+    },
+    get debug() { return { on, cur, n, src: els.map(e => e.getAttribute('src') ? name() : null), time: els.map(e => +e.currentTime.toFixed(2)), paused: els.map(e => e.paused) }; },
+  };
+})();
+function duckMusic(down) {
+  const b = sfx.bus;
+  if (!b || !b.out) return;
+  try {
+    const g = b.out.gain, t = b.ctx.currentTime;
+    g.cancelScheduledValues(t); g.setValueAtTime(g.value, t);
+    g.linearRampToValueAtTime(down ? VDO_DUCK : 1, t + (down ? 0.5 : 1.5));
+  } catch (e) { /* เสียงพังต้องไม่ทำให้เกมพัง */ }
+}
+// iOS Safari: <video> ที่มีเสียงต้องเคยถูกเล่นจากการแตะของผู้ใช้ก่อน → แตะครั้งแรกหลังโหลดครบ เล่นแล้วหยุดทันที (เสียง 0)
+let vdoPrimed = false;
+function vdoPrime() {
+  if (vdoPrimed || !vdo.ready || ui.vdo) return;
+  vdoPrimed = true;
+  const el = $('#vdoFight');
+  el.src = vdo.url('idle-red'); el.muted = false; el.volume = 0;
+  el.play().then(() => { el.pause(); el.volume = 1; }, () => { el.volume = 1; vdoPrimed = false; });
+}
+// setTimeout จริง (ไม่ผ่าน wait — โหมดเร่งความเร็วไม่ย่อเวลา VDO) · until = รอจนเงื่อนไขเป็นจริง (เช็กทุก 80 ms)
+const sleep = ms => new Promise(res => setTimeout(res, ms));
+const until = cond => new Promise(res => { const t = () => (cond() ? res() : setTimeout(t, 80)); t(); });
+// เล่น VDO ของช่อง i: การ์ดขึ้นบน VDO VDO_REVEAL_MS → เก็บ UI ลง → ก่อน VDO สุดท้ายจบ VDO_HP_LEAD วิ แถบ HP กลับลงมา + showResult()
+// SKIP = ข้ามไปโชว์ผลทันที · คืน false ถ้าออกจากเกมกลางทาง
+async function laneVdo(i, clips, gid, showResult) {
+  const W = $('#world'), el = $('#vdoFight'), lv = { skip: false, failed: false, clips };
+  const gone = () => gid !== ui.gid;
+  let hp = false;
+  const hpNow = async () => {
+    if (hp) return;
+    hp = true;
+    W.classList.add('vdo-hp');
+    if (W.classList.contains('vdo-full')) await sleep(450); // ให้แถบ HP เลื่อนลงมาก่อน ตัวเลขค่อยวิ่ง
+    if (!gone()) showResult();
+  };
+  ui.vdo = lv;
+  $('#vdoLane').textContent = `ช่อง ${i + 1}`;
+  $('#vdoBar').hidden = false;
+  vdoBg.sync(false);
+  duckMusic(true);
+  W.classList.add('vdo-fight');
+  try {
+    for (let k = 0; k < clips.length && !lv.skip; k++) {
+      const t0 = Date.now();
+      lv.failed = false;
+      el.src = vdo.url(clips[k]);
+      el.volume = 1;
+      el.muted = !sfx.on;
+      el.classList.add('on');
+      el.play().catch(() => { el.muted = true; el.play().catch(() => { lv.failed = true; }); });
+      if (k === 0) {
+        await until(() => lv.skip || gone() || lv.failed || Date.now() - t0 >= VDO_REVEAL_MS);
+        if (gone()) return false;
+        if (!lv.skip && !lv.failed) W.classList.add('vdo-full');
+      }
+      if (k === clips.length - 1) {
+        const at = VDO_FILES[clips[k]][1] - VDO_HP_LEAD;
+        await until(() => lv.skip || gone() || lv.failed || el.ended || el.currentTime >= at);
+        if (gone()) return false;
+        await hpNow();
+      }
+      await until(() => lv.skip || gone() || lv.failed || el.ended);
+      if (gone()) return false;
+    }
+    if (!hp) await hpNow();
+    if (lv.skip || lv.failed) await sleep(1300); // ข้าม/เล่นไม่ได้ → ค้างผลให้เห็นก่อนกลับกระดาน
+    return !gone();
+  } finally {
+    el.pause();
+    el.classList.remove('on');
+    W.classList.remove('vdo-fight', 'vdo-full', 'vdo-hp');
+    $('#vdoBar').hidden = true;
+    ui.vdo = null;
+    duckMusic(false);
+  }
+}
+// หน้าเริ่ม: แถบโหลด VDO · START GAME กดได้เมื่อโหลดครบ (หรือปิด VDO)
+function renderVdoLoad() {
+  const need = vdoNeed(), failed = vdo.state === 'failed', box = $('#vdoLoad'), btn = $('#start [data-act="start"]');
+  box.hidden = !need;
+  box.classList.toggle('failed', failed);
+  btn.disabled = need;
+  btn.textContent = need && !failed ? `LOADING VDO ${vdo.pct}%` : 'START GAME';
+  box.querySelector('i').style.width = `${vdo.pct}%`;
+  box.querySelector('.vl-txt').textContent = failed ? `โหลด VDO ไม่สำเร็จ (${vdo.mb})` : `กำลังโหลด VDO ฉากต่อสู้ ${vdo.mb} · ต้องโหลดครบก่อนเริ่มเกม`;
+  box.querySelector('[data-act="vdoRetry"]').hidden = !failed;
+}
+
 function addLog(html, cls = '') {
   const ol = $('#log'), li = document.createElement('li');
   if (cls) li.className = cls;
@@ -2535,6 +2799,7 @@ async function runFight() {
   ui.busy = true;
   ui.hpStart = { RED: g.p.RED.hp, BLUE: g.p.BLUE.hp };
   ui.phase = 'fight';
+  if (ui.pvp && vdo.ready) presence({ vdo: g.round }); // อีกฝ่ายเห็นว่าเรากำลังดู VDO → เวลารอของเขาไม่เดิน
   addLog('Fight Phase · เปิดทีละช่อง 1 → 2 → 3 · HP หมดเมื่อไหร่จบทันที');
   render();
   let last = SLOT_N - 1;
@@ -2545,25 +2810,36 @@ async function runFight() {
     const r = rollClash(g, i);
     Object.assign(ui, { shown: i, detail: i, pending: r });
     const ctr = counterSide(r);
+    const clips = vdo.ready ? vdoClips(r) : [];
     ui.fx = { lane: i, cls: actionFx(r), marks: actionMarks(r), impact: r.RED.raw > 0 || r.BLUE.raw > 0, ult: [r.RED.card, r.BLUE.card].some(c => c && c.type === 'ULT'), counter: ctr, chg: changeCallouts(r) };
     render();
-    clashFx(r);
-    await wait(ctr ? 1450 : 900); // ชนะทาง = ค้างให้เห็นป้ายและค่าที่เปลี่ยนนานขึ้น
-    if (gid !== ui.gid) return;
     // 2) หัก HP / ได้ HP คืน — แผงผลปะทะเฉลยผลทอยหลบและตัวเลขสุดท้าย
-    applyDamage(g, r);
-    ui.results[i] = r;
-    ui.pending = null;
-    ui.hit = { RED: r.RED.taken > 0, BLUE: r.BLUE.taken > 0 };
-    const after = s => (r[s].taken > 0 ? 'fx-hurt' : r[s].healed > 0 ? 'fx-heal' : '');
-    ui.fx = { lane: i, resIn: true, cls: { RED: after('RED'), BLUE: after('BLUE') }, marks: resultMarks(r) };
-    render();
-    for (const s of SIDES) floatHp(s, r[s]);
-    if (SIDES.some(s => r[s].taken > 0)) sfx.play('hurt');
-    if (SIDES.some(s => r[s].evaded)) sfx.play('miss');
-    if (SIDES.some(s => r[s].healed > 0)) sfx.play('heal', 400);
-    await wait(900);
-    if (gid !== ui.gid) return;
+    const showResult = () => {
+      applyDamage(g, r);
+      ui.results[i] = r;
+      ui.pending = null;
+      ui.hit = { RED: r.RED.taken > 0, BLUE: r.BLUE.taken > 0 };
+      const after = s => (r[s].taken > 0 ? 'fx-hurt' : r[s].healed > 0 ? 'fx-heal' : '');
+      ui.fx = { lane: i, resIn: true, cls: { RED: after('RED'), BLUE: after('BLUE') }, marks: resultMarks(r) };
+      render();
+      for (const s of SIDES) floatHp(s, r[s]);
+      if (SIDES.some(s => r[s].taken > 0)) sfx.play('hurt');
+      if (SIDES.some(s => r[s].evaded)) sfx.play('miss');
+      if (SIDES.some(s => r[s].healed > 0)) sfx.play('heal', 400);
+    };
+    if (clips.length) {
+      // VDO: เสียงฟัน/อัลติ/โล่อยู่ใน VDO แล้ว — เกมเล่นแค่เสียงพลิกการ์ด + ชนะทาง
+      sfx.play('flip');
+      if (ctr) { sfx.play(`ctr${r[ctr].card.type}`, 120); flashStage(ctr); quake(true); }
+      if (!(await laneVdo(i, clips, gid, showResult))) return;
+    } else {
+      clashFx(r);
+      await wait(ctr ? 1450 : 900); // ชนะทาง = ค้างให้เห็นป้ายและค่าที่เปลี่ยนนานขึ้น
+      if (gid !== ui.gid) return;
+      showResult();
+      await wait(900);
+      if (gid !== ui.gid) return;
+    }
     // 3) ทิ้ง / จั่ว / เลเวลอัป / เสีย HP เพราะมือว่าง
     if (applyCards(g, r)) {
       ui.dying = [...(r[OPP].broke ? r[OPP].broke.cards : []), ...(r[ME].paid ? r[ME].paid.cards : [])];
@@ -2598,6 +2874,7 @@ async function runFight() {
   if (gid !== ui.gid) return;
   Object.assign(ui, { phase: 'end', busy: false, winner: verdict.winner, winReason: verdict.reason, oppHidden: 0 });
   if (ui.pvp) ui.pvp.endAt = Date.now();
+  if (net.mine.vdo) presence({ vdo: null });
   if (ui.pvp && ui.winner) presence({ seat: null, at: null, inp: {} }); // จบแมตช์ = ปล่อยที่นั่งให้คนอื่น (mid ยังอยู่จนกว่าจะออก)
   addLog(`End Phase · HP ${tagOf('RED')} ${hpDelta(ui.hpStart.RED, g.p.RED.hp)} · ${tagOf('BLUE')} ${hpDelta(ui.hpStart.BLUE, g.p.BLUE.hp)}`);
   if (ui.winner) addLog(`Winner Phase · ${ui.winner === 'DRAW' ? 'เสมอ!' : `${tagOf(ui.winner)} WIN!`} — ${ui.winReason}`, 'sys');
@@ -2625,6 +2902,7 @@ function toStart(screen = 'start') {
   ui.gid++; // ตัด async ที่ค้างอยู่ทั้งหมด
   if (ui.mode === 'spec') specLeave();
   if (ui.mode === 'pvp' || net.mine.seat || net.mine.mid) pvpLeaveMatch(); // ออกจากห้อง/แมตช์ = ปล่อยที่นั่งให้คนอื่น
+  if (net.mine.vdo) presence({ vdo: null });
   ui.pvpStarting = null;
   Object.assign(ui, { screen, intro: false, phase: null, winner: null, busy: false, peek: false, drawer: null, hpShown: {}, ko: null });
   $('#ko').hidden = true;
@@ -3052,6 +3330,10 @@ function render() {
   $('.tab.red small').textContent = inGame ? who('RED') : 'คุณ';
   $('.tab.blue small').textContent = inGame ? who('BLUE') : 'บอท';
   $('#world').classList.toggle('is-game', inGame);
+  // VDO: ชั้นวิดีโอโผล่เมื่ออยู่ในเกม (หลังฉากเปิด) · Idle วนเป็นพื้นหลังเมื่อไม่ได้เล่น VDO ปะทะ
+  $('#world').classList.toggle('has-vdo', inGame && !ui.intro && vdo.ready);
+  vdoBg.sync(inGame && !ui.intro && vdo.ready && !ui.vdo);
+  renderVdoLoad();
   $('#splash').hidden = !(inGame && ui.intro);
   for (const id of ['#strip', '#main', '#controls', '#hand']) $(id).hidden = !inGame || !!ui.intro;
   $('#quit').hidden = !inGame;
@@ -3100,11 +3382,17 @@ function rulesListHTML() {
 
 document.addEventListener('click', e => {
   sfx.unlock(); // เบราว์เซอร์ยอมให้เล่นเสียงหลังผู้ใช้คลิกเท่านั้น
+  vdoPrime();
   const t = e.target.closest('[data-act]');
   if (!t || t.disabled) return;
   if (ui.mode === 'spec' && SPEC_BLOCKED.has(t.dataset.act)) return; // ผู้ชมแตะการ์ด/ปุ่มเล่นไม่ได้
+  // เข้าเกม/ห้อง PVP ได้เมื่อโหลด VDO ครบ (ตี้: "ต้องโหลดไฟล์ให้ครบ ก่อนเริ่มเกม") — หรือปิด VDO
+  if (VDO_GATED.has(t.dataset.act) && vdoNeed()) { toast(vdo.state === 'failed' ? 'โหลด VDO ไม่สำเร็จ — กลับหน้าแรกกดลองใหม่ หรือปิด VDO' : `รอโหลด VDO ให้ครบก่อน (${vdo.pct}%)`); return; }
   const i = Number(t.dataset.i);
   switch (t.dataset.act) {
+    case 'vdoSkip': if (ui.vdo) ui.vdo.skip = true; break;
+    case 'vdoOff': vdo.on = false; $('#vdoOn').checked = false; render(); break;
+    case 'vdoRetry': vdo.load(); break;
     case 'watch': specStart(); break;
     case 'start': if (ROOM.label && !ON_CLAUDE) pvpOpen(); else { ui.screen = 'lobby'; render(); } break; // ลิงก์ห้องส่วนตัว → เข้าห้อง PVP เลย
     case 'copyRoom': {
@@ -3174,7 +3462,9 @@ document.addEventListener('fullscreenchange', () => { renderFs(); fitStage(); })
 document.addEventListener('webkitfullscreenchange', () => { renderFs(); fitStage(); });
 renderFs();
 
+const VDO_GATED = new Set(['start', 'arcade', 'pvpLobby', 'seat', 'watch']);
 document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && ui.vdo) { ui.vdo.skip = true; return; }
   if (e.key === 'Escape' && ui.drawer) { ui.drawer = null; renderDrawer(); }
   if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z' && canUndo()) { e.preventDefault(); undo(); }
 });
@@ -3185,9 +3475,10 @@ document.addEventListener('keydown', e => {
    (presence = ข้อมูลของเราที่ห้องส่งให้ทุกคน ส่งซ้ำให้คนที่เพิ่งเข้า และหายเองเมื่อเราออก)
    presence ของเรา: { v, nick, nonce, seat: 'RED'|'BLUE'|null, at, mid, over, inp: { '<รอบ>p': เก็บ, '<รอบ>a': วาง, '<รอบ>n': พร้อมรอบถัดไป } }
    mid = รหัสแมตช์ (nonce + เวลากด READY ของทั้งสองฝั่ง → ไม่ซ้ำทุกครั้งที่นั่งใหม่) · over = mid ของแมตช์ที่เราตัดสินว่าอีกฝ่ายหลุด
+   vdo = รอบที่เรากำลังดู VDO ฉากปะทะอยู่ (อีกฝ่ายหยุดนับเวลารอ) — ไม่มี = ไม่ได้ดู
    inp เก็บทั้งแมตช์ (ผู้ชมที่เข้ากลางเกมย้อนคำนวณจากรอบ 1) · ผู้ชม: { watch: mid } อย่างเดียว ไม่ส่งอะไรให้ผู้เล่น */
-const PVP_V = 3; // เปลี่ยนกติกา/เอนจินเมื่อไหร่ต้องเพิ่มเลขนี้ — คนละเวอร์ชันจะไม่ถูกจับคู่ (เล่นคนละกติกา = ผลเพี้ยน)
-const PVP_SEC = 60, PVP_CUT = 30, PVP_GONE_MS = 8000, PVP_NEXT_MS = 10000, PVP_WAIT_MS = 90000;
+const PVP_V = 4; // เปลี่ยนกติกา/เอนจินเมื่อไหร่ต้องเพิ่มเลขนี้ — คนละเวอร์ชันจะไม่ถูกจับคู่ (เล่นคนละกติกา = ผลเพี้ยน) · 4 = Fight Phase เป็น VDO (ยาวขึ้นมาก + presence.vdo)
+const PVP_SEC = 60, PVP_CUT = 30, PVP_GONE_MS = 8000, PVP_NEXT_MS = 10000, PVP_WAIT_MS = 90000, VDO_HOLD_MS = 240000;
 // ที่ไหนก็ได้นอก claude.ai (เช่น GitHub Pages): ส่ง presence ผ่าน MQTT broker สาธารณะ 3 เจ้าพร้อมกัน ไม่ต้องล็อกอิน · เจ้าไหนล่มก็ยังคุยกันได้
 // บน claude.ai ต่อข้างนอกไม่ได้ (CSP connect-src 'self' + webrtc block) → ใช้ room ของ claude ได้เฉพาะคนในองค์กรเดียวกัน
 const PUBLIC_URL = 'https://thunderzzzai.github.io/dreamfight-cards/';
@@ -3239,6 +3530,7 @@ function cleanPresence(p) {
   for (const [k, n] of [['nick', 16], ['nonce', 16], ['mid', 96], ['over', 96], ['watch', 96]]) { const v = str(p[k], n); if (v) o[k] = v; }
   if (p.seat === 'RED' || p.seat === 'BLUE') o.seat = p.seat;
   if (Number.isFinite(p.at)) o.at = p.at;
+  if (Number.isInteger(p.vdo) && p.vdo > 0 && p.vdo < 1000) o.vdo = p.vdo;
   o.inp = {};
   if (p.inp && typeof p.inp === 'object' && !Array.isArray(p.inp)) {
     for (const [k, v] of Object.entries(p.inp).slice(0, 200)) if (/^\d{1,3}[pan]$/.test(k) && v != null && (typeof v === 'object' || v === 1)) o.inp[k] = v;
@@ -3587,6 +3879,11 @@ function pvpTick() {
     else if (!P.goneSince) P.goneSince = now;
     else if (now - P.goneSince > PVP_GONE_MS) { pvpForfeit(); return; }
   }
+  // อีกฝ่ายกำลังดู VDO ฉากปะทะรอบนี้ = เวลารอไม่เดิน (ตี้ 2026-10-21) · กันค้างตลอดกาล: หยุดได้ไม่เกิน VDO_HOLD_MS ต่อครั้ง
+  if (P.waitSince && o && o.presence && o.presence.mid === P.mid && o.presence.vdo === g.round) {
+    if (!P.holdSince) P.holdSince = now;
+    if (now - P.holdSince < VDO_HOLD_MS) P.waitSince = now;
+  } else P.holdSince = 0;
   // ยืนยันแล้วแต่อีกฝ่ายเงียบนานเกิน (เครื่องอีกฝ่ายต้องยืนยันเองเมื่อหมดเวลาอยู่แล้ว) = อีกฝ่ายหลุด
   if (!ui.winner && P.waitSince) {
     if (oppInput(P.waitKey) !== undefined) P.waitSince = 0;
@@ -3998,7 +4295,14 @@ $('#sound').addEventListener('change', e => {
   sfx.unlock();
   sfx.play('pick');
   bgm.sync();
+  $('#vdoFight').muted = !sfx.on; // เสียงใน VDO ตามปุ่มเสียง
 });
+$('#vdoOn').checked = vdo.on;
+$('#vdoOn').addEventListener('change', e => {
+  vdo.on = e.target.checked;
+  render();
+});
+if (vdo.on) vdo.load(); // เริ่มโหลด VDO ทันทีที่เปิดหน้า — START GAME รอจนครบ
 $('#music').checked = bgm.on;
 $('#music').addEventListener('change', e => {
   sfx.unlock();
@@ -4021,7 +4325,7 @@ addEventListener('resize', fitStage);
 fitStage();
 // ลายนิ้วมือสถานะเกม (ทดสอบว่า PVP สองเครื่องตรงกัน) — ลำดับการ์ดในมือตามอาร์เรย์ (ส่วนที่กระทบผลสุ่ม)
 const stateHash = () => { const g = ui.g; return g ? JSON.stringify({ r: g.round, hp: SIDES.map(s => g.p[s].hp), h: SIDES.map(s => g.p[s].hand.map(c => `${c.id}${c.type[0]}${c.lv}`).join(',')), d: g.deck.length, m: g.market.map(c => c.type[0]).join('') }) : null; };
-window.__dreamfight = { bgm, stateHash, ui: () => ui, simulate, stackLanes, pickOne, swapHand, botAction, newGame, doLock, clash, effText, gain, forceDiscard, judge, sfx, calcSideHTML, discardText, drawCount, fitStage };
+window.__dreamfight = { bgm, vdo, vdoBg, vdoClips, stateHash, ui: () => ui, simulate, stackLanes, pickOne, swapHand, botAction, newGame, doLock, clash, effText, gain, forceDiscard, judge, sfx, calcSideHTML, discardText, drawCount, fitStage };
 render();
 })();
 </script>
