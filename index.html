@@ -621,7 +621,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
         <div class="st-cards" id="stCards"></div>
         <div class="st-cta">
           <form class="gate" id="gate" autocomplete="off" novalidate hidden>
-            <input id="gateCode" type="password" inputmode="numeric" maxlength="12" placeholder="รหัสเข้าเกม" aria-label="รหัสเข้าเกม" autocomplete="off">
+            <input id="gateCode" type="password" autocapitalize="off" spellcheck="false" maxlength="24" placeholder="รหัสเข้าเกม" aria-label="รหัสเข้าเกม" autocomplete="off">
             <button type="submit" class="btn primary big">เข้าเกม</button>
           </form>
           <button type="button" class="btn primary big" data-act="start">START GAME</button>
@@ -2324,8 +2324,9 @@ function renderVdoLoad() {
 /* ───────── รหัสเข้าเกม (ตี้ 2026-10-21 — ลิงก์เกมหลุดไปกลุ่มแชทอื่น) ─────────
    หน้าแรกถามรหัสแทนปุ่ม START GAME · ถูกแล้วจำไว้ในเครื่อง (เปิดครั้งหน้าไม่ต้องกรอก) · VDO เริ่มโหลดหลังปลดล็อก
    เก็บแค่ SHA-256 ของ "dreamfight:<รหัส>" — กันคนทั่วไปได้ ไม่ใช่ความปลอดภัยจริง (โค้ดทั้งหมดอยู่ในเครื่องผู้เล่น)
-   เปลี่ยนรหัส: python3 -c "import hashlib;print(hashlib.sha256(b'dreamfight:<รหัสใหม่>').hexdigest())" แล้วแทน ACCESS_HASH (ทุกคนต้องกรอกใหม่) */
-const ACCESS_HASH = 'dee262fee4887ef599f7de1fff9c1ec640faf3a82fcd9c4dbca6b1aad8e25043';
+   ตัวพิมพ์เล็ก/ใหญ่ถือว่าเหมือนกัน (มือถือมักขึ้นตัวใหญ่ให้เอง) · รหัสปัจจุบันตั้ง 2026-10-21 (ตี้ เปลี่ยนจากเลข 6 หลักเป็นตัวอักษร)
+   เปลี่ยนรหัส: python3 -c "import hashlib;print(hashlib.sha256(b'dreamfight:<รหัสใหม่ตัวพิมพ์เล็ก>').hexdigest())" แล้วแทน ACCESS_HASH (ทุกคนต้องกรอกใหม่) */
+const ACCESS_HASH = '64d3226b2629dca7fc614e6a717f53377700788361b143e6ca60e13ccb9040d6';
 let accessOk = false;
 try { accessOk = localStorage.getItem('df-access') === ACCESS_HASH; } catch (e) { /* ไม่มี storage = กรอกทุกครั้ง */ }
 async function sha256Hex(text) {
@@ -2340,7 +2341,7 @@ function renderGate() {
 async function tryAccess(code) {
   const msg = $('#gateMsg'), form = $('#gate');
   let ok = false;
-  try { ok = !!code.trim() && (await sha256Hex(`dreamfight:${code.trim()}`)) === ACCESS_HASH; } catch (e) { msg.textContent = 'เบราว์เซอร์นี้ตรวจรหัสไม่ได้ — ลองเปิดลิงก์แบบ https'; msg.hidden = false; return; }
+  try { ok = !!code.trim() && (await sha256Hex(`dreamfight:${code.trim().toLowerCase()}`)) === ACCESS_HASH; } catch (e) { msg.textContent = 'เบราว์เซอร์นี้ตรวจรหัสไม่ได้ — ลองเปิดลิงก์แบบ https'; msg.hidden = false; return; }
   if (!ok) {
     msg.textContent = 'รหัสไม่ถูกต้อง';
     msg.hidden = false;
