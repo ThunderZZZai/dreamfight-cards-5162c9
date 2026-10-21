@@ -106,6 +106,7 @@ body:not(.portrait) #rotateHint{display:none}
 .gauge.unl .orbs{border-color:var(--gold)}
 .gauge .gunl{padding:2px 12px;border-radius:999px;background:var(--gold);color:#1a1204;font-size:16px;font-weight:700;white-space:nowrap}
 @keyframes gGlow{50%{box-shadow:0 0 0 3px rgba(255,255,255,.35),0 0 28px rgba(170,120,255,.95)}}
+.win-bot{margin:10px auto 0;max-width:820px;font-size:19px;line-height:1.45;color:var(--muted);text-transform:none}
 .gmenu{position:absolute;top:200px;z-index:9;width:520px;padding:16px;border-radius:18px;background:var(--panel);border:2px solid rgba(255,255,255,.18);box-shadow:0 18px 50px rgba(0,0,0,.7),0 0 0 1px rgba(170,120,255,.4),0 0 40px rgba(170,120,255,.25);text-transform:none}
 .gmenu.side-red{left:320px} .gmenu.side-blue{right:320px}
 .gm-head{display:flex;align-items:center;gap:12px;margin-bottom:12px}
@@ -693,7 +694,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
         <p class="st-eyebrow">LOBBY</p>
         <h2 class="lobby-title">เลือกโหมด</h2>
         <div class="modes">
-          <button type="button" class="mode arcade" data-act="arcade"><b>ARCADE</b><span>คุณ (RED) ปะทะบอท BLUE</span><small>เล่นคนเดียว · ไม่ต้องรอใคร</small></button>
+          <button type="button" class="mode arcade" data-act="arcade"><b>ARCADE</b><span>คุณ (RED) ปะทะบอท BLUE</span><small>บอทสุ่มนิสัย 6 แบบ · เปลี่ยนแผนกลางเกมได้</small></button>
           <button type="button" class="mode pvp" data-act="pvpLobby"><b>PVP</b><span>ผู้เล่นปะทะผู้เล่น · ออนไลน์</span><small>RED vs BLUE · เฟสละ 60 วินาที</small></button>
         </div>
         <button type="button" class="btn ghost" data-act="toStart">← หน้าแรก</button>
@@ -859,6 +860,12 @@ function newGame(log = () => {}) {
   const side = () => ({ hp: HP_MAX, hand: [], slots: [[], [], []], lanes: null, picks: [], gauge: 0, gStack: 0, gDmg: 0, gOps: [], gRound: 0, gNew: 0, unl: 0 });
   const g = { round: 0, deck: freshDeck(), market: [], p: { RED: side(), BLUE: side() }, log };
   g.gseed = Math.floor(rand() * 4294967296); // ตัวสุ่มของเกจ (PVP: ได้ค่าเดียวกันทั้งสองเครื่อง)
+  // บอท: style = นิสัยที่ใช้รอบนี้ · persona = นิสัยประจำตัว (ARCADE สุ่มตอนเริ่มเกม) · styleLog = [รอบ, นิสัย] ที่เปลี่ยน
+  // seen = เลเวลรวมของการ์ดที่แต่ละฝ่ายเปิดในแผงแล้ว (ข้อมูลที่ทุกคนเห็น — นิสัย "อ่านทาง" ใช้)
+  g.style = { RED: 'STD', BLUE: 'STD' };
+  g.persona = { RED: 'STD', BLUE: 'STD' };
+  g.styleLog = { RED: [], BLUE: [] };
+  g.seen = { RED: { ATK: 0, ULT: 0, DEF: 0, DODGE: 0 }, BLUE: { ATK: 0, ULT: 0, DEF: 0, DODGE: 0 } };
   return g;
 }
 function drawOne(g, fresh) {
@@ -1128,6 +1135,7 @@ function judge(g, upto = SLOT_N - 1) {
   return out(w, `HP หมดทั้งคู่${at} เท่ากันพอดี (${r}) — ${Math.min(ur, ub) ? `Ultimate ของ ${w} เลเวลสูงกว่า (Lv${Math.max(ur, ub)} vs Lv${Math.min(ur, ub)})` : `${w} ใช้ Ultimate`}`);
 }
 function clearBoard(g) {
+  for (const s of SIDES) for (const l of g.p[s].lanes || []) if (l && l.lv) g.seen[s][l.type] += l.lv;
   for (const s of SIDES) Object.assign(g.p[s], { slots: [[], [], []], lanes: null, picks: [] });
   g.market = [];
 }
@@ -1138,11 +1146,38 @@ function countTypes(cards) {
   for (const c of cards) n[c.type]++;
   return n;
 }
+/* ── นิสัยบอท (ตี้ 2026-10-22: "มีนิสัยสไตล์การเล่นที่หลากหลาย ไม่เล่นแต่แบบเดิมๆ มีหลายกลยุทธ") ──
+   ทุกนิสัยคิดตามสถานการณ์เหมือนกัน (laneValue) แล้วบวก "ความชอบ" ของนิสัยนั้น — ต่างกันที่การเก็บการ์ด · การวาง · วิธีใช้เกจ
+   pick = น้ำหนักตอนเก็บ · have = ชอบเก็บชนิดที่มีอยู่แล้ว (+ ไว้ซ้อน / − ให้ครบทุกชนิด) · lean(t) = แต้มต่อเลเวลตอนวาง · kinds = แต้มต่อชนิดที่ต่างกันในตาเดียว
+   gauge: tr = เปลี่ยนการ์ดเมื่อแผนดีขึ้น · draw = จั่วทันที · max = เก็บครบ 3 ใช้พลังเต็ม · mix = ครบ 3 ใช้พลังเต็ม / มี 2 + เปลี่ยนแล้วดีขึ้นมาก = เปลี่ยน */
+const counterOf = t => TYPES.find(x => INFO[x].beats === t); // ชนิดที่ชนะทาง t
+const BOT_STYLES = {
+  STD:    { th: 'มาตรฐาน', note: 'เล่นตามสถานการณ์ล้วน', pick: () => ({ ULT: 4, ATK: 3.2, DEF: 2.6, DODGE: 2.6 }), have: 0.9, lean: () => 0, kinds: 0, gauge: 'tr' },
+  RUSH:   { th: 'บุกหนัก', note: 'เก็บ/วางการ์ดจู่โจมเป็นหลัก ได้เกจเมื่อไหร่จั่วทันที', pick: () => ({ ULT: 4.2, ATK: 4.2, DEF: 1.6, DODGE: 1.6 }), have: 0.6, lean: (g, s, t) => (INFO[t].off ? 6 : 0), kinds: 0, gauge: 'draw' },
+  WALL:   { th: 'กำแพง', note: 'เก็บ/วางการ์ดตั้งรับเป็นหลัก สะสมเกจไว้ใช้พลังเต็ม', pick: () => ({ ULT: 3, ATK: 2.4, DEF: 4.2, DODGE: 4 }), have: 0.6, lean: (g, s, t) => (INFO[t].off ? 0 : 5), kinds: 0, gauge: 'mix' },
+  EVEN:   { th: 'สมดุล', note: 'เก็บทุกชนิดให้ครบ วางหลายชนิดในตาเดียว', pick: () => ({ ULT: 3.8, ATK: 3.4, DEF: 3.2, DODGE: 3.2 }), have: 0, lean: () => 0, kinds: 1, gauge: 'tr' },
+  READ:   { th: 'อ่านทาง', note: 'จำว่าเราชอบวางอะไร แล้วเก็บ/วางตัวที่ชนะทาง', pick: (g, s) => { const f = g.seen[FOE[s]], n = TYPES.reduce((a, t) => a + f[t], 0) || 1, w = { ULT: 3.4, ATK: 3, DEF: 2.8, DODGE: 2.8 }; for (const t of TYPES) w[counterOf(t)] += 3 * f[t] / n; return w; },
+            have: 0.6, lean: (g, s, t) => { const f = g.seen[FOE[s]], n = TYPES.reduce((a, x) => a + f[x], 0); return n ? 12 * f[INFO[t].beats] / n : 0; }, kinds: 0, gauge: 'tr' },
+  GAMBLE: { th: 'สายอัลติ', note: 'สะสม Ultimate ซ้อนให้เลเวลสูง เสี่ยงแต่แรง', pick: () => ({ ULT: 4.8, ATK: 2.6, DEF: 2, DODGE: 2.4 }), have: 1, lean: (g, s, t) => (t === 'ULT' ? 2.5 : 0), kinds: 0, gauge: 'max' },
+};
+const PERSONAS = ['RUSH', 'WALL', 'EVEN', 'READ', 'GAMBLE', 'STD'];
+const botStyle = (g, s) => BOT_STYLES[(g.style && g.style[s]) || 'STD'];
+// ต้นรอบ: นิสัยประจำตัวเป็นหลัก แต่ปรับตามสถานการณ์ — ตามหลังมาก = บุกสุดตัว · นำมาก = ปิดเกมแบบรัดกุม · บางรอบเปลี่ยนแผนเฉย ๆ ให้เดายาก
+function botMood(g, s) {
+  const P = g.p[s], foe = g.p[FOE[s]], diff = P.hp - foe.hp, base = g.persona[s], r = Math.random();
+  let st = base;
+  if (diff <= -45 && r < 0.7) st = Math.random() < 0.5 ? 'RUSH' : 'GAMBLE';
+  else if (diff >= 45 && r < 0.5) st = 'WALL';
+  else if (r < 0.18) { const others = PERSONAS.filter(x => x !== base); st = others[Math.floor(Math.random() * others.length)]; }
+  if (st !== g.style[s] || !g.styleLog[s].length) g.styleLog[s].push([g.round, st]);
+  g.style[s] = st;
+  return st;
+}
 function botPick(g, s) {
-  const P = g.p[s], have = countTypes(P.hand), low = P.hp <= 40;
-  const base = { ULT: 4, ATK: 3.2, DEF: 2.6, DODGE: 2.6 };
+  const P = g.p[s], have = countTypes(P.hand), low = P.hp <= 40, st = botStyle(g, s);
+  const base = st.pick(g, s);
   return g.market
-    .map((c, i) => ({ i, v: base[c.type] + Math.min(have[c.type], 2) * 0.9 + (low && !INFO[c.type].off ? 1.8 : 0) + Math.random() * 1.6 }))
+    .map((c, i) => ({ i, v: base[c.type] + Math.min(have[c.type], 2) * st.have + (low && !INFO[c.type].off ? 1.8 : 0) + Math.random() * 1.6 }))
     .sort((a, b) => b.v - a.v)
     .slice(0, PICK_N)
     .map(o => o.i);
@@ -1185,7 +1220,7 @@ const LV_SETS = [[1], [2], [3], [1, 1], [2, 1], [1, 1, 1], [2, 2]]; // [2, 2] = 
 // ทุกแผนที่วางได้ + คะแนน (เรียงมาก → น้อย) · noise = สุ่มปนแบบบอทในเกม (ปิดได้ไว้เทียบค่าเปลี่ยนการ์ดด้วยเกจ)
 // ใช้ 3 เกจรอบนี้ = วางกี่ใบก็ได้ (อย่างน้อยเท่าปกติ)
 function botPlans(g, s, noise = true) {
-  const P = g.p[s], foe = g.p[FOE[s]], H = P.hand;
+  const P = g.p[s], foe = g.p[FOE[s]], H = P.hand, st = botStyle(g, s), leanT = Object.fromEntries(TYPES.map(t => [t, st.lean(g, s, t)]));
   const need = Math.min(SLOT_N, H.length), unl = unlimitedNow(g, s);
   const w = { deal: foe.hp <= 40 ? 1.4 : 1, take: P.hp <= 40 ? 1.6 : P.hp <= 70 ? 1.2 : 1 };
   // อีกฝ่ายยังไม่วาง = มือยังรวม 3 ใบที่จะวาง · วางแล้ว (ใน simulate) = มือที่เห็นคือที่เหลือจริง
@@ -1215,7 +1250,8 @@ function botPlans(g, s, noise = true) {
     if (!ok || (unl ? n < need : n !== need)) continue;
     const back = plan.reduce((a, u) => a + (u ? u.back : 0), 0); // การ์ดคืนจากคู่ Lv2 (บอทเก็บไว้ใช้รอบหน้า) ≈ 3 HP ต่อใบ
     let v = (noise ? Math.random() * 6 : 0) + back * 3;
-    plan.forEach((u, k) => { v += val(u, H.length - n + back) * ord(k); });
+    plan.forEach((u, k) => { v += val(u, H.length - n + back) * ord(k) + (u ? leanT[u.t] * u.lane.lv : 0); });
+    if (st.kinds) v += st.kinds * new Set(plan.filter(Boolean).map(u => u.t)).size;
     scored.push({ plan, v });
   }
   return scored.sort((x, y) => y.v - x.v);
@@ -1230,10 +1266,16 @@ function botAction(g, s) {
 // บอทใช้เกจก่อนวาง (ตัวจำลอง: แบบ "เปลี่ยนการ์ด" ดีสุดสำหรับบอท 53% · จั่วทันที 49% · เก็บ 3 เกจ 50%)
 // มี ≥ 2 เกจ → ลองเปลี่ยนทุกใบ × ทุกชนิด เลือกแบบที่แผนวางดีขึ้นมากสุด · ไม่มีใบไหนดีขึ้น = เก็บไว้ · เกจเต็ม 3 แล้ว = จั่ว 1 กันเกจล้น
 function botGauge(g, s) {
-  const P = g.p[s], res = [];
+  const P = g.p[s], res = [], how = botStyle(g, s).gauge;
+  if (how === 'draw') { while (P.gauge > 0) res.push(useGauge(g, s, { k: 'draw' })); return res.filter(Boolean); }
+  if (how === 'max' || how === 'mix') {
+    if (P.gauge >= GAUGE_MAX) return [useGauge(g, s, { k: 'max' })].filter(Boolean);
+    if (how === 'max') return res;
+  }
+  const need = how === 'mix' ? 8 : 1e-6; // mix: เปลี่ยนเฉพาะตอนแผนดีขึ้นชัด ๆ (ไม่งั้นเก็บไว้ใช้พลังเต็ม)
   while (P.gauge >= GAUGE_COST.tr) {
     const now = botPlans(g, s, false)[0].v, seen = new Set();
-    let best = null, gainV = 1e-6;
+    let best = null, gainV = need;
     for (const c of P.hand) {
       if (seen.has(c.type + c.lv)) continue;
       seen.add(c.type + c.lv);
@@ -1249,7 +1291,7 @@ function botGauge(g, s) {
     if (!best) break;
     res.push(useGauge(g, s, { k: 'tr', ...best }));
   }
-  if (P.gauge >= GAUGE_MAX) res.push(useGauge(g, s, { k: 'draw' }));
+  if (P.gauge >= GAUGE_MAX) res.push(useGauge(g, s, { k: how === 'mix' ? 'max' : 'draw' }));
   return res.filter(Boolean);
 }
 
@@ -2616,6 +2658,7 @@ async function startGame(opt = { mode: 'arcade' }) {
   setRand(pvp ? seededRand(opt.seed) : null); // PVP: ตัวสุ่มชุดเดียวกันทั้งสองเครื่อง ต้องตั้งก่อนสร้างเกม
   ui.pvp = pvp ? { mid: opt.mid, oppPeer: opt.oppPeer, oppNick: opt.oppNick || 'ผู้เล่น', phaseKey: null } : null;
   ui.g = newGame(addLog);
+  if (!pvp) { const pe = PERSONAS[Math.floor(Math.random() * PERSONAS.length)]; ui.g.persona[OPP] = ui.g.style[OPP] = pe; } // ARCADE: บอทสุ่มนิสัยทุกเกม (เฉลยตอนจบ)
   clockStart();
   if (pvp) presence({ t0: clock.t0 }); // ผู้ชมที่เข้ากลางเกมนับเวลาจากจุดเดียวกับผู้เล่น
   // เปิดเกม: Overlay + แผง CARD ORDER เลื่อนเข้า แถบ HP ชาร์จ 0 → 100 แล้วค่อยเริ่มจั่ว
@@ -2639,6 +2682,7 @@ async function beginRound(gid) {
   clock.rounds.push(Date.now());
   Object.assign(ui, { phase: 'draw', busy: true, picks: [], undo: [], pickShown: false, place: [], shown: -1, results: [], detail: null, pending: null, ko: null });
   const res = doDraw(g);
+  if (ui.mode === 'arcade') botMood(g, OPP); // นิสัยประจำตัว + เปลี่ยนแผนตามสถานการณ์ (ไม่บอกผู้เล่นจนจบเกม)
   for (const s of SIDES) noteGain(s, res[s]);
   addLog(`Round ${g.round}`, 'round');
   addLog(`Draw Phase · จั่วคนละ ${drawCount(g.round)} ใบ${g.round === 1 ? ' (รอบแรก)' : ''}`);
@@ -3238,6 +3282,7 @@ async function runFight() {
   if (ui.pvp && ui.winner) presence({ seat: null, at: null, inp: {} }); // จบแมตช์ = ปล่อยที่นั่งให้คนอื่น (mid ยังอยู่จนกว่าจะออก)
   addLog(`End Phase · HP ${tagOf('RED')} ${hpDelta(ui.hpStart.RED, g.p.RED.hp)} · ${tagOf('BLUE')} ${hpDelta(ui.hpStart.BLUE, g.p.BLUE.hp)}`);
   if (ui.winner) addLog(`Winner Phase · ${ui.winner === 'DRAW' ? 'เสมอ!' : `${tagOf(ui.winner)} WIN!`} — ${ui.winReason}`, 'sys');
+  if (ui.winner && ui.mode === 'arcade') addLog(`เฉลย · ${botStyleText(g, OPP)}`, 'sys');
   render();
   if (ui.winner) sfx.play(ui.winner === 'DRAW' ? 'levelup' : ui.mode === 'spec' || ui.winner === ME ? 'win' : 'lose');
 }
@@ -3779,6 +3824,12 @@ function renderControls() {
   $('#controls').classList.toggle('has-clock', !!clock);
   $('#controls').innerHTML = `<div class="hint">${hint}</div><div class="btns-main">${clock}${main}</div><div class="btns">${btns}</div>`;
 }
+// เฉลยนิสัยบอท: นิสัยประจำตัว + รอบที่เปลี่ยนแผน
+function botStyleText(g, s) {
+  const pe = BOT_STYLES[g.persona[s]], log = g.styleLog[s].filter(([, st], k, a) => k === 0 || st !== a[k - 1][1]);
+  const turns = log.length > 1 ? ` · เปลี่ยนแผน: ${log.map(([r, st]) => `รอบ ${r} ${BOT_STYLES[st].th}`).join(' → ')}` : ' · ไม่เปลี่ยนแผนเลย';
+  return `บอท ${s} นิสัย "${pe.th}" (${pe.note})${turns}`;
+}
 function renderWinner() {
   const el = $('#winner'), w = ui.winner, g = ui.g;
   el.hidden = !w || ui.peek;
@@ -3792,6 +3843,7 @@ function renderWinner() {
     <p>${line}</p>
     <div class="win-stats"><span class="t-red">RED ${g.p.RED.hp} HP</span><span class="t-blue">BLUE ${g.p.BLUE.hp} HP</span><span>${g.round} รอบ</span></div>
     ${clockSummaryHTML()}
+    ${ui.mode === 'arcade' && g.persona ? `<p class="win-bot">${esc(botStyleText(g, OPP))}</p>` : ''}
     <div class="win-btns">${ui.mode === 'pvp' || ui.mode === 'spec' ? '<button type="button" class="btn primary big" data-act="toPvp">กลับห้อง PVP</button>' : '<button type="button" class="btn primary big" data-act="toLobby">กลับ LOBBY</button>'}<button type="button" class="btn ghost" data-act="peek">ดูกระดานรอบสุดท้าย</button></div>
   </div>`;
 }
@@ -3861,6 +3913,7 @@ function rulesListHTML() {
     <li><b>เก็บการ์ด</b> — แตะหรือลากการ์ดกองกลางเข้ามือ = เข้าขวาสุด · มือเต็ม ${HAND_MAX} ใบแล้วเก็บ = เหมือนจั่ว: สุ่มเลเวลอัปการ์ดบนมือ 1 ใบแทน (สุ่มตอนกด PICK UP ไม่รู้ล่วงหน้าว่าใบไหน) · <b>เปลี่ยนใจ</b>: ก่อนกด PICK UP แตะหรือลากใบที่เพิ่งเก็บ (ป้ายแดง "เก็บ") กลับกองกลางได้</li>
     <li><b>วางการ์ด</b> — แตะการ์ดบนมือ = ลงช่องว่างถัดไป · ลาก = ลงช่องที่ต้องการ · <b>เลเวลอัป</b> = ลากทับการ์ดชนิดเดียวกันในแผงเท่านั้น (สูงสุด Lv3) · <b>Lv2 + Lv2</b> = Lv3 + ได้การ์ด Lv1 ชนิดเดียวกันคืนขึ้นมือทันที (วางต่อช่องอื่นได้) · ลากทับต่างชนิด = สลับ (ในแผง และมือ ↔ แผง) · <b>บนมือรวมเลเวลไม่ได้</b> ลากทับกัน = สลับตำแหน่ง · วางชนิดเดียวกันไว้คนละช่องไม่รวม · ช่องว่างไม่มีอะไรกัน การ์ดอีกฝ่ายเข้าเต็ม ๆ</li>
     <li><b>เกจ (ลูกสีรุ้งใต้แถบ HP · สูงสุด ${GAUGE_MAX})</b> — ได้เกจเมื่อ: การ์ดตั้งรับ (Defence/Dodge) ที่วางรวมเลเวลครบ ${GAUGE_STACK} · การ์ดจู่โจม (Attack/Ultimate) ชนะทาง 1 ช่อง · การ์ดจู่โจมทำดาเมจสะสมครบ ${GAUGE_DMG} — สะสมข้ามรอบ เกจเต็มแล้วแต้มสะสมหาย · <b>ใช้ในเฟส Action</b> (แตะลูกเกจ): 1 เกจ = จั่ว 1 ใบ · 2 เกจ = เปลี่ยนการ์ดบนมือ 1 ใบเป็นชนิดไหนก็ได้ + เลเวล +1 (ใบ Lv3 = จั่ว 1 ใบแทน) · 3 เกจ (พลังเต็ม) = จั่วจนมือครบ ${HAND_MAX} → อัปเลเวลการ์ดบนมือทุกใบ +1 → รอบนั้นวางกี่ใบก็ได้ · ใช้แล้วย้อนไม่ได้ · ทุกจั่วจากเกจ มือเต็ม = สุ่มเลเวลอัปแทน</li>
+    <li><b>บอท (ARCADE)</b> — สุ่มนิสัยทุกเกม: ${PERSONAS.map(k => BOT_STYLES[k].th).join(' · ')} · เปลี่ยนแผนกลางเกมได้ (ตามหลังมาก = บุก · นำมาก = ตั้งรับ · บางรอบเปลี่ยนเฉย ๆ ให้เดายาก) · ไม่แอบดูมือเรา แต่ "อ่านทาง" จำการ์ดที่เราเปิดแล้ว · เฉลยนิสัยตอนจบเกม</li>
     <li><b>UNDO</b> (ข้างปุ่ม PICK UP / FIGHT! หรือ Ctrl+Z) — ย้อนการเก็บ วาง ซ้อน สลับ ทีละขั้น จนกว่าจะกดยืนยัน</li>
     <li><b>แผง ${OPP} (อีกฝ่าย)</b> — คว่ำครบ 3 ช่องเสมอ ไม่บอกว่าช่องไหนมีการ์ด ว่าง หรือซ้อนกี่ใบ จนกว่าจะเปิดปะทะ</li>
     <li><b>HP หมด = จบทันที (K.O.)</b> — เช็ก HP หลังปะทะจบแต่ละช่อง ฝ่ายไหน HP ≤ 0 ที่ช่อง 1 หรือ 2 รู้ผลทันที ช่องที่เหลือไม่ต้องเปิด · HP หมดทั้งคู่ในช่องเดียวกัน → ติดลบน้อยกว่าชนะ · ติดลบเท่ากัน → คนที่มี Ultimate ในช่องที่เปิดแล้วชนะ (มีทั้งคู่ → Ultimate เลเวลสูงกว่าชนะ)</li>
