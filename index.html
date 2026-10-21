@@ -122,6 +122,7 @@ body:not(.portrait) #rotateHint{display:none}
 .c-name{position:absolute;left:50%;bottom:6.5%;transform:translateX(-50%);padding:.14em .6em;border-radius:999px;background:rgba(5,7,11,.72);font-family:var(--font-disp);font-weight:700;font-size:calc(var(--cw,150px)*.1);line-height:1.15;letter-spacing:.04em;white-space:nowrap}
 .st-card .c-name{display:none}
 .c-new.c-pick{background:linear-gradient(180deg,#ff6b72,#d61f2b);color:#fff;box-shadow:0 0 12px rgba(255,61,69,.8),0 2px 8px rgba(0,0,0,.5)}
+.c-new.c-back{background:linear-gradient(180deg,#8ff5c2,#1fb36b);color:#04140b;box-shadow:0 0 12px rgba(70,227,145,.8),0 2px 8px rgba(0,0,0,.5)} /* การ์ดคืนจากคู่ Lv2 + Lv2 */
 .hc.picked-now .card{animation:pickedPulse calc(1s*var(--spd)) ease}
 @keyframes pickedPulse{0%,100%{filter:none;transform:none}35%{filter:drop-shadow(0 0 22px rgba(255,61,69,.95)) brightness(1.25);transform:translateY(-14px) scale(1.05)}}
 .c-new{position:absolute;right:3%;top:-3.5%;padding:0 .6em;border-radius:999px;background:var(--gold);color:#1a1204;font-family:var(--font-disp);font-weight:700;font-size:calc(var(--cw,150px)*.1);line-height:1.6;box-shadow:0 2px 8px rgba(0,0,0,.5)}
@@ -858,11 +859,21 @@ function swapHand(g, s, aId, bId) {
   [a.got, b.got] = [b.got, a.got];
   return true;
 }
+// Lv2 + Lv2 ชนิดเดียวกันในช่องเดียว (ตี้ 2026-10-22) = ช่องนั้น Lv3 + ได้การ์ด Lv1 ชนิดเดียวกันคืนขึ้นมือ 1 ใบทันที (วางต่อช่องอื่นในรอบนั้นได้)
+// id การ์ดคืน = id สูงสุดของคู่ + REFUND_ID → ทุกเครื่องได้ id เดียวกันโดยไม่ใช้ cardSeq (PVP สองเครื่องล็อกคนละลำดับได้)
+const REFUND_ID = 100000;
+const isLv2Pair = cs => !!cs && cs.length === 2 && cs[0].type === cs[1].type && cs[0].lv === 2 && cs[1].lv === 2;
+const refundOf = cs => ({ id: Math.max(cs[0].id, cs[1].id) + REFUND_ID, type: cs[0].type, lv: 1, refund: true });
+// กองในช่องถูกกติกาไหม: ชนิดเดียวกัน · เลเวลรวม ≤ 3 หรือเป็นคู่ Lv2 + Lv2
+const stackOk = cs => !cs.length || (cs.every(c => c.type === cs[0].type) && (cs.reduce((a, c) => a + c.lv, 0) <= 3 || isLv2Pair(cs)));
 // วางการ์ดลง 3 ช่อง: slots[k] = การ์ดที่วางซ้อนในช่อง k (ชนิดเดียวกันเท่านั้น) · รับการ์ดเดี่ยว/null แบบเดิมได้ด้วย
+// การ์ดคืนจากคู่ Lv2 เข้ามือก่อน แล้วค่อยเอาการ์ดที่วางออกจากมือ (เทียบด้วย id — การ์ดคืนที่วางต่อในช่องอื่นถูกเอาออกด้วย)
 function doLock(g, s, slots) {
   const P = g.p[s];
   P.slots = [0, 1, 2].map(k => { const x = slots[k]; return Array.isArray(x) ? x.filter(Boolean) : x ? [x] : []; });
-  for (const cs of P.slots) for (const c of cs) P.hand.splice(P.hand.indexOf(c), 1);
+  const top = P.hand.reduce((m, c) => Math.max(m, c.got || 0), 0);
+  P.slots.filter(isLv2Pair).forEach((cs, j) => P.hand.push({ ...refundOf(cs), got: top + 0.5 + j * 0.01 })); // ขวาสุดของมือ (ไม่แตะ gotSeq)
+  for (const cs of P.slots) for (const c of cs) { const k = P.hand.findIndex(x => x.id === c.id); if (k >= 0) P.hand.splice(k, 1); }
   P.lanes = stackLanes(P.slots);
 }
 // เลเวลอัปได้เฉพาะการ์ดที่วางซ้อนในช่องเดียวกัน (ชนิดเดียวกัน) → เลเวลรวม สูงสุด Lv3
@@ -1028,7 +1039,7 @@ function laneValue(mine, w, ctx) {
 }
 // แผนการวางของบอท: แต่ละช่อง = การ์ดชนิดเดียวกัน 1-3 ใบ (ซ้อนในช่อง เลเวลรวมไม่เกิน 3) หรือว่าง · วางรวม min(3, มือ) ใบพอดี
 // เหมือนผู้เล่น · ลองทุกแบบแล้วเลือกแบบที่คุ้มสุด มีสุ่มปนนิดหน่อย
-const LV_SETS = [[1], [2], [3], [1, 1], [2, 1], [1, 1, 1]];
+const LV_SETS = [[1], [2], [3], [1, 1], [2, 1], [1, 1, 1], [2, 2]]; // [2, 2] = Lv3 + การ์ด Lv1 คืนขึ้นมือ
 function botAction(g, s) {
   const P = g.p[s], foe = g.p[FOE[s]], H = P.hand;
   const need = Math.min(SLOT_N, H.length);
@@ -1041,14 +1052,14 @@ function botAction(g, s) {
   for (const t of TYPES) for (const set of LV_SETS) {
     const use = {};
     for (const l of set) use[t + l] = (use[t + l] || 0) + 1;
-    if (Object.keys(use).every(k => (have[k] || 0) >= use[k])) units.push({ k: units.length, t, set, use, lane: { type: t, lv: set.reduce((a, b) => a + b, 0) } });
+    if (Object.keys(use).every(k => (have[k] || 0) >= use[k])) units.push({ k: units.length, t, set, use, back: isLv2Pair(set.map(lv => ({ type: t, lv }))) ? 1 : 0, lane: { type: t, lv: Math.min(3, set.reduce((a, b) => a + b, 0)) } });
   }
   // HP หมดช่องไหนจบช่องนั้น → ตอนที่ใครก็อาจตายรอบนี้ ช่องแรก ๆ สำคัญกว่า
   const risky = foe.hp <= 45 || P.hp <= 45;
   const ord = k => (risky ? 1 + (SLOT_N - 1 - k) * 0.08 : 1);
   const memo = new Map();
   const val = (u, spare) => {
-    const key = (u ? u.k : -1) * 16 + spare;
+    const key = (u ? u.k : -1) * 16 + Math.min(15, spare);
     if (!memo.has(key)) memo.set(key, laneValue(u ? u.lane : null, w, { ...ctx0, spare }));
     return memo.get(key);
   };
@@ -1058,8 +1069,9 @@ function botAction(g, s) {
     let n = 0, ok = true;
     for (const u of plan) if (u) { n += u.set.length; for (const k in u.use) if ((used[k] = (used[k] || 0) + u.use[k]) > have[k]) ok = false; }
     if (!ok || n !== need) continue;
-    let v = Math.random() * 6;
-    plan.forEach((u, k) => { v += val(u, H.length - n) * ord(k); });
+    const back = plan.reduce((a, u) => a + (u ? u.back : 0), 0); // การ์ดคืนจากคู่ Lv2 (บอทเก็บไว้ใช้รอบหน้า) ≈ 3 HP ต่อใบ
+    let v = Math.random() * 6 + back * 3;
+    plan.forEach((u, k) => { v += val(u, H.length - n + back) * ord(k); });
     scored.push({ plan, v });
   }
   scored.sort((x, y) => y.v - x.v);
@@ -2582,16 +2594,43 @@ function flyOppBacks(fanBefore) {
   for (let k = 0; k < SLOT_N; k++) sfx.play('place', k * FLY_GAP + FLY_MS - 60);
 }
 // ui.place = [{ id, slot }] ตามลำดับที่ลากมาวาง · ช่องหนึ่งซ้อนได้เฉพาะการ์ดชนิดเดียวกัน (เลเวลรวม สูงสุด 3)
-const handCard = id => ui.g.p[ME].hand.find(c => c.id === id);
-const previewStacks = () => [0, 1, 2].map(k => ui.place.filter(p => p.slot === k).map(p => handCard(p.id)));
+const realCard = id => ui.g.p[ME].hand.find(c => c.id === id);
+// การ์ดคืนจากคู่ Lv2 + Lv2 ที่วางในแผงตอนนี้ — ยังไม่อยู่บนมือจริง (doLock ใส่ให้ตอนกด FIGHT!) แต่โผล่บนมือให้วางต่อได้ทันที
+function refundsNow() {
+  if (ui.phase !== 'action' || !ui.g || ui.g.p[ME].lanes) return [];
+  const top = ui.g.p[ME].hand.reduce((m, c) => Math.max(m, c.got || 0), 0);
+  return [0, 1, 2].map(k => ui.place.filter(p => p.slot === k).map(p => realCard(p.id)).filter(Boolean))
+    .filter(isLv2Pair).map((cs, j) => ({ ...refundOf(cs), refund: ui.g.round, got: top + 0.5 + j * 0.01 }));
+}
+const handCard = id => realCard(id) || refundsNow().find(c => c.id === id);
+const previewStacks = () => [0, 1, 2].map(k => ui.place.filter(p => p.slot === k).map(p => handCard(p.id)).filter(Boolean));
+// ช่องของคู่ Lv2 ที่ให้การ์ดคืนใบนี้ (-1 = ไม่ใช่การ์ดคืนของรอบนี้)
+const refundLane = id => previewStacks().findIndex(cs => isLv2Pair(cs) && refundOf(cs).id === id);
+// แยกคู่ Lv2 แล้วการ์ดคืนหายไป → เอาตำแหน่งที่วางการ์ดคืนนั้นออกด้วย · คืนจำนวนที่ถูกเอาออก
+function settlePlace() {
+  const before = ui.place.length;
+  ui.place = ui.place.filter(p => handCard(p.id));
+  return before - ui.place.length;
+}
+// คู่ Lv2 + Lv2 ในช่อง k ครบแล้ว: การ์ด Lv1 ลอยจากช่องเข้ามือ (ป้าย "คืน")
+function refundFx(k) {
+  const cs = previewStacks()[k];
+  if (!isLv2Pair(cs)) return;
+  const r = refundOf(cs);
+  flyIn(cardHTML({ type: r.type, lv: 1 }), rectOf(slotCardEl(k)), rectOf(handEl(r.id)), 1);
+  floatNote(ME, `Lv2 + Lv2 → ได้ ${INFO[r.type].name} Lv1 คืน`, 'gain');
+  sfx.play('draw', 260);
+}
 const previewLanes = () => stackLanes(previewStacks());
 const needPlace = () => Math.min(SLOT_N, ui.g.p[ME].hand.length);
 // การ์ดจากมือลงช่อง k: ช่องว่าง = วาง · ชนิดเดียวกัน = ซ้อนเลเวลอัป · ต่างชนิด = สลับกับการ์ดในช่อง (การ์ดเดิมกลับมือ)
 // ชนิดเดียวกันแต่ซ้อนไม่ได้ (เกิน Lv3 / วางครบแล้ว) = สลับแทน · วางครบแล้วลงช่องว่างไม่ได้
 function dropPlan(c, k) {
   const l = previewLanes()[k], room = ui.place.length < needPlace();
+  if (c.refund && refundLane(c.id) === k) return { why: 'การ์ดใบนี้ได้คืนจากช่องนี้ — วางลงช่องอื่น' };
   if (!l) return room ? { kind: 'place' } : { why: `วางครบ ${needPlace()} ใบแล้ว — ลากทับการ์ดในแผงเพื่อสลับ หรือแตะการ์ดในแผงเพื่อเอาคืน` };
-  if (l.type === c.type && room && l.lv + c.lv <= 3) return { kind: 'stack' };
+  const pair = isLv2Pair([...previewStacks()[k], c]); // Lv2 + Lv2 = Lv3 + การ์ด Lv1 คืนขึ้นมือ
+  if (l.type === c.type && room && (l.lv + c.lv <= 3 || pair)) return { kind: 'stack', pair };
   return { kind: 'swap', note: l.type !== c.type ? '' : room ? `ช่อง ${k + 1} ซ้อนแล้วเกิน Lv3 — สลับให้แทน` : 'วางครบแล้ว — สลับให้แทน' };
 }
 const PLACE_MS = 220;
@@ -2607,9 +2646,11 @@ function dropCard(id, k, fromRect) {
   ui.place = ui.place.filter(p => !out.includes(p.id)).concat({ id, slot: k });
   ui.justPlaced = [id];
   out.forEach((oid, j) => ui.arrive.set(oid, j));
+  if (plan.pair) ui.arrive.set(refundOf(previewStacks()[k]).id, 1);
   sfx.play(plan.kind === 'swap' ? 'swap' : plan.kind === 'stack' ? (previewLanes()[k].lv >= 3 ? 'levelup3' : 'levelup') : 'place');
   render();
   flyIn(cardHTML({ type: c.type, lv: c.lv }), fromRect, rectOf(slotCardEl(k)), 0, PLACE_MS);
+  if (plan.pair) refundFx(k);
   out.forEach((oid, j) => { const oc = handCard(oid); flyIn(cardHTML({ type: oc.type, lv: oc.lv }), oldRect, rectOf(handEl(oid)), j); });
   if (plan.kind === 'swap') flashHint(plan.note || `สลับ: ${INFO[c.type].name} ลงช่อง ${k + 1} · การ์ดเดิมกลับเข้ามือ`);
   return true;
@@ -2626,20 +2667,23 @@ function placeCard(id) {
 // ลากการ์ดในแผงไปช่องอื่น: ช่องว่าง = ย้าย · ต่างชนิด = สลับ · ชนิดเดียวกัน = ซ้อนเลเวลอัป (รวมแล้วเกิน Lv3 → สลับแทน)
 function moveStack(a, b, fromRect) {
   if (ui.phase !== 'action' || ui.busy || a === b) return false;
-  const L = previewLanes(), A = L[a], B = L[b];
+  const L = previewLanes(), A = L[a], B = L[b], st = previewStacks();
   if (!A) return false;
-  const kind = !B ? 'move' : B.type === A.type && A.lv + B.lv <= 3 ? 'merge' : 'swap';
+  const pair = !!B && isLv2Pair([...st[b], ...st[a]]);
+  const kind = !B ? 'move' : B.type === A.type && (A.lv + B.lv <= 3 || pair) ? 'merge' : 'swap';
   const bHTML = B && cardHTML(B), bRect = B && rectOf(slotCardEl(b));
   saveUndo();
   if (kind === 'merge') {
     const moving = ui.place.filter(p => p.slot === a).map(p => ({ id: p.id, slot: b }));
     ui.place = ui.place.filter(p => p.slot !== a).concat(moving); // ใบที่ลากมาอยู่บนกอง
+    if (pair) ui.arrive.set(refundOf(previewStacks()[b]).id, 1);
   } else ui.place = ui.place.map(p => ({ id: p.id, slot: p.slot === a ? b : p.slot === b ? a : p.slot }));
   ui.justPlaced = kind === 'swap' ? [A.ids[0], B.ids[0]] : [A.ids[0]];
   sfx.play(kind === 'merge' ? (A.lv + B.lv >= 3 ? 'levelup3' : 'levelup') : kind === 'swap' ? 'swap' : 'place');
   render();
   flyIn(cardHTML(A), fromRect, rectOf(slotCardEl(b)), 0, PLACE_MS);
   if (kind === 'swap') flyIn(bHTML, bRect, rectOf(slotCardEl(a)), 0, PLACE_MS);
+  if (kind === 'merge' && pair) refundFx(b);
   if (kind === 'swap' && B.type === A.type) flashHint(`รวมแล้วเกิน Lv3 — สลับช่อง ${a + 1} กับช่อง ${b + 1} ให้แทน`);
   return true;
 }
@@ -2647,6 +2691,7 @@ function moveStack(a, b, fromRect) {
 function slotOnHand(a, hid, fromRect) {
   const A = previewLanes()[a], h = handCard(hid);
   if (ui.phase !== 'action' || ui.busy || !A || !h) return false;
+  if (h.refund && refundLane(hid) === a) { sfx.play('miss'); flashHint('การ์ดใบนี้ได้คืนจากช่องนี้ — วางลงช่องอื่น'); return false; }
   const ids = ui.place.filter(p => p.slot === a).map(p => p.id), hRect = rectOf(handEl(hid));
   saveUndo();
   ui.place = ui.place.filter(p => p.slot !== a);
@@ -2664,6 +2709,7 @@ function slotOnHand(a, hid, fromRect) {
 function handDrop(fromId, toId, fromRect) {
   const a = handCard(fromId), b = handCard(toId);
   if (!a || !b || a === b || ui.busy || !(ui.phase === 'action' || (ui.phase === 'pick' && !ui.pickShown))) return;
+  if (!realCard(fromId) || !realCard(toId)) return; // การ์ดคืนยังไม่อยู่บนมือจริง — ลำดับจัดได้หลังกด FIGHT!
   const aHTML = cardHTML({ type: a.type, lv: a.lv }), bHTML = cardHTML({ type: b.type, lv: b.lv }), bRect = rectOf(handEl(toId));
   saveUndo();
   swapHand(ui.g, ME, fromId, toId);
@@ -3107,7 +3153,7 @@ function cardHTML(c, o = {}) {
     : ` role="img" aria-label="${INFO[c.type].name} Lv${c.lv}"`;
   const cls = ['card', `k-${c.type}`, c.lv > 1 && `lv${c.lv}`, o.sel && 'sel', o.act && 'clickable', o.cls].filter(Boolean).join(' ');
   const extra = `${o.cid != null ? ` data-cid="${o.cid}"` : ''}${o.style ? ` style="${o.style}"` : ''}`;
-  return `<${el} class="${cls}"${attrs}${extra}><img class="c-art" src="${ART[c.type]}" alt="" draggable="false"><span class="c-lv"><small>LV</small>${c.lv}</span><span class="c-name">${INFO[c.type].name}</span>${o.picked ? '<span class="c-new c-pick">เก็บ</span>' : o.fresh ? '<span class="c-new">ใหม่</span>' : ''}</${el}>`;
+  return `<${el} class="${cls}"${attrs}${extra}><img class="c-art" src="${ART[c.type]}" alt="" draggable="false"><span class="c-lv"><small>LV</small>${c.lv}</span><span class="c-name">${INFO[c.type].name}</span>${o.picked ? '<span class="c-new c-pick">เก็บ</span>' : o.back ? '<span class="c-new c-back">คืน</span>' : o.fresh ? '<span class="c-new">ใหม่</span>' : ''}</${el}>`;
 }
 const backHTML = (cls = '', style = '') => `<div class="card back ${cls}"${style ? ` style="${style}"` : ''}><img class="back-logo" src="assets/logo-df.webp" alt="" draggable="false"></div>`;
 // เปิดการ์ด: เริ่มจากหลังการ์ดแล้วพลิกเป็นหน้าการ์ด (d = หน่วงก่อนพลิก ms) · กองกลางพลิกห่างกันใบละ REVEAL_GAP
@@ -3260,7 +3306,7 @@ function renderMain() {
   else if (ui.phase === 'action' && ui.mode === 'spec') {
     html = `<div class="msg"><b>Action Phase</b><span>ผู้เล่นกำลังวางการ์ดลงแผง CARD ORDER — แผงของทั้งสองฝ่ายเปิดให้ผู้ชมเห็นเมื่อกด FIGHT! ครบทั้งคู่</span><span>${specStatus()}</span></div>`;
   } else if (ui.phase === 'action') {
-    html = `<div class="msg"><b>Action Phase</b><span>แตะการ์ดเพื่อวางลงช่องว่างถัดไป หรือลากไปวางช่องที่ต้องการบนแผง CARD ORDER · ลากทับชนิดเดียวกันในแผง = เลเวลอัป · ลากทับต่างชนิด = สลับ (มือ ↔ แผง และในแผง) · ลากการ์ดบนมือทับกัน = สลับตำแหน่ง</span><span class="t-${OPP.toLowerCase()}">${ui.mode !== 'pvp' || g.p[OPP].lanes ? `${OPP} คว่ำการ์ดลงแผงแล้ว — จะรู้ว่ามีอะไรตอนเปิดปะทะ` : `รอ ${OPP} วางการ์ด…`}</span></div>`;
+    html = `<div class="msg"><b>Action Phase</b><span>แตะการ์ดเพื่อวางลงช่องว่างถัดไป หรือลากไปวางช่องที่ต้องการบนแผง CARD ORDER · ลากทับชนิดเดียวกันในแผง = เลเวลอัป (Lv2 + Lv2 = Lv3 + ได้ Lv1 คืนขึ้นมือ) · ลากทับต่างชนิด = สลับ (มือ ↔ แผง และในแผง) · ลากการ์ดบนมือทับกัน = สลับตำแหน่ง</span><span class="t-${OPP.toLowerCase()}">${ui.mode !== 'pvp' || g.p[OPP].lanes ? `${OPP} คว่ำการ์ดลงแผงแล้ว — จะรู้ว่ามีอะไรตอนเปิดปะทะ` : `รอ ${OPP} วางการ์ด…`}</span></div>`;
   } else html = clashHTML();
   $('#main').innerHTML = html;
 }
@@ -3359,7 +3405,7 @@ function renderHand() {
   if (ui.mode === 'spec') { $('#hand').innerHTML = `<div class="spec-hands">${SIDES.map(specHandHTML).join('')}</div>`; return; }
   const placed = ui.phase === 'action' ? ui.place.map(pl => pl.id) : [];
   const dyingIds = new Set(ui.dying.map(c => c.id));
-  const alive = g.p[ME].hand.filter(c => !placed.includes(c.id));
+  const alive = g.p[ME].hand.concat(refundsNow()).filter(c => !placed.includes(c.id));
   // เรียงตามลำดับที่ได้มา: ใบที่เพิ่งหยิบ/จั่วมาต่อท้ายขวาสุดเสมอ — ใบที่กำลังถูกทิ้งยังอยู่ที่เดิมจนลอยออก
   const cards = alive.concat(ui.dying).sort((a, b) => (a.got || 0) - (b.got || 0) || a.id - b.id);
   // เฟส Pick up และ Action: ลากการ์ดบนมือได้ (สลับตำแหน่ง / ลงช่อง) · แตะ = วางลงช่อง เฉพาะเฟส Action
@@ -3373,7 +3419,7 @@ function renderHand() {
         const land = up != null ? landAt(up) : arr != null ? landAt(arr) : null;
         const cls = dying ? 'leaving' : up != null ? 'lvup' : arr != null ? 'arrive' : '';
         const usable = canUse && !dying;
-        const card = cardHTML({ type: c.type, lv: c.lv }, { cid: c.id, fresh: !dying && c.fresh >= g.round, picked: !dying && c.picked === g.round, cls: usable ? 'draggable' : '', act: !usable ? null : ui.phase === 'action' ? 'place' : pickOf(c.id) ? 'unpick' : null, data: c.id });
+        const card = cardHTML({ type: c.type, lv: c.lv }, { cid: c.id, fresh: !dying && c.fresh >= g.round, picked: !dying && c.picked === g.round, back: !dying && c.refund === g.round, cls: usable ? 'draggable' : '', act: !usable ? null : ui.phase === 'action' ? 'place' : pickOf(c.id) ? 'unpick' : null, data: c.id });
         return `<div class="hc ${cls}"${land != null && !dying ? ` style="--d:${land}ms"` : ''}>${card}${capHTML(c.type, c.lv)}</div>`;
       }).join('')
       : `<p class="hand-empty">ไม่มีการ์ดบนมือ — ถ้าโดนบังคับทิ้งตอนนี้จะเสีย ${EMPTY_PENALTY} HP ต่อใบ</p>`}</div>`;
@@ -3402,7 +3448,7 @@ function renderControls() {
     }
   } else if (ui.phase === 'action') {
     const n = ui.place.length, need = needPlace();
-    hint = n < need ? `แตะหรือลากการ์ดลงช่อง (${n}/${need}) · ลากทับชนิดเดียวกันในแผง = เลเวลอัป · ต่างชนิด = สลับ · แตะการ์ดในแผงเพื่อเอาคืน` : 'ครบแล้ว — กด FIGHT! เพื่อเปิดปะทะ · ยังลากสลับ / ซ้อนในแผงได้';
+    hint = n < need ? `แตะหรือลากการ์ดลงช่อง (${n}/${need}) · ลากทับชนิดเดียวกันในแผง = เลเวลอัป (Lv2 + Lv2 ได้ Lv1 คืน) · ต่างชนิด = สลับ · แตะการ์ดในแผงเพื่อเอาคืน` : 'ครบแล้ว — กด FIGHT! เพื่อเปิดปะทะ · ยังลากสลับ / ซ้อนในแผงได้';
     main = `<button type="button" class="btn primary cta" data-act="confirmAction"${n >= need ? '' : ' disabled'}>FIGHT!</button>`;
     btns = `${undoBtn()}<button type="button" class="btn ghost" data-act="clearPlace"${n ? '' : ' disabled'}>ล้างช่อง</button>`;
   } else if (ui.phase === 'fight') hint = `กำลังเปิดช่อง ${Math.max(1, ui.shown + 1)} …`;
@@ -3457,6 +3503,7 @@ function renderDrawer() {
 }
 function render() {
   const inGame = ui.screen === 'game';
+  if (inGame && ui.phase === 'action' && settlePlace()) setTimeout(() => flashHint('แยกคู่ Lv2 แล้ว — การ์ด Lv1 ที่ได้คืนหายไปด้วย'), 0);
   $('#start').hidden = ui.screen !== 'start';
   $('#lobby').hidden = ui.screen !== 'lobby';
   $('#pvp').hidden = ui.screen !== 'pvp';
@@ -3511,7 +3558,7 @@ function rulesListHTML() {
     <li><b>มือสูงสุด ${HAND_MAX} ใบ</b> — ได้การ์ดเกิน (จั่ว / เก็บ / Dodge) ใบที่เกินกลายเป็นสุ่มเลเวลอัปการ์ดบนมือ 1 ใบแทน (สูงสุด Lv3)</li>
     <li><b>ถูกบังคับทิ้งแต่มือว่าง</b> — เสีย ${EMPTY_PENALTY} HP ต่อใบที่ทิ้งไม่ได้ แต่ลด HP ให้ต่ำกว่า ${PEN_FLOOR} ไม่ได้ทุกกรณี (Defence · Dodge Lv3 · ค่า Ultimate) — มือว่างทำให้แพ้ไม่ได้</li>
     <li><b>เก็บการ์ด</b> — แตะหรือลากการ์ดกองกลางเข้ามือ = เข้าขวาสุด · มือเต็ม ${HAND_MAX} ใบแล้วเก็บ = เหมือนจั่ว: สุ่มเลเวลอัปการ์ดบนมือ 1 ใบแทน (สุ่มตอนกด PICK UP ไม่รู้ล่วงหน้าว่าใบไหน) · <b>เปลี่ยนใจ</b>: ก่อนกด PICK UP แตะหรือลากใบที่เพิ่งเก็บ (ป้ายแดง "เก็บ") กลับกองกลางได้</li>
-    <li><b>วางการ์ด</b> — แตะการ์ดบนมือ = ลงช่องว่างถัดไป · ลาก = ลงช่องที่ต้องการ · <b>เลเวลอัป</b> = ลากทับการ์ดชนิดเดียวกันในแผงเท่านั้น (สูงสุด Lv3) · ลากทับต่างชนิด = สลับ (ในแผง และมือ ↔ แผง) · <b>บนมือรวมเลเวลไม่ได้</b> ลากทับกัน = สลับตำแหน่ง · วางชนิดเดียวกันไว้คนละช่องไม่รวม · ช่องว่างไม่มีอะไรกัน การ์ดอีกฝ่ายเข้าเต็ม ๆ</li>
+    <li><b>วางการ์ด</b> — แตะการ์ดบนมือ = ลงช่องว่างถัดไป · ลาก = ลงช่องที่ต้องการ · <b>เลเวลอัป</b> = ลากทับการ์ดชนิดเดียวกันในแผงเท่านั้น (สูงสุด Lv3) · <b>Lv2 + Lv2</b> = Lv3 + ได้การ์ด Lv1 ชนิดเดียวกันคืนขึ้นมือทันที (วางต่อช่องอื่นได้) · ลากทับต่างชนิด = สลับ (ในแผง และมือ ↔ แผง) · <b>บนมือรวมเลเวลไม่ได้</b> ลากทับกัน = สลับตำแหน่ง · วางชนิดเดียวกันไว้คนละช่องไม่รวม · ช่องว่างไม่มีอะไรกัน การ์ดอีกฝ่ายเข้าเต็ม ๆ</li>
     <li><b>UNDO</b> (ข้างปุ่ม PICK UP / FIGHT! หรือ Ctrl+Z) — ย้อนการเก็บ วาง ซ้อน สลับ ทีละขั้น จนกว่าจะกดยืนยัน</li>
     <li><b>แผง ${OPP} (อีกฝ่าย)</b> — คว่ำครบ 3 ช่องเสมอ ไม่บอกว่าช่องไหนมีการ์ด ว่าง หรือซ้อนกี่ใบ จนกว่าจะเปิดปะทะ</li>
     <li><b>HP หมด = จบทันที (K.O.)</b> — เช็ก HP หลังปะทะจบแต่ละช่อง ฝ่ายไหน HP ≤ 0 ที่ช่อง 1 หรือ 2 รู้ผลทันที ช่องที่เหลือไม่ต้องเปิด · HP หมดทั้งคู่ในช่องเดียวกัน → ติดลบน้อยกว่าชนะ · ติดลบเท่ากัน → คนที่มี Ultimate ในช่องที่เปิดแล้วชนะ (มีทั้งคู่ → Ultimate เลเวลสูงกว่าชนะ)</li>
@@ -3617,7 +3664,7 @@ document.addEventListener('keydown', e => {
    vdo = รอบที่เรากำลังดู VDO ฉากปะทะอยู่ (อีกฝ่ายหยุดนับเวลารอ) — ไม่มี = ไม่ได้ดู
    t0 = เวลาเริ่มแมตช์ (Date.now ของเรา) — ผู้ชมที่เข้ากลางเกมใช้ตั้งนาฬิกาแมตช์ · แสดงผลเท่านั้น
    inp เก็บทั้งแมตช์ (ผู้ชมที่เข้ากลางเกมย้อนคำนวณจากรอบ 1) · ผู้ชม: { watch: mid } อย่างเดียว ไม่ส่งอะไรให้ผู้เล่น */
-const PVP_V = 5; // เปลี่ยนกติกา/เอนจินเมื่อไหร่ต้องเพิ่มเลขนี้ — คนละเวอร์ชันจะไม่ถูกจับคู่ (เล่นคนละกติกา = ผลเพี้ยน) · 4 = Fight Phase เป็น VDO (ยาวขึ้นมาก + presence.vdo) · 5 = Dodge Lv3 มีเพดาน HP 10 + HP สูงสุด 100 → 150 (ตี้ 2026-10-22)
+const PVP_V = 6; // เปลี่ยนกติกา/เอนจินเมื่อไหร่ต้องเพิ่มเลขนี้ — คนละเวอร์ชันจะไม่ถูกจับคู่ (เล่นคนละกติกา = ผลเพี้ยน) · 4 = Fight Phase เป็น VDO (ยาวขึ้นมาก + presence.vdo) · 5 = Dodge Lv3 มีเพดาน HP 10 + HP สูงสุด 100 → 150 (ตี้ 2026-10-22) · 6 = Lv2 + Lv2 คืนการ์ด Lv1 (validLock รับ id การ์ดคืน)
 const PVP_SEC = 60, PVP_CUT = 30, PVP_GONE_MS = 8000, PVP_NEXT_MS = 10000, PVP_WAIT_MS = 90000, VDO_HOLD_MS = 240000;
 // ที่ไหนก็ได้นอก claude.ai (เช่น GitHub Pages): ส่ง presence ผ่าน MQTT broker สาธารณะ 3 เจ้าพร้อมกัน ไม่ต้องล็อกอิน · เจ้าไหนล่มก็ยังคุยกันได้
 // บน claude.ai ต่อข้างนอกไม่ได้ (CSP connect-src 'self' + webrtc block) → ใช้ room ของ claude ได้เฉพาะคนในองค์กรเดียวกัน
@@ -3968,20 +4015,22 @@ function pvpSubmit(kind, auto = false) {
 }
 const cleanPicks = a => [...new Set((Array.isArray(a) ? a : []).filter(i => Number.isInteger(i) && i >= 0 && i < MARKET_N))].slice(0, PICK_N);
 // การวางของอีกฝ่าย: ตรวจแบบเดียวกันทั้งสองเครื่อง (ใบต้องอยู่บนมือ · ช่องเดียวกันชนิดเดียวกัน · รวมไม่เกิน Lv3 · ไม่เกินที่ต้องวาง)
+// การ์ดคืนจากคู่ Lv2 (id ≥ REFUND_ID) ยังไม่อยู่บนมือ → รอบแรกหาการ์ดบนมือ แล้วรอบสองค่อยหาการ์ดคืนจากคู่ Lv2 ที่วางไว้
 function validLock(g, s, slots) {
-  const P = g.p[s], need = Math.min(SLOT_N, P.hand.length), used = new Set(), out = [[], [], []];
-  if (!Array.isArray(slots) || slots.length !== SLOT_N) return [[], [], []];
+  const P = g.p[s], need = Math.min(SLOT_N, P.hand.length), used = new Set(), out = [[], [], []], bad = [[], [], []];
+  if (!Array.isArray(slots) || slots.length !== SLOT_N || !slots.every(Array.isArray)) return bad;
+  const late = [];
   let n = 0;
-  for (let k = 0; k < SLOT_N; k++) {
-    if (!Array.isArray(slots[k])) return [[], [], []];
-    for (const id of slots[k]) {
-      const c = P.hand.find(x => x.id === id);
-      if (!c || used.has(id)) return [[], [], []];
-      used.add(id); out[k].push(c); n++;
-    }
-    if (out[k].length && (out[k].some(c => c.type !== out[k][0].type) || out[k].reduce((a, c) => a + c.lv, 0) > 3)) return [[], [], []];
+  for (let k = 0; k < SLOT_N; k++) for (const id of slots[k]) {
+    if (used.has(id)) return bad;
+    used.add(id); n++;
+    const c = P.hand.find(x => x.id === id);
+    if (c) out[k].push(c); else late.push([k, id]);
   }
-  return n <= need ? out : [[], [], []];
+  const back = out.filter(isLv2Pair).map(refundOf);
+  for (const [k, id] of late) { const c = back.find(x => x.id === id); if (!c) return bad; out[k].push(c); }
+  if (!out.every(stackOk)) return bad;
+  return n <= need ? out : bad;
 }
 // เก็บจริงทั้งสองฝ่าย (RED แล้ว BLUE — ลำดับเดียวกันทุกเครื่อง): ย้อนมือเราเป็นก่อนเก็บ แล้วเก็บตามที่ทั้งคู่ส่งมา
 function pvpApplyPicks(mine, theirs) {
