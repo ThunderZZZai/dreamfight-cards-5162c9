@@ -776,7 +776,7 @@ const INFO = {
 // brk บังคับอีกฝ่ายทิ้งการ์ดสุ่ม · cost ทิ้งการ์ดสุ่มบนมือเรา · draw จั่วเพิ่ม
 // ตอนเจอคู่ปราบ: pierce ลดโอกาสหลบของอีกฝ่าย · bonus ดาเมจเพิ่ม (บวกก่อนหักค่ากัน/ทอยหลบ) · heal ได้ HP คืน · save ค่า Ultimate ทิ้งน้อยลง
 const LV = {
-  ATK:   [{ dmg: 10, pierce: 0.25, bonus: 10 }, { dmg: 20, pierce: 0.50, bonus: 15 }, { dmg: 35, pierce: 0.75, bonus: 20 }],
+  ATK:   [{ dmg: 10, brkP: 0.5, brkN: 1, pierce: 0.25, bonus: 10 }, { dmg: 20, brkP: 0.55, brkN: 2, pierce: 0.50, bonus: 15 }, { dmg: 35, brkP: 0.6, brkN: 3, pierce: 0.75, bonus: 20 }],
   ULT:   [{ dmg: 20, cost: 1, bonus: 10, save: 1 }, { dmg: 40, cost: 2, bonus: 15, save: 1 }, { dmg: 60, cost: 3, bonus: 20, save: 1 }],
   DEF:   [{ guard: 5, brk: 1, heal: 10 }, { guard: 15, brk: 2, heal: 15 }, { guard: 25, brk: 3, heal: 20 }],
   DODGE: [{ evade: 0.5, draw: 1, evadeVs: 0.75 }, { evade: 0.75, draw: 2, evadeVs: 1 }, { evade: 1, draw: 3, brkVs: 1 }],
@@ -785,12 +785,12 @@ const HP_MAX = 150, COPIES = 10, DRAW_N = 2, FIRST_DRAW_N = 3, MARKET_N = 5, PIC
 const drawCount = round => (round === 1 ? FIRST_DRAW_N : DRAW_N); // รอบแรกจั่ว 3 · รอบต่อไปจั่ว 2
 const HAND_MAX = 6;        // มือเต็มแล้ว การ์ดที่ได้เพิ่มกลายเป็นสุ่มเลเวลอัปการ์ดบนมือ 1 ใบแทน
 const EMPTY_PENALTY = 10;  // ถูกบังคับทิ้งแต่มือว่าง: เสีย HP ต่อใบที่ทิ้งไม่ได้
-const PEN_FLOOR = 10;      // ...แต่ลด HP ให้ต่ำกว่านี้ไม่ได้ทุกกรณี (Defence / Dodge Lv3 บังคับ · ค่า Ultimate) — มือว่างทำให้ตายไม่ได้ (ตี้ 2026-10-22 · เดิม Dodge Lv3 ไม่มีเพดาน)
+const PEN_FLOOR = 10;      // ...แต่ลด HP ให้ต่ำกว่านี้ไม่ได้ทุกกรณี (Defence / Attack / Dodge Lv3 บังคับ · ค่า Ultimate) — มือว่างทำให้ตายไม่ได้ (ตี้ 2026-10-22 · เดิม Dodge Lv3 ไม่มีเพดาน)
 const SIDES = ['RED', 'BLUE'];
 const FOE = { RED: 'BLUE', BLUE: 'RED' };
 const stat = c => LV[c.type][c.lv - 1];
 
-const BASE_KEYS = { ATK: ['dmg'], ULT: ['dmg', 'cost'], DEF: ['guard', 'brk', 'draw'], DODGE: ['evade', 'draw', 'brk'] };
+const BASE_KEYS = { ATK: ['dmg', 'brkP', 'brkN'], ULT: ['dmg', 'cost'], DEF: ['guard', 'brk', 'draw'], DODGE: ['evade', 'draw', 'brk'] };
 const COUNTER_KEYS = ['pierce', 'bonus', 'heal', 'evadeVs', 'brkVs', 'save'];
 const pctOf = p => `${Math.round(p * 100)}%`;
 const beatsName = t => INFO[INFO[t].beats].name;
@@ -799,6 +799,9 @@ const EFF = {
   guard:  { short: v => `กัน ${v}`,         label: 'กัน ',         fmt: v => v },
   evade:  { short: v => `หลบ ${pctOf(v)}`,  label: 'หลบ ',        fmt: v => Math.round(v * 100), unit: '%' },
   brk:    { short: v => `อีกฝ่ายทิ้ง ${v}`,  label: 'อีกฝ่ายทิ้ง ',  fmt: v => v, unit: ' ใบ' },
+  // Attack (ตี้ 2026-10-22): ทอยให้อีกฝ่ายทิ้งการ์ด 1 ใบ ทอย brkN ครั้ง ครั้งละ brkP
+  brkP:   { short: (v, s) => `ทอยให้อีกฝ่ายทิ้ง ${pctOf(v)}${s.brkN > 1 ? ` ×${s.brkN}` : ''}`, label: 'โอกาสอีกฝ่ายทิ้ง ', fmt: v => Math.round(v * 100), unit: '%' },
+  brkN:   { short: () => '', label: 'ทอย ', fmt: v => v, unit: ' ครั้ง' },
   cost:   { short: v => `ทิ้งการ์ดเรา ${v}`, label: 'ทิ้งการ์ดเรา ', fmt: v => v, unit: ' ใบ' },
   draw:   { short: v => `จั่ว ${v}`,        label: 'จั่ว ',        fmt: v => v, unit: ' ใบ' },
   pierce: { short: v => `หลบ −${pctOf(v)}`, label: 'โอกาสหลบ −',    fmt: v => Math.round(v * 100), unit: '%' },
@@ -811,7 +814,7 @@ const EFF = {
 // เช่น "ดาเมจ 10 · เจอ Dodge: หลบ −10% ดาเมจ +5"
 function effText(type, lv) {
   const s = LV[type][lv - 1];
-  const base = BASE_KEYS[type].filter(k => s[k]).map(k => EFF[k].short(s[k]));
+  const base = BASE_KEYS[type].filter(k => s[k]).map(k => EFF[k].short(s[k], s)).filter(Boolean);
   const counter = COUNTER_KEYS.filter(k => s[k]).map(k => EFF[k].short(s[k]));
   if (counter.length) base.push(`เจอ ${beatsName(type)}: ${counter.join(' ')}`);
   return base.join(' · ');
@@ -1064,6 +1067,13 @@ function rollClash(g, i) {
     }
     o.heal = healOf(card[s], foe);
   }
+  // Attack: ทอยให้อีกฝ่ายทิ้งการ์ด (Lv1 50% ×1 · Lv2 55% ×2 · Lv3 60% ×3) — ทอยทุกครั้งที่เปิด เหมือน Defence บังคับทิ้ง (โดนหลบก็ยังทอย)
+  for (const s of SIDES) {
+    const m = card[s] ? stat(card[s]) : {};
+    if (!m.brkN) continue;
+    const rolls = Array.from({ length: m.brkN }, () => rand() < m.brkP);
+    r[s].atkBrk = { p: m.brkP, rolls, hit: rolls.filter(Boolean).length };
+  }
   return r;
 }
 // หักดาเมจก่อน แล้วค่อยบวก HP คืน (ไม่เกิน HP_MAX)
@@ -1091,9 +1101,9 @@ function forceDiscard(g, s, n, floor = PEN_FLOOR) {
 function applyCards(g, r) {
   let any = false;
   const st = s => (r[s].card ? stat(r[s].card) : {});
-  // บังคับอีกฝ่ายทิ้ง: Defence · Dodge Lv3 เจอ Ultimate — มีเพดาน HP 10 ทั้งคู่
+  // บังคับอีกฝ่ายทิ้ง: Defence · Dodge Lv3 เจอ Ultimate · Attack ทอยติด — มีเพดาน HP 10 ทั้งหมด
   for (const s of SIDES) {
-    const n = (st(s).brk || 0) + (isCounter(r[s].card, r[FOE[s]].card) ? st(s).brkVs || 0 : 0);
+    const n = (st(s).brk || 0) + (isCounter(r[s].card, r[FOE[s]].card) ? st(s).brkVs || 0 : 0) + (r[s].atkBrk ? r[s].atkBrk.hit : 0);
     if (n) { r[s].broke = forceDiscard(g, FOE[s], n, PEN_FLOOR); any = true; }
   }
   // ค่า Ultimate ทิ้งการ์ดเรา (มีเพดาน HP 10 เหมือน Defence)
@@ -1152,13 +1162,13 @@ function countTypes(cards) {
    gauge: tr = เปลี่ยนการ์ดเมื่อแผนดีขึ้น · draw = จั่วทันที · max = เก็บครบ 3 ใช้พลังเต็ม · mix = ครบ 3 ใช้พลังเต็ม / มี 2 + เปลี่ยนแล้วดีขึ้นมาก = เปลี่ยน */
 const counterOf = t => TYPES.find(x => INFO[x].beats === t); // ชนิดที่ชนะทาง t
 const BOT_STYLES = {
-  STD:    { th: 'มาตรฐาน', note: 'เล่นตามสถานการณ์ล้วน', pick: () => ({ ULT: 4, ATK: 3.2, DEF: 2.6, DODGE: 2.6 }), have: 0.9, lean: () => 0, kinds: 0, gauge: 'tr' },
-  RUSH:   { th: 'บุกหนัก', note: 'เก็บ/วางการ์ดจู่โจมเป็นหลัก ได้เกจเมื่อไหร่จั่วทันที', pick: () => ({ ULT: 4.2, ATK: 4.2, DEF: 1.6, DODGE: 1.6 }), have: 0.6, lean: (g, s, t) => (INFO[t].off ? 6 : 0), kinds: 0, gauge: 'draw' },
-  WALL:   { th: 'กำแพง', note: 'เก็บ/วางการ์ดตั้งรับเป็นหลัก สะสมเกจไว้ใช้พลังเต็ม', pick: () => ({ ULT: 3, ATK: 2.4, DEF: 4.2, DODGE: 4 }), have: 0.6, lean: (g, s, t) => (INFO[t].off ? 0 : 5), kinds: 0, gauge: 'mix' },
-  EVEN:   { th: 'สมดุล', note: 'เก็บทุกชนิดให้ครบ วางหลายชนิดในตาเดียว', pick: () => ({ ULT: 3.8, ATK: 3.4, DEF: 3.2, DODGE: 3.2 }), have: 0, lean: () => 0, kinds: 1, gauge: 'tr' },
-  READ:   { th: 'อ่านทาง', note: 'จำว่าเราชอบวางอะไร แล้วเก็บ/วางตัวที่ชนะทาง', pick: (g, s) => { const f = g.seen[FOE[s]], n = TYPES.reduce((a, t) => a + f[t], 0) || 1, w = { ULT: 3.4, ATK: 3, DEF: 2.8, DODGE: 2.8 }; for (const t of TYPES) w[counterOf(t)] += 3 * f[t] / n; return w; },
+  STD:    { th: 'มาตรฐาน', note: 'เล่นตามสถานการณ์ล้วน', pick: () => ({ ULT: 4, ATK: 3.8, DEF: 2.6, DODGE: 2.6 }), have: 0.9, lean: () => 0, kinds: 0, gauge: 'tr' },
+  RUSH:   { th: 'บุกหนัก', note: 'เก็บ/วางการ์ดจู่โจมเป็นหลัก ได้เกจเมื่อไหร่จั่วทันที', pick: () => ({ ULT: 3.8, ATK: 3.8, DEF: 2.5, DODGE: 2.3 }), have: 0.6, lean: (g, s, t) => (INFO[t].off ? 1.5 : 0), kinds: 0, gauge: 'draw' },
+  WALL:   { th: 'กำแพง', note: 'เก็บ/วางการ์ดตั้งรับเป็นหลัก สะสมเกจไว้ใช้พลังเต็ม', pick: () => ({ ULT: 3.4, ATK: 3.6, DEF: 3.9, DODGE: 3.3 }), have: 0.6, lean: (g, s, t) => (INFO[t].off ? 0 : 2), kinds: 0, gauge: 'mix' },
+  EVEN:   { th: 'สมดุล', note: 'เก็บทุกชนิดให้ครบ วางหลายชนิดในตาเดียว', pick: () => ({ ULT: 3.8, ATK: 3.9, DEF: 3.2, DODGE: 3.2 }), have: 0, lean: () => 0, kinds: 1, gauge: 'tr' },
+  READ:   { th: 'อ่านทาง', note: 'จำว่าเราชอบวางอะไร แล้วเก็บ/วางตัวที่ชนะทาง', pick: (g, s) => { const f = g.seen[FOE[s]], n = TYPES.reduce((a, t) => a + f[t], 0) || 1, w = { ULT: 3.4, ATK: 3.6, DEF: 2.8, DODGE: 2.8 }; for (const t of TYPES) w[counterOf(t)] += 3 * f[t] / n; return w; },
             have: 0.6, lean: (g, s, t) => { const f = g.seen[FOE[s]], n = TYPES.reduce((a, x) => a + f[x], 0); return n ? 12 * f[INFO[t].beats] / n : 0; }, kinds: 0, gauge: 'tr' },
-  GAMBLE: { th: 'สายอัลติ', note: 'สะสม Ultimate ซ้อนให้เลเวลสูง เสี่ยงแต่แรง', pick: () => ({ ULT: 4.8, ATK: 2.6, DEF: 2, DODGE: 2.4 }), have: 1, lean: (g, s, t) => (t === 'ULT' ? 2.5 : 0), kinds: 0, gauge: 'max' },
+  GAMBLE: { th: 'สายอัลติ', note: 'สะสม Ultimate ซ้อนให้เลเวลสูง เสี่ยงแต่แรง', pick: () => ({ ULT: 4.8, ATK: 3.2, DEF: 2, DODGE: 2.4 }), have: 1, lean: (g, s, t) => (t === 'ULT' ? 2.5 : 0), kinds: 0, gauge: 'max' },
 };
 const PERSONAS = ['RUSH', 'WALL', 'EVEN', 'READ', 'GAMBLE', 'STD'];
 const botStyle = (g, s) => BOT_STYLES[(g.style && g.style[s]) || 'STD'];
@@ -1202,7 +1212,8 @@ function laneValue(mine, w, ctx) {
   v /= GUESS.length;
   if (!mine) return v;
   const s = stat(mine);
-  if (s.brk) v += Math.min(s.brk, ctx.foeSpare) * 3 + Math.min(Math.max(0, s.brk - ctx.foeSpare) * EMPTY_PENALTY, Math.max(0, ctx.foeHp - PEN_FLOOR)) * w.deal;
+  const brk = (s.brk || 0) + (s.brkN ? s.brkN * s.brkP : 0); // Attack: ทิ้งเฉลี่ย ทอย × โอกาส
+  if (brk) v += Math.min(brk, ctx.foeSpare) * 3 + Math.min(Math.max(0, brk - ctx.foeSpare) * EMPTY_PENALTY, Math.max(0, ctx.foeHp - PEN_FLOOR)) * w.deal;
   if (s.cost) {
     let c = 0;
     for (const foe of GUESS) {
@@ -1300,7 +1311,7 @@ function simulate(games = 500, order = SIDES) {
   const st = { games, RED: 0, BLUE: 0, DRAW: 0, avgRounds: 0, maxRounds: 0, maxHand: 0, levelUpsPerGame: 0, penaltyHpPerGame: 0 };
   let rounds = 0, ups = 0, pen = 0, hit = 0, decided = 0;
   const endLane = [0, 0, 0]; // เกมจบที่ช่องไหน (ช่อง 1-2 = จบทันทีโดยไม่เปิดช่องที่เหลือ)
-  const src = { DEF: 0, ULT: 0, DODGE: 0 }; // HP ที่เสียเพราะมือว่าง แยกตามการ์ดที่ทำให้ต้องทิ้ง
+  const src = { DEF: 0, ULT: 0, DODGE: 0, ATK: 0 }; // HP ที่เสียเพราะมือว่าง แยกตามการ์ดที่ทำให้ต้องทิ้ง
   for (let k = 0; k < games; k++) {
     const g = newGame(), gp = { RED: 0, BLUE: 0 };
     let w = null;
@@ -1338,7 +1349,7 @@ function simulate(games = 500, order = SIDES) {
   st.avgRounds = per(rounds);
   st.levelUpsPerGame = per(ups);
   st.penaltyHpPerGame = per(pen); // รวมสองฝ่าย
-  st.penaltyBySource = { DEF: per(src.DEF), ULT: per(src.ULT), DODGE: per(src.DODGE) };
+  st.penaltyBySource = { DEF: per(src.DEF), ULT: per(src.ULT), DODGE: per(src.DODGE), ATK: per(src.ATK) };
   st.gamesWithPenaltyPct = +(hit / games * 100).toFixed(1);
   st.penaltyWhenItHappens = +(pen / Math.max(1, hit)).toFixed(1);
   st.penaltyDecidedPct = +(decided / games * 100).toFixed(1);
@@ -3355,6 +3366,7 @@ function logClash(r) {
   }
   for (const s of SIDES) {
     const o = r[s];
+    if (o.atkBrk) parts.push(`${tagOf(s)} Attack ทอยให้ทิ้ง ${o.atkBrk.rolls.map(x => (x ? '✓' : '✗')).join('')} (${pctOf(o.atkBrk.p)} · ติด ${o.atkBrk.hit}/${o.atkBrk.rolls.length})`);
     if (o.broke) parts.push(`${tagOf(FOE[s])} ต้องทิ้งการ์ด (${INFO[o.card.type].name} ของ ${tagOf(s)}): ${discardText(o.broke, FOE[s])}`);
     if (o.paid) parts.push(`${tagOf(s)} ทิ้งการ์ดเรา (ค่า Ultimate): ${discardText(o.paid, s)}`);
     if (o.saved) parts.push(`${tagOf(s)} ค่า Ultimate ลด ${o.saved} ใบ (ปราบ Defence)${o.paid ? '' : ' ไม่ต้องทิ้ง'}`);
@@ -3385,10 +3397,11 @@ const backHTML = (cls = '', style = '') => `<div class="card back ${cls}"${style
 const REVEAL_GAP = 110;
 const flipHTML = (front, d = 0) => `<div class="flip3d" style="--d:${d}ms"><div class="fl">${front}${backHTML()}</div></div>`;
 // คำอธิบายใต้การ์ด: ผลหลักของเลเวลนั้น + ปราบใคร (ค่าเต็มดูในลิ้นชักกติกา/คู่มือ)
-const CAP = { dmg: v => `ดาเมจ ${v}`, cost: v => `ทิ้งเรา ${v}`, guard: v => `กัน ${v}`, brk: v => `อีกฝ่ายทิ้ง ${v}`, evade: v => `หลบ ${pctOf(v)}`, draw: v => `จั่ว ${v}` };
+const CAP = { dmg: v => `ดาเมจ ${v}`, cost: v => `ทิ้งเรา ${v}`, guard: v => `กัน ${v}`, brk: v => `อีกฝ่ายทิ้ง ${v}`, evade: v => `หลบ ${pctOf(v)}`, draw: v => `จั่ว ${v}`,
+  brkP: (v, s) => `ทิ้ง ${pctOf(v)}${s.brkN > 1 ? `×${s.brkN}` : ''}`, brkN: () => '' };
 function capHTML(t, lv) {
   const s = LV[t][lv - 1];
-  const base = BASE_KEYS[t].filter(k => s[k]).map(k => CAP[k](s[k])).join(' · ');
+  const base = BASE_KEYS[t].filter(k => s[k]).map(k => CAP[k](s[k], s)).filter(Boolean).join(' · ');
   return `<span class="cap">${base}<span class="beat k-${INFO[t].beats}">ปราบ ${beatsName(t)}</span></span>`;
 }
 function laneHTML(l, o = {}) {
@@ -3459,6 +3472,8 @@ function calcSideHTML(s, r, done) {
     if (o.heal) fins.push(o.healed ? `<span class="fin heal">+${o.healed} HP</span><small>${INFO[me.type].name} ปราบ ${INFO[foe.type].name}</small>` : '<small>HP เต็มแล้ว ไม่ได้เพิ่ม</small>');
     if (fins.length) rows.push(`<div class="fins">${fins.join('')}</div>`);
     const fx = [], forced = r[FOE[s]].broke, pen = (forced ? forced.pen : 0) + (o.paid ? o.paid.pen : 0);
+    const fr = r[FOE[s]].atkBrk;
+    if (fr) fx.push(`Attack ทอยให้ทิ้ง ${fr.rolls.map(x => (x ? '✓' : '✗')).join('')} ${pctOf(fr.p)}`);
     if (forced) fx.push(`โดน ${INFO[foe.type].name} บังคับทิ้ง ${forced.cards.length} ใบ`);
     if (o.paid) fx.push(`ค่า Ultimate ทิ้งการ์ดเรา ${o.paid.cards.length} ใบ`);
     if (o.saved) fx.push(`ปราบ ${INFO[foe.type].name} ค่า Ultimate ลด ${o.saved} ใบ${o.paid ? '' : ' ไม่ต้องทิ้ง'}`);
@@ -3906,10 +3921,10 @@ function rulesListHTML() {
     <li><b>จู่โจมชนจู่โจม</b> (Attack/Ultimate) — โดนดาเมจทั้งสองฝ่าย</li>
     <li><b>จู่โจมชน Defence</b> — ดาเมจลดลงตามค่ากัน</li>
     <li><b>จู่โจมชน Dodge</b> — ทอยหลบ ถ้าหลบได้ไม่โดนเลย</li>
-    <li><b>Ultimate</b> ทิ้งการ์ดสุ่มบนมือเรา · <b>Defence</b> บังคับอีกฝ่ายทิ้งการ์ดสุ่ม · <b>Dodge</b> จั่วเพิ่ม — เกิดทุกครั้งที่เปิด</li>
+    <li><b>Ultimate</b> ทิ้งการ์ดสุ่มบนมือเรา · <b>Defence</b> บังคับอีกฝ่ายทิ้งการ์ดสุ่ม · <b>Attack</b> ทอยให้อีกฝ่ายทิ้งการ์ด 1 ใบ (Lv1 50% · Lv2 55% ทอย 2 ครั้ง · Lv3 60% ทอย 3 ครั้ง) · <b>Dodge</b> จั่วเพิ่ม — เกิดทุกครั้งที่เปิด</li>
     <li><b>คู่ปราบ (วนเป็นวง)</b> — Attack ปราบ Dodge (หลบยากขึ้น + ดาเมจเพิ่มถ้าโดน) · Dodge ปราบ Ultimate (หลบเป็น 75% / 100% · Lv3 ให้อีกฝ่ายทิ้ง 1 ใบ) · Ultimate ปราบ Defence (ดาเมจเพิ่มก่อนหักค่ากัน + ทิ้งการ์ดเราน้อยลง 1 ใบ) · Defence ปราบ Attack (ได้ HP คืน) · HP สูงสุด ${HP_MAX}</li>
     <li><b>มือสูงสุด ${HAND_MAX} ใบ</b> — ได้การ์ดเกิน (จั่ว / เก็บ / Dodge) ใบที่เกินกลายเป็นสุ่มเลเวลอัปการ์ดบนมือ 1 ใบแทน (สูงสุด Lv3)</li>
-    <li><b>ถูกบังคับทิ้งแต่มือว่าง</b> — เสีย ${EMPTY_PENALTY} HP ต่อใบที่ทิ้งไม่ได้ แต่ลด HP ให้ต่ำกว่า ${PEN_FLOOR} ไม่ได้ทุกกรณี (Defence · Dodge Lv3 · ค่า Ultimate) — มือว่างทำให้แพ้ไม่ได้</li>
+    <li><b>ถูกบังคับทิ้งแต่มือว่าง</b> — เสีย ${EMPTY_PENALTY} HP ต่อใบที่ทิ้งไม่ได้ แต่ลด HP ให้ต่ำกว่า ${PEN_FLOOR} ไม่ได้ทุกกรณี (Defence · Attack · Dodge Lv3 · ค่า Ultimate) — มือว่างทำให้แพ้ไม่ได้</li>
     <li><b>เก็บการ์ด</b> — แตะหรือลากการ์ดกองกลางเข้ามือ = เข้าขวาสุด · มือเต็ม ${HAND_MAX} ใบแล้วเก็บ = เหมือนจั่ว: สุ่มเลเวลอัปการ์ดบนมือ 1 ใบแทน (สุ่มตอนกด PICK UP ไม่รู้ล่วงหน้าว่าใบไหน) · <b>เปลี่ยนใจ</b>: ก่อนกด PICK UP แตะหรือลากใบที่เพิ่งเก็บ (ป้ายแดง "เก็บ") กลับกองกลางได้</li>
     <li><b>วางการ์ด</b> — แตะการ์ดบนมือ = ลงช่องว่างถัดไป · ลาก = ลงช่องที่ต้องการ · <b>เลเวลอัป</b> = ลากทับการ์ดชนิดเดียวกันในแผงเท่านั้น (สูงสุด Lv3) · <b>Lv2 + Lv2</b> = Lv3 + ได้การ์ด Lv1 ชนิดเดียวกันคืนขึ้นมือทันที (วางต่อช่องอื่นได้) · ลากทับต่างชนิด = สลับ (ในแผง และมือ ↔ แผง) · <b>บนมือรวมเลเวลไม่ได้</b> ลากทับกัน = สลับตำแหน่ง · วางชนิดเดียวกันไว้คนละช่องไม่รวม · ช่องว่างไม่มีอะไรกัน การ์ดอีกฝ่ายเข้าเต็ม ๆ</li>
     <li><b>เกจ (ลูกสีรุ้งใต้แถบ HP · สูงสุด ${GAUGE_MAX})</b> — ได้เกจเมื่อ: การ์ดตั้งรับ (Defence/Dodge) ที่วางรวมเลเวลครบ ${GAUGE_STACK} · การ์ดจู่โจม (Attack/Ultimate) ชนะทาง 1 ช่อง · การ์ดจู่โจมทำดาเมจสะสมครบ ${GAUGE_DMG} — สะสมข้ามรอบ เกจเต็มแล้วแต้มสะสมหาย · <b>ใช้ในเฟส Action</b> (แตะลูกเกจ): 1 เกจ = จั่ว 1 ใบ · 2 เกจ = เปลี่ยนการ์ดบนมือ 1 ใบเป็นชนิดไหนก็ได้ + เลเวล +1 (ใบ Lv3 = จั่ว 1 ใบแทน) · 3 เกจ (พลังเต็ม) = จั่วจนมือครบ ${HAND_MAX} → อัปเลเวลการ์ดบนมือทุกใบ +1 → รอบนั้นวางกี่ใบก็ได้ · ใช้แล้วย้อนไม่ได้ · ทุกจั่วจากเกจ มือเต็ม = สุ่มเลเวลอัปแทน</li>
@@ -4025,7 +4040,7 @@ document.addEventListener('keydown', e => {
    vdo = รอบที่เรากำลังดู VDO ฉากปะทะอยู่ (อีกฝ่ายหยุดนับเวลารอ) — ไม่มี = ไม่ได้ดู
    t0 = เวลาเริ่มแมตช์ (Date.now ของเรา) — ผู้ชมที่เข้ากลางเกมใช้ตั้งนาฬิกาแมตช์ · แสดงผลเท่านั้น
    inp เก็บทั้งแมตช์ (ผู้ชมที่เข้ากลางเกมย้อนคำนวณจากรอบ 1) · ผู้ชม: { watch: mid } อย่างเดียว ไม่ส่งอะไรให้ผู้เล่น */
-const PVP_V = 7; // เปลี่ยนกติกา/เอนจินเมื่อไหร่ต้องเพิ่มเลขนี้ — คนละเวอร์ชันจะไม่ถูกจับคู่ (เล่นคนละกติกา = ผลเพี้ยน) · 4 = Fight Phase เป็น VDO (ยาวขึ้นมาก + presence.vdo) · 5 = Dodge Lv3 มีเพดาน HP 10 + HP สูงสุด 100 → 150 (ตี้ 2026-10-22) · 6 = Lv2 + Lv2 คืนการ์ด Lv1 (validLock รับ id การ์ดคืน) · 7 = เกจ (การวางส่ง gauge ops ไปด้วย · newGame สุ่ม gseed)
+const PVP_V = 8; // เปลี่ยนกติกา/เอนจินเมื่อไหร่ต้องเพิ่มเลขนี้ — คนละเวอร์ชันจะไม่ถูกจับคู่ (เล่นคนละกติกา = ผลเพี้ยน) · 4 = Fight Phase เป็น VDO (ยาวขึ้นมาก + presence.vdo) · 5 = Dodge Lv3 มีเพดาน HP 10 + HP สูงสุด 100 → 150 (ตี้ 2026-10-22) · 6 = Lv2 + Lv2 คืนการ์ด Lv1 (validLock รับ id การ์ดคืน) · 7 = เกจ (การวางส่ง gauge ops ไปด้วย · newGame สุ่ม gseed) · 8 = Attack ทอยให้อีกฝ่ายทิ้งการ์ด (rollClash ใช้ตัวสุ่มเพิ่ม)
 const PVP_SEC = 60, PVP_CUT = 30, PVP_GONE_MS = 8000, PVP_NEXT_MS = 10000, PVP_WAIT_MS = 90000, VDO_HOLD_MS = 240000;
 // ที่ไหนก็ได้นอก claude.ai (เช่น GitHub Pages): ส่ง presence ผ่าน MQTT broker สาธารณะ 3 เจ้าพร้อมกัน ไม่ต้องล็อกอิน · เจ้าไหนล่มก็ยังคุยกันได้
 // บน claude.ai ต่อข้างนอกไม่ได้ (CSP connect-src 'self' + webrtc block) → ใช้ room ของ claude ได้เฉพาะคนในองค์กรเดียวกัน
