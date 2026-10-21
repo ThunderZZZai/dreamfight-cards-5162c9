@@ -893,8 +893,9 @@ function rollClash(g, i) {
   return r;
 }
 // หักดาเมจก่อน แล้วค่อยบวก HP คืน (ไม่เกิน HP_MAX)
-function applyDamage(g, r) {
-  for (const s of SIDES) {
+// sides = ฝั่งที่จะหัก (หน้าจอ VDO หักทีละฝั่งได้ — แต่ละฝั่งคิดจาก HP ของตัวเอง ผลรวมจึงเท่ากับหักพร้อมกัน)
+function applyDamage(g, r, sides = SIDES) {
+  for (const s of sides) {
     const P = g.p[s], o = r[s], hit = P.hp - o.taken;
     o.hp0 = P.hp;
     P.hp = o.heal ? Math.max(hit, Math.min(HP_MAX, hit + o.heal)) : hit;
@@ -2170,6 +2171,18 @@ function vdoClips(r) {
   }
   return SIDES.filter(s => r[s].card).map(s => `taunt-${tag(s)}`);
 }
+// ลำดับ VDO ของช่อง i + ฝั่งที่ HP ลดหลังจบแต่ละ VDO (hit) — ใช้กับช่องที่ตีกันทั้งคู่ (ตี้ 2026-10-21):
+// HP ลดทีละฝั่งหลังจบ VDO ของฝั่งที่ตี (เล่น VDO ฝั่งไหน อีกฝั่งเสีย HP) · ช่องนี้มีคนแพ้ → เล่น VDO ของคนแพ้ก่อน ให้คนชนะปิดท้าย
+// รู้ผลล่วงหน้าโดยไม่แตะตัวสุ่ม: ช่องที่ตีกันทั้งคู่ HP เปลี่ยนแค่ดาเมจ (ค่า Ultimate ลด HP ต่ำกว่า PEN_FLOOR ไม่ได้ ไม่ทำให้ใครแพ้)
+// → ส่ง HP หลังดาเมจเข้า judge ตัวจริง · ไม่มีคนแพ้ (หรือเสมอ) = ลำดับเดิมของ vdoClips
+function vdoPlan(g, r, i) {
+  const clips = vdoClips(r);
+  if (!SIDES.every(s => r[s].card && HIT_VDO[r[s].card.type])) return clips.map(name => ({ name, hit: null }));
+  const side = s => ({ hp: g.p[s].hp - r[s].taken, lanes: g.p[s].lanes });
+  const v = judge({ p: { RED: side('RED'), BLUE: side('BLUE') } }, i);
+  const order = v.winner && v.winner !== 'DRAW' ? [FOE[v.winner], v.winner] : clips.map(n => (n.endsWith('-red') ? 'RED' : 'BLUE'));
+  return order.map(s => ({ name: clips.find(n => n.endsWith(`-${s.toLowerCase()}`)), hit: FOE[s] }));
+}
 // Idle วนเป็นพื้นหลัง (ไม่มีเสียง): ฝั่งเรา → อีกฝั่ง → … สลับด้วยครอสเฟดระหว่าง <video> 2 ตัว
 const vdoBg = (() => {
   const els = [$('#vdoBgA'), $('#vdoBgB')];
@@ -2219,18 +2232,17 @@ function vdoPrime() {
 // setTimeout จริง (ไม่ผ่าน wait — โหมดเร่งความเร็วไม่ย่อเวลา VDO) · until = รอจนเงื่อนไขเป็นจริง (เช็กทุก 80 ms)
 const sleep = ms => new Promise(res => setTimeout(res, ms));
 const until = cond => new Promise(res => { const t = () => (cond() ? res() : setTimeout(t, 80)); t(); });
-// เล่น VDO ของช่อง i: การ์ดขึ้นบน VDO VDO_REVEAL_MS → เก็บ UI ลง → ก่อน VDO สุดท้ายจบ VDO_HP_LEAD วิ แถบ HP กลับลงมา + showResult()
-// SKIP = ข้ามไปโชว์ผลทันที · คืน false ถ้าออกจากเกมกลางทาง
-async function laneVdo(i, clips, gid, showResult) {
-  const W = $('#world'), el = $('#vdoFight'), lv = { skip: false, failed: false, clips };
-  const gone = () => gid !== ui.gid;
-  let hp = false;
-  const hpNow = async () => {
-    if (hp) return;
-    hp = true;
+// เล่น VDO ของช่อง i: การ์ดขึ้นบน VDO VDO_REVEAL_MS → เก็บ UI ลง → VDO ไหนมี hp: ก่อนจบ VDO_HP_LEAD วิ แถบ HP ลงมา + hp()
+// VDO ถัดไปเริ่ม = แถบ HP เก็บขึ้นอีกรอบ · plan = [{ name, hp }] · SKIP = hp() ที่เหลือเรียงตามลำดับทันที · คืน false ถ้าออกจากเกมกลางทาง
+async function laneVdo(i, plan, gid) {
+  const W = $('#world'), el = $('#vdoFight'), clips = plan.map(p => p.name), lv = { skip: false, failed: false, clips };
+  const gone = () => gid !== ui.gid, shown = new Set();
+  const hpNow = async k => {
+    if (shown.has(k) || !plan[k].hp) return;
+    shown.add(k);
     W.classList.add('vdo-hp');
     if (W.classList.contains('vdo-full')) await sleep(450); // ให้แถบ HP เลื่อนลงมาก่อน ตัวเลขค่อยวิ่ง
-    if (!gone()) showResult();
+    if (!gone()) plan[k].hp();
   };
   ui.vdo = lv;
   const v0 = Date.now();
@@ -2243,6 +2255,7 @@ async function laneVdo(i, clips, gid, showResult) {
     for (let k = 0; k < clips.length && !lv.skip; k++) {
       const t0 = Date.now();
       lv.failed = false;
+      if (k) W.classList.remove('vdo-hp');
       el.src = vdo.url(clips[k]);
       el.volume = 1;
       el.muted = !sfx.on;
@@ -2253,16 +2266,22 @@ async function laneVdo(i, clips, gid, showResult) {
         if (gone()) return false;
         if (!lv.skip && !lv.failed) W.classList.add('vdo-full');
       }
-      if (k === clips.length - 1) {
+      if (plan[k].hp) {
         const at = VDO_FILES[clips[k]][1] - VDO_HP_LEAD;
         await until(() => lv.skip || gone() || lv.failed || el.ended || el.currentTime >= at);
         if (gone()) return false;
-        await hpNow();
+        await hpNow(k);
       }
       await until(() => lv.skip || gone() || lv.failed || el.ended);
       if (gone()) return false;
     }
-    if (!hp) await hpNow();
+    // ข้าม/เล่นไม่ได้: หัก HP ที่ยังค้างตามลำดับเดิม (เว้นจังหวะให้เห็นทีละฝั่ง)
+    for (let k = 0; k < plan.length; k++) {
+      if (!plan[k].hp || shown.has(k)) continue;
+      if (shown.size) await sleep(700);
+      await hpNow(k);
+      if (gone()) return false;
+    }
     if (lv.skip || lv.failed) await sleep(1300); // ข้าม/เล่นไม่ได้ → ค้างผลให้เห็นก่อนกลับกระดาน
     return !gone();
   } finally {
@@ -2866,28 +2885,36 @@ async function runFight() {
     const r = rollClash(g, i);
     Object.assign(ui, { shown: i, detail: i, pending: r });
     const ctr = counterSide(r);
-    const clips = vdo.ready ? vdoClips(r) : [];
+    const plan = vdo.ready ? vdoPlan(g, r, i) : [];
     ui.fx = { lane: i, cls: actionFx(r), marks: actionMarks(r), impact: r.RED.raw > 0 || r.BLUE.raw > 0, ult: [r.RED.card, r.BLUE.card].some(c => c && c.type === 'ULT'), counter: ctr, chg: changeCallouts(r) };
     render();
     // 2) หัก HP / ได้ HP คืน — แผงผลปะทะเฉลยผลทอยหลบและตัวเลขสุดท้าย
-    const showResult = () => {
-      applyDamage(g, r);
-      ui.results[i] = r;
-      ui.pending = null;
-      ui.hit = { RED: r.RED.taken > 0, BLUE: r.BLUE.taken > 0 };
-      const after = s => (r[s].taken > 0 ? 'fx-hurt' : r[s].healed > 0 ? 'fx-heal' : '');
-      ui.fx = { lane: i, resIn: true, cls: { RED: after('RED'), BLUE: after('BLUE') }, marks: resultMarks(r) };
+    // sides = ฝั่งที่หักรอบนี้ (VDO ตีกันทั้งคู่หักทีละฝั่ง) · final = ครั้งสุดท้ายของช่อง → เปิดผลในแผง
+    const showResult = (sides = SIDES, final = true) => {
+      applyDamage(g, r, sides);
+      if (final) {
+        ui.results[i] = r;
+        ui.pending = null;
+        const after = s => (r[s].taken > 0 ? 'fx-hurt' : r[s].healed > 0 ? 'fx-heal' : '');
+        ui.fx = { lane: i, resIn: true, cls: { RED: after('RED'), BLUE: after('BLUE') }, marks: resultMarks(r) };
+      }
+      ui.hit = Object.fromEntries(sides.map(s => [s, r[s].taken > 0]));
       render();
-      for (const s of SIDES) floatHp(s, r[s]);
-      if (SIDES.some(s => r[s].taken > 0)) sfx.play('hurt');
-      if (SIDES.some(s => r[s].evaded)) sfx.play('miss');
-      if (SIDES.some(s => r[s].healed > 0)) sfx.play('heal', 400);
+      for (const s of sides) floatHp(s, r[s]);
+      if (sides.some(s => r[s].taken > 0)) sfx.play('hurt');
+      if (sides.some(s => r[s].evaded)) sfx.play('miss');
+      if (sides.some(s => r[s].healed > 0)) sfx.play('heal', 400);
     };
-    if (clips.length) {
+    if (plan.length) {
       // VDO: เสียงฟัน/อัลติ/โล่อยู่ใน VDO แล้ว — เกมเล่นแค่เสียงพลิกการ์ด + ชนะทาง
       sfx.play('flip');
       if (ctr) { sfx.play(`ctr${r[ctr].card.type}`, 120); flashStage(ctr); quake(true); }
-      if (!(await laneVdo(i, clips, gid, showResult))) return;
+      const last = plan.length - 1;
+      const steps = plan.map((p, k) => ({
+        name: p.name,
+        hp: p.hit ? () => showResult([p.hit], k === last) : k === last ? () => showResult() : null,
+      }));
+      if (!(await laneVdo(i, steps, gid))) return;
     } else {
       clashFx(r);
       await wait(ctr ? 1450 : 900); // ชนะทาง = ค้างให้เห็นป้ายและค่าที่เปลี่ยนนานขึ้น
@@ -4389,7 +4416,7 @@ setInterval(clockTick, 250);
 fitStage();
 // ลายนิ้วมือสถานะเกม (ทดสอบว่า PVP สองเครื่องตรงกัน) — ลำดับการ์ดในมือตามอาร์เรย์ (ส่วนที่กระทบผลสุ่ม)
 const stateHash = () => { const g = ui.g; return g ? JSON.stringify({ r: g.round, hp: SIDES.map(s => g.p[s].hp), h: SIDES.map(s => g.p[s].hand.map(c => `${c.id}${c.type[0]}${c.lv}`).join(',')), d: g.deck.length, m: g.market.map(c => c.type[0]).join('') }) : null; };
-window.__dreamfight = { bgm, vdo, vdoBg, vdoClips, stateHash, ui: () => ui, simulate, stackLanes, pickOne, swapHand, botAction, newGame, doLock, clash, effText, gain, forceDiscard, judge, sfx, calcSideHTML, discardText, drawCount, fitStage };
+window.__dreamfight = { bgm, vdo, vdoBg, vdoClips, vdoPlan, stateHash, ui: () => ui, simulate, stackLanes, pickOne, swapHand, botAction, newGame, doLock, clash, effText, gain, forceDiscard, judge, sfx, calcSideHTML, discardText, drawCount, fitStage };
 render();
 })();
 </script>
