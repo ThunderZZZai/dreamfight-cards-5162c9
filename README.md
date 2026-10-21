@@ -1,6 +1,6 @@
 # DreamFight Cards
 
-เกมการ์ด RED vs BLUE บนเว็บ — **เล่นได้ที่ https://thunderzzzai.github.io/dreamfight-cards/** (ไม่ต้องล็อกอิน)
+เกมการ์ด RED vs BLUE บนเว็บ — **เล่นได้ที่ https://thunderzzzai.github.io/dreamfight-cards-5162c9/** (ไม่ต้องล็อกอิน · ต้องมีรหัสเข้าเกม — ขอจากผู้จัด)
 
 - **ARCADE** — สู้กับบอท BLUE
 - **PVP** — ผู้เล่นสู้กันออนไลน์ กด RED READY / BLUE READY · ห้องส่วนตัวใส่ `?room=ชื่อห้อง` ต่อท้ายลิงก์
