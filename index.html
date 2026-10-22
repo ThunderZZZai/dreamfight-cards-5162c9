@@ -795,7 +795,8 @@ const LV = {
   // Defence = ได้ชิลด์ 10/20/30 (ไม่บังคับอีกฝ่ายทิ้งแล้ว) · ชนะทาง Attack = ฝั่ง Defence จั่ว 1/2/3
   ULT:   [{ dmg: 20, cost: 1, bonus: 10 }, { dmg: 40, cost: 2, bonus: 20 }, { dmg: 60, cost: 3, bonus: 30 }],
   // ตี้ 2026-10-22: Defence เจอ Attack = ไม่ต้องทิ้งการ์ดจากผลของ Attack (blockBrk)
-  DEF:   [{ shield: 10, drawVs: 1, blockBrk: 1 }, { shield: 20, drawVs: 2, blockBrk: 1 }, { shield: 30, drawVs: 3, blockBrk: 1 }],
+  // ตี้ 2026-10-22: Defence ชนะทาง Attack ได้ชิลด์เพิ่ม 5/10/15 (shieldVs — รวมกับชิลด์ปกติ ได้ก่อนรับดาเมจช่องนั้น)
+  DEF:   [{ shield: 10, shieldVs: 5, drawVs: 1, blockBrk: 1 }, { shield: 20, shieldVs: 10, drawVs: 2, blockBrk: 1 }, { shield: 30, shieldVs: 15, drawVs: 3, blockBrk: 1 }],
   // Dodge เจอ Ultimate (ตี้ 2026-10-22): หลบ 100% ทุกเลเวล · Lv2 อีกฝ่ายทิ้ง 1 + เสีย 1 เกจ · Lv3 ทิ้ง 2 + เสีย 2 เกจ
   DODGE: [{ evade: 0.5, draw: 1, evadeVs: 1 }, { evade: 0.75, draw: 2, evadeVs: 1, brkVs: 1, gaugeVs: 1 }, { evade: 1, draw: 3, evadeVs: 1, brkVs: 2, gaugeVs: 2 }],
 };
@@ -812,13 +813,14 @@ const FOE = { RED: 'BLUE', BLUE: 'RED' };
 const stat = c => LV[c.type][c.lv - 1];
 
 const BASE_KEYS = { ATK: ['dmg', 'brkP', 'brkN'], ULT: ['dmg', 'cost'], DEF: ['shield'], DODGE: ['evade', 'draw', 'brk'] };
-const COUNTER_KEYS = ['pierce', 'bonus', 'heal', 'evadeVs', 'brkVs', 'gaugeVs', 'drawVs', 'blockBrk', 'save'];
+const COUNTER_KEYS = ['pierce', 'bonus', 'heal', 'evadeVs', 'brkVs', 'gaugeVs', 'shieldVs', 'drawVs', 'blockBrk', 'save'];
 const pctOf = p => `${Math.round(p * 100)}%`;
 const beatsName = t => INFO[INFO[t].beats].name;
 const EFF = {
   dmg:    { short: v => `ดาเมจ ${v}`,       label: 'ดาเมจ ',       fmt: v => v },
   guard:  { short: v => `กัน ${v}`,         label: 'กัน ',         fmt: v => v },
   shield: { short: v => `ชิลด์ +${v}`,      label: 'ชิลด์ +',      fmt: v => v },
+  shieldVs: { short: v => `ชิลด์ +${v}`,    label: 'ชิลด์เพิ่ม +', fmt: v => v },
   drawVs: { short: v => `จั่ว ${v}`,         label: 'จั่ว ',        fmt: v => v, unit: ' ใบ' },
   blockBrk: { short: () => '· ไม่ต้องทิ้งจาก Attack', label: 'ไม่ต้องทิ้งจาก Attack ', fmt: () => '✓' },
   evade:  { short: v => `หลบ ${pctOf(v)}`,  label: 'หลบ ',        fmt: v => Math.round(v * 100), unit: '%' },
@@ -1081,7 +1083,8 @@ function rollClash(g, i) {
     o.raw = rawVs(foe, card[s]);
     o.bonus = o.raw - dmgOf(foe);
     o.taken = o.raw; // ดาเมจที่เข้าตัว (หลังทอยหลบ) — หักชิลด์ก่อนใน applyDamage
-    o.shieldGain = mine.shield || 0;
+    o.shieldVs = isCounter(card[s], foe) ? mine.shieldVs || 0 : 0; // Defence ชนะทาง Attack: ชิลด์เพิ่ม
+    o.shieldGain = (mine.shield || 0) + o.shieldVs;
     if (o.raw && mine.evade) {
       o.pierce = pierceOf(foe, card[s]);
       o.evBase = isCounter(card[s], foe) && mine.evadeVs ? mine.evadeVs : mine.evade; // Dodge เจอ Ultimate หลบง่ายขึ้น
@@ -1253,7 +1256,8 @@ function laneValue(mine, w, ctx) {
   let v = 0;
   for (const foe of GUESS) {
     v += expTaken(mine, foe) * w.deal - expTaken(foe, mine) * w.take + healOf(mine, foe) * w.take;
-    if (isCounter(mine, foe)) v += (stat(mine).brkVs || 0) * 3 + (stat(mine).gaugeVs || 0) * 4 + (stat(mine).drawVs || 0) * 3;
+    if (isCounter(mine, foe)) v += (stat(mine).brkVs || 0) * 3 + (stat(mine).gaugeVs || 0) * 4 + (stat(mine).drawVs || 0) * 3
+      + Math.min(stat(mine).shieldVs || 0, Math.max(0, SHIELD_MAX - (ctx.shield || 0) - (stat(mine).shield || 0))) * 0.6 * w.take; // ชิลด์เพิ่มตอนชนะทาง (เต็มเพดานแล้วไม่มีค่า)
   }
   v /= GUESS.length;
   if (!mine) return v;
@@ -3199,6 +3203,7 @@ function changeCallouts(r) {
     if (won && st.brkVs) c[s].push(chgPlus('อีกฝ่ายทิ้ง', `+${st.brkVs}`));
     if (won && st.gaugeVs) c[s].push(chgPlus('อีกฝ่ายเสียเกจ', `−${st.gaugeVs}`));
     if (won && st.heal) c[s].push(chgPlus('ได้ HP คืน', `+${st.heal}`));
+    if (won && st.shieldVs) c[s].push(chg('ชิลด์', st.shield, st.shield + st.shieldVs, 'boost'));
     if (won && st.drawVs) c[s].push(chgPlus('จั่ว', `+${st.drawVs}`));
     if (won && st.blockBrk) c[s].push(chgPlus('Attack ทอยทิ้ง', 'ไม่ได้'));
   }
@@ -3405,7 +3410,7 @@ function logClash(r) {
   const parts = [];
   for (const s of SIDES) {
     const o = r[s];
-    if (o.shieldGain) parts.push(`${tagOf(s)} ได้ชิลด์ +${o.shieldGain} (${INFO[o.card.type].name} Lv${o.card.lv}) → ชิลด์ ${Math.min(SHIELD_MAX, o.sh0 + o.shieldGain)}${o.sh0 + o.shieldGain > SHIELD_MAX ? ` (เต็ม ${SHIELD_MAX})` : ''}`);
+    if (o.shieldGain) parts.push(`${tagOf(s)} ได้ชิลด์ +${o.shieldGain} (${INFO[o.card.type].name} Lv${o.card.lv}${o.shieldVs ? ` · ชนะทาง +${o.shieldVs}` : ''}) → ชิลด์ ${Math.min(SHIELD_MAX, o.sh0 + o.shieldGain)}${o.sh0 + o.shieldGain > SHIELD_MAX ? ` (เต็ม ${SHIELD_MAX})` : ''}`);
     if (o.raw) {
       const foeName = INFO[r[FOE[s]].card.type].name;
       const odds = o.chance != null ? `โอกาสหลบ ${pctOf(o.chance)}${o.pierce ? ` (${foeName} ลด ${pctOf(o.pierce)})` : ''}` : '';
@@ -3525,7 +3530,7 @@ function calcSideHTML(s, r, done) {
   } else rows.push('<div class="calc-none">ไม่โดนโจมตี</div>');
   if (done) {
     const fins = [];
-    if (o.sh0 != null && (o.shieldGain || o.absorbed)) rows.push(`<div class="eq"><span class="eq-label">ชิลด์</span><span class="term src k-DEF">${o.sh0}</span>${o.shieldGain ? `<span class="term mod up">▲ +${o.shieldGain} Defence</span>` : ''}${o.absorbed ? `<span class="term mod down">▼ −${o.absorbed} รับดาเมจ</span>` : ''}<span class="term res">= ${o.sh1}</span></div>`);
+    if (o.sh0 != null && (o.shieldGain || o.absorbed)) rows.push(`<div class="eq"><span class="eq-label">ชิลด์</span><span class="term src k-DEF">${o.sh0}</span>${o.shieldGain ? `<span class="term mod up">▲ +${o.shieldGain - (o.shieldVs || 0)} Defence</span>` : ''}${o.shieldVs ? `<span class="term mod up">▲ +${o.shieldVs} ชนะทาง</span>` : ''}${o.absorbed ? `<span class="term mod down">▼ −${o.absorbed} รับดาเมจ</span>` : ''}<span class="term res">= ${o.sh1}</span></div>`);
     if (o.raw) fins.push(o.hpLoss > 0 ? `<span class="fin dmg">−${o.hpLoss} HP</span>` : `<span class="fin ok">${o.evaded ? 'หลบได้' : 'ชิลด์รับไว้หมด'}</span>`);
     if (o.heal) fins.push(o.healed ? `<span class="fin heal">+${o.healed} HP</span><small>${INFO[me.type].name} ปราบ ${INFO[foe.type].name}</small>` : '<small>HP เต็มแล้ว ไม่ได้เพิ่ม</small>');
     if (fins.length) rows.push(`<div class="fins">${fins.join('')}</div>`);
@@ -3992,10 +3997,10 @@ function rulesCompactHTML() {
 function rulesListHTML() {
   return `<ul class="rules-list">
     <li><b>จู่โจมชนจู่โจม</b> (Attack/Ultimate) — โดนดาเมจทั้งสองฝ่าย</li>
-    <li><b>ชิลด์</b> (หลอดสีขาวเหนือแถบ HP) — Defence เปิดเมื่อไหร่ได้ชิลด์ Lv1/2/3 = +10/20/30 ก่อนรับดาเมจของช่องนั้น · ดาเมจทุกชนิด (การ์ด + ค่า Ultimate ตอนมือว่าง) หักชิลด์ก่อน เหลือค่อยหัก HP · ชิลด์อยู่ข้ามรอบ สะสมได้สูงสุด ${SHIELD_MAX}</li>
+    <li><b>ชิลด์</b> (หลอดสีขาวเหนือแถบ HP) — Defence เปิดเมื่อไหร่ได้ชิลด์ Lv1/2/3 = +10/20/30 (ชนะทาง Attack ได้เพิ่มอีก +5/10/15) ก่อนรับดาเมจของช่องนั้น · ดาเมจทุกชนิด (การ์ด + ค่า Ultimate ตอนมือว่าง) หักชิลด์ก่อน เหลือค่อยหัก HP · ชิลด์อยู่ข้ามรอบ สะสมได้สูงสุด ${SHIELD_MAX}</li>
     <li><b>จู่โจมชน Dodge</b> — ทอยหลบ ถ้าหลบได้ไม่โดนเลย</li>
     <li><b>Ultimate</b> ทิ้งการ์ดสุ่มบนมือเรา 1/2/3 ใบ · <b>Attack</b> ทอยให้อีกฝ่ายทิ้งการ์ด 1 ใบ (Lv1 50% · Lv2 55% ทอย 2 ครั้ง · Lv3 60% ทอย 3 ครั้ง · เจอ Defence ไม่ทอย) · <b>Dodge</b> จั่วเพิ่ม — เกิดทุกครั้งที่เปิด</li>
-    <li><b>คู่ปราบ (วนเป็นวง)</b> — Attack ปราบ Dodge (หลบยากขึ้น + ดาเมจเพิ่มถ้าโดน) · Dodge ปราบ Ultimate (หลบ 100% ทุกเลเวล · Lv2 อีกฝ่ายทิ้ง 1 ใบ + เสีย 1 เกจ · Lv3 ทิ้ง 2 ใบ + เสีย 2 เกจ) · Ultimate ปราบ Defence (ดาเมจเพิ่ม +10/20/30) · Defence ปราบ Attack (ฝั่ง Defence จั่ว 1/2/3 ใบ + ไม่ต้องทิ้งการ์ดจาก Attack) · HP สูงสุด ${HP_MAX}</li>
+    <li><b>คู่ปราบ (วนเป็นวง)</b> — Attack ปราบ Dodge (หลบยากขึ้น + ดาเมจเพิ่มถ้าโดน) · Dodge ปราบ Ultimate (หลบ 100% ทุกเลเวล · Lv2 อีกฝ่ายทิ้ง 1 ใบ + เสีย 1 เกจ · Lv3 ทิ้ง 2 ใบ + เสีย 2 เกจ) · Ultimate ปราบ Defence (ดาเมจเพิ่ม +10/20/30) · Defence ปราบ Attack (ชิลด์เพิ่ม +5/10/15 + ฝั่ง Defence จั่ว 1/2/3 ใบ + ไม่ต้องทิ้งการ์ดจาก Attack) · HP สูงสุด ${HP_MAX}</li>
     <li><b>มือสูงสุด ${HAND_MAX} ใบ</b> — ได้การ์ดเกิน (จั่ว / เก็บ / Dodge) ใบที่เกินกลายเป็นสุ่มเลเวลอัปการ์ดบนมือ 1 ใบแทน (สูงสุด Lv3)</li>
     <li><b>มือว่าง</b> — โดนอีกฝ่ายบังคับทิ้ง (Attack ทอยติด · Dodge Lv2-3) = ทิ้งเท่าที่มี <b>ไม่เสีย HP</b> · <b>ค่า Ultimate</b> ทิ้งไม่ครบ = เสีย ${EMPTY_PENALTY} HP ต่อใบที่ขาด แต่ลด HP ต่ำกว่า ${PEN_FLOOR} ไม่ได้ — มือว่างทำให้แพ้ไม่ได้ · มีชิลด์ = หักชิลด์ก่อน</li>
     <li><b>เก็บการ์ด</b> — แตะหรือลากการ์ดกองกลางเข้ามือ = เข้าขวาสุด · มือเต็ม ${HAND_MAX} ใบแล้วเก็บ = เหมือนจั่ว: สุ่มเลเวลอัปการ์ดบนมือ 1 ใบแทน (สุ่มตอนกด PICK UP ไม่รู้ล่วงหน้าว่าใบไหน) · <b>เปลี่ยนใจ</b>: ก่อนกด PICK UP แตะหรือลากใบที่เพิ่งเก็บ (ป้ายแดง "เก็บ") กลับกองกลางได้</li>
@@ -4113,7 +4118,7 @@ document.addEventListener('keydown', e => {
    vdo = รอบที่เรากำลังดู VDO ฉากปะทะอยู่ (อีกฝ่ายหยุดนับเวลารอ) — ไม่มี = ไม่ได้ดู
    t0 = เวลาเริ่มแมตช์ (Date.now ของเรา) — ผู้ชมที่เข้ากลางเกมใช้ตั้งนาฬิกาแมตช์ · แสดงผลเท่านั้น
    inp เก็บทั้งแมตช์ (ผู้ชมที่เข้ากลางเกมย้อนคำนวณจากรอบ 1) · ผู้ชม: { watch: mid } อย่างเดียว ไม่ส่งอะไรให้ผู้เล่น */
-const PVP_V = 13; // เปลี่ยนกติกา/เอนจินเมื่อไหร่ต้องเพิ่มเลขนี้ — คนละเวอร์ชันจะไม่ถูกจับคู่ (เล่นคนละกติกา = ผลเพี้ยน) · 4 = Fight Phase เป็น VDO (ยาวขึ้นมาก + presence.vdo) · 5 = Dodge Lv3 มีเพดาน HP 10 + HP สูงสุด 100 → 150 (ตี้ 2026-10-22) · 6 = Lv2 + Lv2 คืนการ์ด Lv1 (validLock รับ id การ์ดคืน) · 7 = เกจ (การวางส่ง gauge ops ไปด้วย · newGame สุ่ม gseed) · 8 = Attack ทอยให้อีกฝ่ายทิ้งการ์ด (rollClash ใช้ตัวสุ่มเพิ่ม) · 9 = Dodge เจอ Ultimate หลบ 100% + Lv2-3 อีกฝ่ายทิ้ง/เสียเกจ · 10 = ชิลด์ (Defence) + Ultimate ใหม่ + เอาเกจชนะทางออก · 11 = Ultimate ดาเมจ 20/40/60 · 12 = Attack เจอ Defence ไม่ทอยทิ้ง (ตัวสุ่มหลักใช้น้อยลง) · 13 = มือว่างเสีย HP เฉพาะค่า Ultimate (Attack / Dodge บังคับทิ้งไม่เสีย HP)
+const PVP_V = 14; // เปลี่ยนกติกา/เอนจินเมื่อไหร่ต้องเพิ่มเลขนี้ — คนละเวอร์ชันจะไม่ถูกจับคู่ (เล่นคนละกติกา = ผลเพี้ยน) · 4 = Fight Phase เป็น VDO (ยาวขึ้นมาก + presence.vdo) · 5 = Dodge Lv3 มีเพดาน HP 10 + HP สูงสุด 100 → 150 (ตี้ 2026-10-22) · 6 = Lv2 + Lv2 คืนการ์ด Lv1 (validLock รับ id การ์ดคืน) · 7 = เกจ (การวางส่ง gauge ops ไปด้วย · newGame สุ่ม gseed) · 8 = Attack ทอยให้อีกฝ่ายทิ้งการ์ด (rollClash ใช้ตัวสุ่มเพิ่ม) · 9 = Dodge เจอ Ultimate หลบ 100% + Lv2-3 อีกฝ่ายทิ้ง/เสียเกจ · 10 = ชิลด์ (Defence) + Ultimate ใหม่ + เอาเกจชนะทางออก · 11 = Ultimate ดาเมจ 20/40/60 · 12 = Attack เจอ Defence ไม่ทอยทิ้ง (ตัวสุ่มหลักใช้น้อยลง) · 13 = มือว่างเสีย HP เฉพาะค่า Ultimate (Attack / Dodge บังคับทิ้งไม่เสีย HP) · 14 = Defence ชนะทาง Attack ชิลด์เพิ่ม 5/10/15
 const PVP_SEC = 60, PVP_CUT = 30, PVP_GONE_MS = 8000, PVP_NEXT_MS = 10000, PVP_WAIT_MS = 90000, VDO_HOLD_MS = 240000;
 // ที่ไหนก็ได้นอก claude.ai (เช่น GitHub Pages): ส่ง presence ผ่าน MQTT broker สาธารณะ 3 เจ้าพร้อมกัน ไม่ต้องล็อกอิน · เจ้าไหนล่มก็ยังคุยกันได้
 // บน claude.ai ต่อข้างนอกไม่ได้ (CSP connect-src 'self' + webrtc block) → ใช้ room ของ claude ได้เฉพาะคนในองค์กรเดียวกัน
