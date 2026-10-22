@@ -791,9 +791,9 @@ const INFO = {
 // ตอนเจอคู่ปราบ: pierce ลดโอกาสหลบของอีกฝ่าย · bonus ดาเมจเพิ่ม (บวกก่อนหักค่ากัน/ทอยหลบ) · heal ได้ HP คืน · save ค่า Ultimate ทิ้งน้อยลง
 const LV = {
   ATK:   [{ dmg: 10, brkP: 0.5, brkN: 1, pierce: 0.25, bonus: 10 }, { dmg: 20, brkP: 0.55, brkN: 2, pierce: 0.50, bonus: 15 }, { dmg: 35, brkP: 0.6, brkN: 3, pierce: 0.75, bonus: 20 }],
-  // Ultimate + Defence (ตี้ 2026-10-22): Ultimate 15/30/50 ทิ้งมือตัวเอง 1/2/3 · ชนะทาง Defence ดาเมจ +10/20/30
+  // Ultimate + Defence (ตี้ 2026-10-22): Ultimate 20/40/60 (ดาเมจกลับค่าเดิม หลังเช็กบาลานซ์) ทิ้งมือตัวเอง 1/2/3 · ชนะทาง Defence ดาเมจ +10/20/30
   // Defence = ได้ชิลด์ 10/20/30 (ไม่บังคับอีกฝ่ายทิ้งแล้ว) · ชนะทาง Attack = ฝั่ง Defence จั่ว 1/2/3
-  ULT:   [{ dmg: 15, cost: 1, bonus: 10 }, { dmg: 30, cost: 2, bonus: 20 }, { dmg: 50, cost: 3, bonus: 30 }],
+  ULT:   [{ dmg: 20, cost: 1, bonus: 10 }, { dmg: 40, cost: 2, bonus: 20 }, { dmg: 60, cost: 3, bonus: 30 }],
   DEF:   [{ shield: 10, drawVs: 1 }, { shield: 20, drawVs: 2 }, { shield: 30, drawVs: 3 }],
   // Dodge เจอ Ultimate (ตี้ 2026-10-22): หลบ 100% ทุกเลเวล · Lv2 อีกฝ่ายทิ้ง 1 + เสีย 1 เกจ · Lv3 ทิ้ง 2 + เสีย 2 เกจ
   DODGE: [{ evade: 0.5, draw: 1, evadeVs: 1 }, { evade: 0.75, draw: 2, evadeVs: 1, brkVs: 1, gaugeVs: 1 }, { evade: 1, draw: 3, evadeVs: 1, brkVs: 2, gaugeVs: 2 }],
@@ -4106,7 +4106,7 @@ document.addEventListener('keydown', e => {
    vdo = รอบที่เรากำลังดู VDO ฉากปะทะอยู่ (อีกฝ่ายหยุดนับเวลารอ) — ไม่มี = ไม่ได้ดู
    t0 = เวลาเริ่มแมตช์ (Date.now ของเรา) — ผู้ชมที่เข้ากลางเกมใช้ตั้งนาฬิกาแมตช์ · แสดงผลเท่านั้น
    inp เก็บทั้งแมตช์ (ผู้ชมที่เข้ากลางเกมย้อนคำนวณจากรอบ 1) · ผู้ชม: { watch: mid } อย่างเดียว ไม่ส่งอะไรให้ผู้เล่น */
-const PVP_V = 10; // เปลี่ยนกติกา/เอนจินเมื่อไหร่ต้องเพิ่มเลขนี้ — คนละเวอร์ชันจะไม่ถูกจับคู่ (เล่นคนละกติกา = ผลเพี้ยน) · 4 = Fight Phase เป็น VDO (ยาวขึ้นมาก + presence.vdo) · 5 = Dodge Lv3 มีเพดาน HP 10 + HP สูงสุด 100 → 150 (ตี้ 2026-10-22) · 6 = Lv2 + Lv2 คืนการ์ด Lv1 (validLock รับ id การ์ดคืน) · 7 = เกจ (การวางส่ง gauge ops ไปด้วย · newGame สุ่ม gseed) · 8 = Attack ทอยให้อีกฝ่ายทิ้งการ์ด (rollClash ใช้ตัวสุ่มเพิ่ม) · 9 = Dodge เจอ Ultimate หลบ 100% + Lv2-3 อีกฝ่ายทิ้ง/เสียเกจ · 10 = ชิลด์ (Defence) + Ultimate ใหม่ + เอาเกจชนะทางออก
+const PVP_V = 11; // เปลี่ยนกติกา/เอนจินเมื่อไหร่ต้องเพิ่มเลขนี้ — คนละเวอร์ชันจะไม่ถูกจับคู่ (เล่นคนละกติกา = ผลเพี้ยน) · 4 = Fight Phase เป็น VDO (ยาวขึ้นมาก + presence.vdo) · 5 = Dodge Lv3 มีเพดาน HP 10 + HP สูงสุด 100 → 150 (ตี้ 2026-10-22) · 6 = Lv2 + Lv2 คืนการ์ด Lv1 (validLock รับ id การ์ดคืน) · 7 = เกจ (การวางส่ง gauge ops ไปด้วย · newGame สุ่ม gseed) · 8 = Attack ทอยให้อีกฝ่ายทิ้งการ์ด (rollClash ใช้ตัวสุ่มเพิ่ม) · 9 = Dodge เจอ Ultimate หลบ 100% + Lv2-3 อีกฝ่ายทิ้ง/เสียเกจ · 10 = ชิลด์ (Defence) + Ultimate ใหม่ + เอาเกจชนะทางออก · 11 = Ultimate ดาเมจ 20/40/60
 const PVP_SEC = 60, PVP_CUT = 30, PVP_GONE_MS = 8000, PVP_NEXT_MS = 10000, PVP_WAIT_MS = 90000, VDO_HOLD_MS = 240000;
 // ที่ไหนก็ได้นอก claude.ai (เช่น GitHub Pages): ส่ง presence ผ่าน MQTT broker สาธารณะ 3 เจ้าพร้อมกัน ไม่ต้องล็อกอิน · เจ้าไหนล่มก็ยังคุยกันได้
 // บน claude.ai ต่อข้างนอกไม่ได้ (CSP connect-src 'self' + webrtc block) → ใช้ room ของ claude ได้เฉพาะคนในองค์กรเดียวกัน
