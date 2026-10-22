@@ -894,7 +894,7 @@ function freshDeck() {
 function newGame(log = () => {}) {
   cardSeq = 0; gotSeq = 0; // เริ่มนับ id ใหม่ทุกเกม — PVP ทั้งสองเครื่องต้องได้ id การ์ดตรงกัน
   // gauge = เกจที่มี · gStack / gDmg = แต้มสะสมไปหาเกจถัดไป · gOps = การใช้เกจในรอบ gRound (PVP ส่งไปกับการวาง) · unl = รอบที่ใช้ 3 เกจ (วางกี่ใบก็ได้)
-  const side = () => ({ hp: HP_MAX, shield: 0, hand: [], slots: [[], [], []], lanes: null, picks: [], gauge: 0, gStack: 0, gDmg: 0, gOps: [], gRound: 0, gNew: 0, unl: 0 });
+  const side = () => ({ hp: HP_MAX, shield: 0, hand: [], slots: [[], [], []], lanes: null, picks: [], gauge: 0, gStack: 0, gDmg: 0, gOps: [], gRound: 0, gNew: 0, unl: 0, freeTr: 0 });
   const g = { round: 0, deck: freshDeck(), market: [], p: { RED: side(), BLUE: side() }, log };
   g.gseed = Math.floor(rand() * 4294967296); // ตัวสุ่มของเกจ (PVP: ได้ค่าเดียวกันทั้งสองเครื่อง)
   // บอท: style = นิสัยที่ใช้รอบนี้ · persona = นิสัยประจำตัว (ARCADE สุ่มตอนเริ่มเกม) · styleLog = [รอบ, นิสัย] ที่เปลี่ยน
@@ -985,11 +985,13 @@ function stackLanes(stacks) {
    ได้เกจ: การ์ดตั้งรับที่วาง (Defence/Dodge) รวมเลเวลครบ 4 = 1 เกจ · การ์ดจู่โจมทำดาเมจสะสมครบ 50 = 1 เกจ (กฎชนะทาง +1 เกจ เอาออก 2026-10-22)
    เกจสูงสุด 3 (เต็มแล้วแต้มสะสมทิ้ง) · ใช้ในเฟส Action ก่อนกด FIGHT!:
    1 เกจ = จั่ว 1 ใบ · 2 เกจ = เปลี่ยนการ์ดบนมือ 1 ใบเป็นชนิดไหนก็ได้ + เลเวล +1 (ใบ Lv3 = ไม่บวกเลเวล จั่ว 1 ใบแทน)
-   3 เกจ = จั่วจนมือครบ 6 ใบ → อัปเลเวลการ์ดบนมือทุกใบ +1 (ใบ Lv3 = จั่ว 1 ใบแทน) → รอบนั้นวางกี่ใบก็ได้
+   3 เกจ (ตี้ 2026-10-22 v2) = จั่วจนมือครบ 6 ใบ (ครบแล้วไม่จั่ว) → เปลี่ยนการ์ดฟรี 2 ครั้ง (op 'ftr' · ชนิดไหนก็ได้ + เลเวล +1 · Lv3 = จั่วแทน)
+     → รอบนั้นผสมการ์ดบนมือได้ (op 'merge' · ชนิดเดียวกัน · Lv1+Lv1 = Lv2 · Lv1+Lv2 = Lv3 · Lv2+Lv2 = Lv3 + Lv1) → วางกี่ใบก็ได้
    รอบที่ใช้ 3 เกจ ฝั่งนั้นสะสม stack ตั้งรับ / ดาเมจ / เกจ ไม่ได้เลย (ตี้ 2026-10-22)
    การ์ดจากเกจใช้ตัวสุ่มของเกจเอง (g.gseed + ฝั่ง + รอบ + ครั้งที่ใช้) ไม่แตะกองกลาง/ตัวสุ่มหลัก → PVP คำนวณซ้ำตอนอีกฝ่ายกด FIGHT! ได้ผลเดียวกัน */
 const GAUGE_MAX = 3, GAUGE_STACK = 4, GAUGE_DMG = 50;
-const GAUGE_COST = { draw: 1, tr: 2, max: 3 };
+const GAUGE_COST = { draw: 1, tr: 2, max: 3, ftr: 0, merge: 0 }; // ftr / merge ใช้ได้เฉพาะรอบที่ใช้ 3 เกจ
+const MAX_FREE_TR = 2;
 const GAUGE_ID = 1e6; // id การ์ดจากเกจ = GAUGE_ID + รอบ × 100 + ฝั่ง (BLUE +50) + ลำดับ — ไม่ชนการ์ดปกติ/การ์ดคืน
 const unlimitedNow = (g, s) => g.p[s].unl === g.round;
 // แต้มสะสมไปหาเกจถัดไป (เต็ม 3 แล้วทิ้ง) — คืนจำนวนเกจที่ได้
@@ -1037,11 +1039,13 @@ function gaugeDraw(g, s, n, rnd, out) {
 function useGauge(g, s, op) {
   const P = g.p[s];
   if (P.gRound !== g.round) Object.assign(P, { gRound: g.round, gOps: [], gNew: 0 });
-  const cost = op && GAUGE_COST[op.k];
-  if (!cost || P.gauge < cost || P.lanes) return null;
+  const cost = op ? GAUGE_COST[op.k] : undefined;
+  if (cost == null || P.gauge < cost || P.lanes) return null;
+  if ((op.k === 'ftr' || op.k === 'merge') && !unlimitedNow(g, s)) return null; // ของฟรีเฉพาะรอบพลังเต็ม
+  if (op.k === 'ftr' && !(P.freeTr > 0)) return null;
   const out = { k: op.k, got: [], ups: [], lost: 0, steps: [], all: [] };
   const rnd = seededRand(hashStr(`${g.gseed}|${s}|${g.round}|${P.gOps.length}`));
-  if (op.k === 'tr') {
+  if (op.k === 'tr' || op.k === 'ftr') {
     const c = P.hand.find(x => x.id === op.id);
     if (!c || !TYPES.includes(op.to)) return null;
     out.card = c;
@@ -1050,21 +1054,30 @@ function useGauge(g, s, op) {
     c.type = op.to;
     if (!was3) c.lv++;
     else gaugeDraw(g, s, 1, rnd, out);
+    if (op.k === 'ftr') P.freeTr--;
+  } else if (op.k === 'merge') {
+    // ผสมการ์ดบนมือ: ใบ a รับเลเวลของใบ b · เกิน Lv3 (Lv2 + Lv2) = a เป็น Lv3 และ b เหลือ Lv1
+    const a = P.hand.find(x => x.id === op.a), b = P.hand.find(x => x.id === op.b);
+    if (!a || !b || a === b || a.type !== b.type || a.lv >= 3 || b.lv >= 3) return null;
+    const sum = a.lv + b.lv;
+    out.card = a;
+    out.from = { a: a.lv, b: b.lv };
+    a.lv = Math.min(3, sum);
+    if (sum > 3) { b.lv = sum - 3; out.rest = b; } else P.hand.splice(P.hand.indexOf(b), 1);
+    out.merged = b;
   } else if (op.k === 'max') {
     gaugeDraw(g, s, Math.max(0, HAND_MAX - P.hand.length), rnd, out);
-    let n3 = 0;
-    for (const c of P.hand) { if (c.lv < 3) { c.lv++; out.all.push(c); } else n3++; }
-    gaugeDraw(g, s, n3, rnd, out);
     P.unl = g.round;
+    P.freeTr = MAX_FREE_TR;
   } else gaugeDraw(g, s, 1, rnd, out);
   P.gauge -= cost;
-  P.gOps.push(op.k === 'tr' ? { k: 'tr', id: op.id, to: op.to } : { k: op.k });
+  P.gOps.push(op.k === 'tr' || op.k === 'ftr' ? { k: op.k, id: op.id, to: op.to } : op.k === 'merge' ? { k: 'merge', a: op.a, b: op.b } : { k: op.k });
   return out;
 }
 // PVP / ผู้ชม: ใช้เกจของอีกฝ่ายตามลำดับที่ส่งมา (ก่อนตรวจการวาง — การ์ดจากเกจอยู่ในแผงได้) · ใบไหนไม่ผ่านหยุดตรงนั้น
 function applyGaugeOps(g, s, ops) {
   const res = [];
-  for (const op of Array.isArray(ops) ? ops.slice(0, 3) : []) { const r = useGauge(g, s, op); if (!r) break; res.push(r); }
+  for (const op of Array.isArray(ops) ? ops.slice(0, 40) : []) { const r = useGauge(g, s, op); if (!r) break; res.push(r); }
   return res;
 }
 const stackCount = slots => (slots || []).reduce((a, cs) => a + (cs ? cs.length : 0), 0);
@@ -1350,33 +1363,64 @@ function botAction(g, s) {
 }
 // บอทใช้เกจก่อนวาง (ตัวจำลอง: แบบ "เปลี่ยนการ์ด" ดีสุดสำหรับบอท 53% · จั่วทันที 49% · เก็บ 3 เกจ 50%)
 // มี ≥ 2 เกจ → ลองเปลี่ยนทุกใบ × ทุกชนิด เลือกแบบที่แผนวางดีขึ้นมากสุด · ไม่มีใบไหนดีขึ้น = เก็บไว้ · เกจเต็ม 3 แล้ว = จั่ว 1 กันเกจล้น
+// การเปลี่ยนการ์ด 1 ใบที่ทำให้แผนดีขึ้นมากสุด (เกินกว่า need) — null = ไม่มีใบไหนคุ้ม
+function botBestTr(g, s, need) {
+  const P = g.p[s], now = botPlans(g, s, false)[0].v, seen = new Set();
+  let best = null, gainV = need;
+  for (const c of P.hand) {
+    if (seen.has(c.type + c.lv)) continue;
+    seen.add(c.type + c.lv);
+    for (const t of TYPES.slice().sort(() => Math.random() - 0.5)) {
+      const lv = Math.min(3, c.lv + 1), old = [c.type, c.lv];
+      if (t === c.type && lv === c.lv) continue;
+      c.type = t; c.lv = lv;
+      const v = botPlans(g, s, false)[0].v;
+      c.type = old[0]; c.lv = old[1];
+      if (v - now > gainV) { gainV = v - now; best = { id: c.id, to: t }; }
+    }
+  }
+  return best;
+}
+// การผสมการ์ดบนมือ 1 คู่ที่ทำให้แผนดีขึ้น (ลองผสมจริงแล้วคืนค่า) — null = ไม่มีคู่ไหนคุ้ม
+function botBestMerge(g, s) {
+  const P = g.p[s], H = P.hand, now = botPlans(g, s, false)[0].v;
+  let best = null, gainV = 1e-6;
+  for (const a of H) for (const b of H) {
+    if (a === b || a.type !== b.type || a.lv >= 3 || b.lv >= 3 || a.lv < b.lv) continue;
+    const la = a.lv, lb = b.lv, at = H.indexOf(b), sum = la + lb;
+    a.lv = Math.min(3, sum);
+    if (sum > 3) b.lv = sum - 3; else H.splice(at, 1);
+    const v = botPlans(g, s, false)[0].v;
+    a.lv = la; b.lv = lb;
+    if (sum <= 3) H.splice(at, 0, b);
+    if (v - now > gainV) { gainV = v - now; best = { a: a.id, b: b.id }; }
+  }
+  return best;
+}
+// พลังเต็มแล้ว: เปลี่ยนฟรีให้ครบ (ฟรี เลือกใบที่ดีสุดเสมอ) แล้วผสมการ์ดบนมือจนไม่มีคู่ไหนคุ้ม
+function botAfterMax(g, s, res) {
+  const P = g.p[s];
+  while (P.freeTr > 0) { const best = botBestTr(g, s, -Infinity); if (!best) break; const r = useGauge(g, s, { k: 'ftr', ...best }); if (!r) break; res.push(r); }
+  for (let k = 0; k < 6; k++) { const best = botBestMerge(g, s); if (!best) break; const r = useGauge(g, s, { k: 'merge', ...best }); if (!r) break; res.push(r); }
+  return res;
+}
 function botGauge(g, s) {
   const P = g.p[s], res = [], how = botStyle(g, s).gauge;
   if (how === 'draw') { while (P.gauge > 0) res.push(useGauge(g, s, { k: 'draw' })); return res.filter(Boolean); }
   if (how === 'max' || how === 'mix') {
-    if (P.gauge >= GAUGE_MAX) return [useGauge(g, s, { k: 'max' })].filter(Boolean);
+    if (P.gauge >= GAUGE_MAX) { const r = useGauge(g, s, { k: 'max' }); return r ? botAfterMax(g, s, [r]) : res; }
     if (how === 'max') return res;
   }
   const need = how === 'mix' ? 8 : 1e-6; // mix: เปลี่ยนเฉพาะตอนแผนดีขึ้นชัด ๆ (ไม่งั้นเก็บไว้ใช้พลังเต็ม)
   while (P.gauge >= GAUGE_COST.tr) {
-    const now = botPlans(g, s, false)[0].v, seen = new Set();
-    let best = null, gainV = need;
-    for (const c of P.hand) {
-      if (seen.has(c.type + c.lv)) continue;
-      seen.add(c.type + c.lv);
-      for (const t of TYPES.slice().sort(() => Math.random() - 0.5)) {
-        const lv = Math.min(3, c.lv + 1), old = [c.type, c.lv];
-        if (t === c.type && lv === c.lv) continue;
-        c.type = t; c.lv = lv;
-        const v = botPlans(g, s, false)[0].v;
-        c.type = old[0]; c.lv = old[1];
-        if (v - now > gainV) { gainV = v - now; best = { id: c.id, to: t }; }
-      }
-    }
+    const best = botBestTr(g, s, need);
     if (!best) break;
     res.push(useGauge(g, s, { k: 'tr', ...best }));
   }
-  if (P.gauge >= GAUGE_MAX) res.push(useGauge(g, s, { k: how === 'mix' ? 'max' : 'draw' }));
+  if (P.gauge >= GAUGE_MAX) {
+    if (how === 'mix') { const r = useGauge(g, s, { k: 'max' }); if (r) { res.push(r); botAfterMax(g, s, res); } }
+    else res.push(useGauge(g, s, { k: 'draw' }));
+  }
   return res.filter(Boolean);
 }
 
@@ -3679,7 +3723,7 @@ function renderShield(s, sh, show) {
   ui.shShown[s] = show ? sh : null;
 }
 // เกจใต้แถบ HP (ตี้ 2026-10-22): ลูกสีรุ้ง 3 ลูก + แต้มสะสม (ตั้งรับ x/4 · ดาเมจ x/50) · ของเราในเฟส Action = ปุ่มเปิดเมนูใช้เกจ
-const gaugeUsable = () => { const g = ui.g; return !!g && ui.screen === 'game' && (ui.mode === 'arcade' || ui.mode === 'pvp') && ui.phase === 'action' && !ui.busy && !g.p[ME].lanes && g.p[ME].gauge > 0 && !pvpWaiting(); };
+const gaugeUsable = () => { const g = ui.g; return !!g && ui.screen === 'game' && (ui.mode === 'arcade' || ui.mode === 'pvp') && ui.phase === 'action' && !ui.busy && !g.p[ME].lanes && (g.p[ME].gauge > 0 || unlimitedNow(g, ME)) && !pvpWaiting(); };
 function renderGauge(s) {
   const el = $(`#gauge${s}`), g = ui.g, show = ui.screen === 'game' && !!g && !ui.intro;
   el.hidden = !show;
@@ -3693,7 +3737,7 @@ function renderGauge(s) {
   const orbs = `<span class="orbs" role="img" aria-label="เกจ ${s} ${n}/${GAUGE_MAX}">${[0, 1, 2].map(k => `<i class="gorb${k < n ? ' on' : ''}${k < n && k >= prev ? ' new' : ''}${k >= n && k < prev ? ' spent' : ''}"></i>`).join('')}</span>`;
   const meta = `<span class="gmeta"><span title="การ์ดตั้งรับที่วาง รวมเลเวลครบ ${GAUGE_STACK} = 1 เกจ">${icon('DEF')}${P.gStack}/${GAUGE_STACK}</span><span title="ดาเมจจากการ์ดจู่โจม ครบ ${GAUGE_DMG} = 1 เกจ">${icon('ATK')}${P.gDmg}/${GAUGE_DMG}</span></span>`;
   el.firstElementChild.innerHTML = usable
-    ? `<button type="button" class="gbtn" data-act="gauge" aria-label="ใช้เกจ (มี ${n})">${orbs}<span class="guse">${ui.gmenu ? 'ปิดเมนูเกจ' : 'แตะเพื่อใช้เกจ'}</span></button>`
+    ? `<button type="button" class="gbtn" data-act="gauge" aria-label="ใช้เกจ (มี ${n})">${orbs}<span class="guse">${ui.gmenu ? 'ปิดเมนูเกจ' : unl ? `พลังเต็ม · แตะ: เปลี่ยนฟรี ${P.freeTr || 0} · ผสมการ์ด` : 'แตะเพื่อใช้เกจ'}</span></button>`
     : orbs + (unl ? '<span class="gunl">วางกี่ใบก็ได้</span>' : nogain ? '<span class="gunl">รอบนี้สะสมเกจไม่ได้</span>' : meta);
   ui.gShown[s] = n;
 }
@@ -3717,21 +3761,33 @@ function renderGaugeMenu() {
   el.className = `gmenu side-${ME.toLowerCase()}`;
   el.hidden = false;
   const head = t => `<div class="gm-head"><b>${t}</b><span class="gm-have">มี ${n}/${GAUGE_MAX} เกจ</span><button type="button" class="gm-x" data-act="gaugeClose" aria-label="ปิด">✕</button></div>`;
+  const P = ui.g.p[ME], unl = unlimitedNow(ui.g, ME), free = P.freeTr || 0;
+  const back = '<button type="button" class="gm-back" data-act="gaugeMenu">← กลับ</button>';
   if (m === 'menu') {
-    const opt = (k, title, sub) => `<button type="button" class="gm-opt" data-act="gaugeUse" data-k="${k}"${n >= GAUGE_COST[k] ? '' : ' disabled'}>${coins(GAUGE_COST[k])}<b>${title}</b><small>${sub}</small></button>`;
-    el.innerHTML = head('ใช้เกจ')
-      + opt('draw', 'จั่ว 1 ใบ · 1 เกจ', 'จั่วจากกองขึ้นมือ · มือเต็มแล้ว = สุ่มเลเวลอัปการ์ดบนมือแทน')
-      + opt('tr', 'เปลี่ยนการ์ด · 2 เกจ', 'เลือกการ์ดบนมือ 1 ใบ → เปลี่ยนเป็นชนิดไหนก็ได้ + เลเวล +1 · ใบ Lv3 = ไม่บวกเลเวล ได้จั่ว 1 ใบแทน')
-      + opt('max', 'พลังเต็ม · 3 เกจ', `จั่วจนมือครบ ${HAND_MAX} ใบ → อัปเลเวลการ์ดบนมือทุกใบ +1 → รอบนี้วางกี่ใบก็ได้ · แต่รอบนี้สะสมเกจไม่ได้`);
-  } else if (m === 'tr') {
-    el.innerHTML = head('เปลี่ยนการ์ด') + '<p class="gm-note">แตะการ์ดบนมือที่จะเปลี่ยน · ใบที่วางในแผงแล้วต้องเอาคืนมือก่อน</p><button type="button" class="gm-back" data-act="gaugeMenu">← กลับ</button>';
+    const opt = (k, title, sub, off = n < GAUGE_COST[k]) => `<button type="button" class="gm-opt" data-act="gaugeUse" data-k="${k}"${off ? ' disabled' : ''}>${coins(GAUGE_COST[k])}<b>${title}</b><small>${sub}</small></button>`;
+    el.innerHTML = unl
+      ? head('พลังเต็ม · ฟรีรอบนี้')
+        + opt('ftr', `เปลี่ยนการ์ดฟรี · เหลือ ${free} ครั้ง`, 'เลือกการ์ดบนมือ 1 ใบ → เปลี่ยนเป็นชนิดไหนก็ได้ + เลเวล +1 · ใบ Lv3 = ไม่บวกเลเวล ได้จั่ว 1 ใบแทน', !free)
+        + opt('merge', 'ผสมการ์ดบนมือ', 'การ์ดชนิดเดียวกัน 2 ใบ (ไม่ใช่ Lv3) · Lv1+Lv1 = Lv2 · Lv1+Lv2 = Lv3 · Lv2+Lv2 = Lv3 + Lv1', false)
+        + '<p class="gm-note">รอบนี้วางกี่ใบก็ได้ · แต่สะสมเกจไม่ได้เลย</p>'
+      : head('ใช้เกจ')
+        + opt('draw', 'จั่ว 1 ใบ · 1 เกจ', 'จั่วจากกองขึ้นมือ · มือเต็มแล้ว = สุ่มเลเวลอัปการ์ดบนมือแทน')
+        + opt('tr', 'เปลี่ยนการ์ด · 2 เกจ', 'เลือกการ์ดบนมือ 1 ใบ → เปลี่ยนเป็นชนิดไหนก็ได้ + เลเวล +1 · ใบ Lv3 = ไม่บวกเลเวล ได้จั่ว 1 ใบแทน')
+        + opt('max', 'พลังเต็ม · 3 เกจ', `จั่วจนมือครบ ${HAND_MAX} ใบ → เปลี่ยนการ์ดฟรี ${MAX_FREE_TR} ครั้ง → รอบนี้ผสมการ์ดบนมือได้ + วางกี่ใบก็ได้ · แต่รอบนี้สะสมเกจไม่ได้`);
+  } else if (m === 'tr' || m === 'ftr') {
+    el.innerHTML = head(m === 'ftr' ? `เปลี่ยนการ์ดฟรี · เหลือ ${free}` : 'เปลี่ยนการ์ด') + `<p class="gm-note">แตะการ์ดบนมือที่จะเปลี่ยน · ใบที่วางในแผงแล้วต้องเอาคืนมือก่อน</p>${back}`;
+  } else if (m === 'merge' || m.merge) {
+    const a = m.merge && realCard(m.merge);
+    el.innerHTML = head('ผสมการ์ดบนมือ') + (a
+      ? `<p class="gm-note">ใบแรก: ${INFO[a.type].name} Lv${a.lv} → แตะ ${INFO[a.type].name} อีกใบบนมือ (ไม่ใช่ Lv3) · แตะใบเดิม = ยกเลิก</p>`
+      : '<p class="gm-note">แตะการ์ดใบแรก แล้วแตะใบที่สองชนิดเดียวกัน · Lv1+Lv1 = Lv2 · Lv1+Lv2 = Lv3 · Lv2+Lv2 = Lv3 + Lv1 · ใบที่วางในแผงแล้วต้องเอาคืนมือก่อน</p>') + back;
   } else {
     const c = realCard(m.id);
-    if (!c) { ui.gmenu = 'tr'; renderGaugeMenu(); return; }
+    if (!c) { ui.gmenu = m.k || 'tr'; renderGaugeMenu(); return; }
     const lv = Math.min(3, c.lv + 1);
-    el.innerHTML = head('เปลี่ยนเป็น…') + `<p class="gm-note">${INFO[c.type].name} Lv${c.lv} → เลือกชนิดใหม่ · ${c.lv >= 3 ? 'Lv3 อยู่แล้ว: ไม่บวกเลเวล ได้จั่ว 1 ใบแทน' : `เลเวล +1 เป็น Lv${lv}`}</p>
+    el.innerHTML = head(m.k === 'ftr' ? 'เปลี่ยนฟรีเป็น…' : 'เปลี่ยนเป็น…') + `<p class="gm-note">${INFO[c.type].name} Lv${c.lv} → เลือกชนิดใหม่ · ${c.lv >= 3 ? 'Lv3 อยู่แล้ว: ไม่บวกเลเวล ได้จั่ว 1 ใบแทน' : `เลเวล +1 เป็น Lv${lv}`}</p>
       <div class="gm-types">${TYPES.map(t => `<button type="button" class="gm-type" data-act="gaugeTo" data-k="${t}" aria-label="เปลี่ยนเป็น ${INFO[t].name} Lv${lv}">${cardHTML({ type: t, lv })}<span>${INFO[t].th}</span></button>`).join('')}</div>
-      <button type="button" class="gm-back" data-act="gaugeUse" data-k="tr">← เลือกการ์ดใบอื่น</button>`;
+      <button type="button" class="gm-back" data-act="gaugeUse" data-k="${m.k || 'tr'}">← เลือกการ์ดใบอื่น</button>`;
   }
 }
 function gaugeOpen() {
@@ -3742,13 +3798,25 @@ function gaugeOpen() {
 }
 function gaugeChoose(k) {
   if (!gaugeUsable() || ui.g.p[ME].gauge < GAUGE_COST[k]) return;
-  if (k === 'tr') { ui.gmenu = 'tr'; render(); return; }
+  if (k === 'tr' || k === 'ftr' || k === 'merge') { ui.gmenu = k; render(); return; }
   gaugeDo({ k });
 }
+// แตะการ์ดบนมือตอนเลือกด้วยเกจ: เปลี่ยน (tr / ftr) = เลือกใบแล้วเลือกชนิด · ผสม = ใบแรก แล้วใบที่สองชนิดเดียวกัน
 function gaugeCard(id) {
-  if (ui.gmenu !== 'tr' || !gaugeUsable()) return;
-  if (!realCard(id) || ui.place.some(p => p.id === id)) { sfx.play('miss'); flashHint('เปลี่ยนได้เฉพาะการ์ดบนมือ — ใบที่วางในแผงแล้วต้องเอาคืนมือก่อน'); return; }
-  ui.gmenu = { id };
+  const m = ui.gmenu;
+  if (!gaugeUsable() || !(m === 'tr' || m === 'ftr' || m === 'merge' || (m && m.merge))) return;
+  if (!realCard(id) || ui.place.some(p => p.id === id)) { sfx.play('miss'); flashHint('ใช้ได้เฉพาะการ์ดบนมือ — ใบที่วางในแผงแล้วต้องเอาคืนมือก่อน'); return; }
+  if (m === 'tr' || m === 'ftr') ui.gmenu = { id, k: m };
+  else if (m === 'merge') {
+    if (realCard(id).lv >= 3) { sfx.play('miss'); flashHint('Lv3 ผสมต่อไม่ได้แล้ว'); return; }
+    ui.gmenu = { merge: id };
+  } else if (m.merge === id) ui.gmenu = 'merge';
+  else {
+    const a = realCard(m.merge), b = realCard(id);
+    if (!a || b.type !== a.type || b.lv >= 3) { sfx.play('miss'); flashHint(`ผสมได้เฉพาะ ${a ? INFO[a.type].name : 'ชนิดเดียวกัน'} ที่ไม่ใช่ Lv3`); return; }
+    gaugeDo({ k: 'merge', a: a.id, b: b.id });
+    return;
+  }
   sfx.play('flip');
   render();
 }
@@ -3756,33 +3824,32 @@ function gaugeCard(id) {
 function gaugeDo(op) {
   const g = ui.g;
   if (!gaugeUsable()) return;
-  const had = ui.place.length;
-  if (op.k === 'max') ui.place = [];
   const res = useGauge(g, ME, op);
   if (!res) { sfx.play('miss'); return; }
-  Object.assign(ui, { gmenu: null, undo: [] }); // ใช้เกจแล้วย้อนไม่ได้
+  // ใช้เกจแล้วย้อนไม่ได้ · พลังเต็ม → เปิดเมนูของฟรีต่อ (เปลี่ยนฟรี / ผสม) · ผสมแล้วอยู่โหมดผสมต่อ
+  Object.assign(ui, { gmenu: op.k === 'max' || op.k === 'ftr' ? 'menu' : op.k === 'merge' ? 'merge' : null, undo: [] });
   gaugeFx(ME, res);
-  if (op.k === 'max' && had) setTimeout(() => flashHint('อัปเลเวลทั้งมือแล้ว — การ์ดที่วางไว้กลับขึ้นมือ วางใหม่ได้กี่ใบก็ได้'), 0);
 }
 // แอนิเมชัน + บันทึกการใช้เกจ (เรา / บอท / อีกฝ่ายตอนกด FIGHT! / ผู้ชม) · hide = ไม่บอกรายละเอียดการ์ดของอีกฝ่าย
 function gaugeFx(s, res, delay = 0) {
   const see = s === ME || ui.mode === 'spec';
   const what = res.k === 'draw' ? 'จั่ว 1 ใบ'
-    : res.k === 'tr' ? (see ? `เปลี่ยน ${INFO[res.from.type].name} Lv${res.from.lv} → ${INFO[res.card.type].name} Lv${res.card.lv}` : 'เปลี่ยนการ์ด 1 ใบ')
-    : `พลังเต็ม (จั่ว ${res.got.length} ใบ · อัปเลเวลทั้งมือ · วางกี่ใบก็ได้)`;
-  addLog(`${tagOf(s)} ใช้เกจ ${GAUGE_COST[res.k]} · ${what}`);
+    : res.k === 'tr' || res.k === 'ftr' ? (see ? `เปลี่ยน${res.k === 'ftr' ? 'ฟรี' : ''} ${INFO[res.from.type].name} Lv${res.from.lv} → ${INFO[res.card.type].name} Lv${res.card.lv}` : `เปลี่ยนการ์ด${res.k === 'ftr' ? 'ฟรี' : ''} 1 ใบ`)
+    : res.k === 'merge' ? (see ? `ผสม ${INFO[res.card.type].name} Lv${res.from.a} + Lv${res.from.b} → Lv${res.card.lv}${res.rest ? ' + Lv1' : ''}` : 'ผสมการ์ดบนมือ')
+    : `พลังเต็ม (จั่ว ${res.got.length} ใบ · เปลี่ยนฟรี ${MAX_FREE_TR} ครั้ง · ผสมการ์ดบนมือได้ · วางกี่ใบก็ได้)`;
+  addLog(`${tagOf(s)} ${GAUGE_COST[res.k] ? `ใช้เกจ ${GAUGE_COST[res.k]}` : 'พลังเต็ม'} · ${what}`);
   logOverflow(s, res);
   noteGain(s, res);
   if (see) {
-    if (res.k === 'tr') ui.lvups.set(res.card.id, 0);
+    if (res.card) ui.lvups.set(res.card.id, 0);
     res.all.forEach((c, k) => { if (!ui.lvups.has(c.id)) ui.lvups.set(c.id, k); });
-  } else if (res.k === 'max') ui.oppLvups += 1;
+  } else if (res.k === 'ftr' || res.k === 'merge') ui.oppLvups += 1;
   if (res.k === 'max') { const w = $('#world'); w.classList.remove('gauge-max'); void w.offsetWidth; w.classList.add('gauge-max'); setTimeout(() => w.classList.remove('gauge-max'), 1200); }
   render();
   flyGains({ [s]: res });
   gainFx({ [s]: res });
-  gaugeFloat(s, res.k === 'draw' ? 'ใช้เกจ: จั่ว 1' : res.k === 'tr' ? 'ใช้เกจ: เปลี่ยนการ์ด' : 'พลังเต็ม!', delay);
-  sfx.play(res.k === 'max' ? 'levelup3' : res.k === 'tr' ? 'levelup' : 'draw', delay);
+  gaugeFloat(s, { draw: 'ใช้เกจ: จั่ว 1', tr: 'ใช้เกจ: เปลี่ยนการ์ด', ftr: 'เปลี่ยนการ์ดฟรี', merge: 'ผสมการ์ด', max: 'พลังเต็ม!' }[res.k], delay);
+  sfx.play(res.k === 'max' ? 'levelup3' : res.k === 'draw' ? 'draw' : 'levelup', delay);
 }
 // ได้เกจหลังปะทะช่องหนึ่ง (ตั้งรับครบ 4 · จู่โจมชนะทาง · ดาเมจครบ 50)
 function gaugeGainFx(got) {
@@ -3883,8 +3950,10 @@ function renderHand() {
         const cls = dying ? 'leaving' : up != null ? 'lvup' : arr != null ? 'arrive' : '';
         const usable = canUse && !dying;
         // เลือกการ์ดที่จะเปลี่ยนด้วยเกจ: แตะ = เลือก (ลากไม่ได้ระหว่างนี้) · การ์ดคืนจากคู่ Lv2 ยังไม่อยู่บนมือจริง เปลี่ยนไม่ได้
-        const gmode = ui.gmenu === 'tr' || !!(ui.gmenu && ui.gmenu.id), gpick = usable && gmode && !c.refund, gsel = gmode && ui.gmenu.id === c.id;
-        const act = gpick ? 'gaugeCard' : !usable ? null : ui.phase === 'action' ? 'place' : pickOf(c.id) ? 'unpick' : null;
+        const gm = ui.gmenu, gmode = gm === 'tr' || gm === 'ftr' || gm === 'merge' || !!(gm && (gm.id || gm.merge));
+        const mergeA = gm && gm.merge ? realCard(gm.merge) : null, mergeOk = gm === 'merge' ? c.lv < 3 : mergeA ? c.id === mergeA.id || (c.type === mergeA.type && c.lv < 3) : true;
+        const gpick = usable && gmode && !c.refund && mergeOk, gsel = gmode && !!gm && (gm.id === c.id || gm.merge === c.id);
+        const act = gpick ? 'gaugeCard' : !usable || gmode ? null : ui.phase === 'action' ? 'place' : pickOf(c.id) ? 'unpick' : null;
         const card = cardHTML({ type: c.type, lv: c.lv }, { cid: c.id, fresh: !dying && c.fresh >= g.round, picked: !dying && c.picked === g.round, back: !dying && c.refund === g.round, cls: usable && !gmode ? 'draggable' : '', act, data: c.id });
         return `<div class="hc ${cls}${gpick ? ' gpick' : ''}${gsel ? ' gsel' : ''}"${land != null && !dying ? ` style="--d:${land}ms"` : ''}>${card}${capHTML(c.type, c.lv)}</div>`;
       }).join('')
@@ -3914,8 +3983,11 @@ function renderControls() {
     }
   } else if (ui.phase === 'action') {
     const n = ui.place.length, need = needPlace(), gn = g.p[ME].gauge;
-    hint = ui.gmenu === 'tr' ? 'แตะการ์ดบนมือที่จะเปลี่ยนด้วยเกจ'
-      : unlMe() ? `พลังเต็ม: วางกี่ใบก็ได้ (อย่างน้อย ${need}) · ตอนนี้ ${n} ใบ · ซ้อนในช่องได้ถึง Lv3 · กด FIGHT! เมื่อพร้อม`
+    const gm = ui.gmenu;
+    hint = gm === 'tr' || gm === 'ftr' ? 'แตะการ์ดบนมือที่จะเปลี่ยน'
+      : gm === 'merge' ? 'แตะการ์ดใบแรกที่จะผสม'
+      : gm && gm.merge ? 'แตะการ์ดใบที่สองชนิดเดียวกัน (แตะใบเดิม = ยกเลิก)'
+      : unlMe() ? `พลังเต็ม: วางกี่ใบก็ได้ (อย่างน้อย ${need}) · ตอนนี้ ${n} ใบ · แตะลูกเกจ = เปลี่ยนฟรี ${g.p[ME].freeTr || 0} ครั้ง / ผสมการ์ดบนมือ · กด FIGHT! เมื่อพร้อม`
       : n < need ? `แตะหรือลากการ์ดลงช่อง (${n}/${need}) · ลากทับชนิดเดียวกันในแผง = เลเวลอัป (Lv2 + Lv2 ได้ Lv1 คืน) · ต่างชนิด = สลับ · แตะการ์ดในแผงเพื่อเอาคืน` : 'ครบแล้ว — กด FIGHT! เพื่อเปิดปะทะ · ยังลากสลับ / ซ้อนในแผงได้';
     if (gn && !ui.gmenu) hint += ` · มีเกจ ${gn} — แตะลูกเกจใต้แถบ HP เพื่อใช้`;
     main = `<button type="button" class="btn primary cta" data-act="confirmAction"${n >= need ? '' : ' disabled'}>FIGHT!</button>`;
@@ -4036,7 +4108,7 @@ function rulesListHTML() {
     <li><b>มือว่าง</b> — โดน Attack ทอยติด = ทิ้งเท่าที่มี <b>ไม่เสีย HP</b> · <b>ค่า Ultimate</b> ทิ้งไม่ครบ = เสีย ${EMPTY_PENALTY} HP ต่อใบที่ขาด แต่ลด HP ต่ำกว่า ${PEN_FLOOR} ไม่ได้ — มือว่างทำให้แพ้ไม่ได้ · มีชิลด์ = หักชิลด์ก่อน</li>
     <li><b>เก็บการ์ด</b> — แตะหรือลากการ์ดกองกลางเข้ามือ = เข้าขวาสุด · มือเต็ม ${HAND_MAX} ใบแล้วเก็บ = เหมือนจั่ว: สุ่มเลเวลอัปการ์ดบนมือ 1 ใบแทน (สุ่มตอนกด PICK UP ไม่รู้ล่วงหน้าว่าใบไหน) · <b>เปลี่ยนใจ</b>: ก่อนกด PICK UP แตะหรือลากใบที่เพิ่งเก็บ (ป้ายแดง "เก็บ") กลับกองกลางได้</li>
     <li><b>วางการ์ด</b> — แตะการ์ดบนมือ = ลงช่องว่างถัดไป · ลาก = ลงช่องที่ต้องการ · <b>เลเวลอัป</b> = ลากทับการ์ดชนิดเดียวกันในแผงเท่านั้น (สูงสุด Lv3) · <b>Lv2 + Lv2</b> = Lv3 + ได้การ์ด Lv1 ชนิดเดียวกันคืนขึ้นมือทันที (วางต่อช่องอื่นได้) · ลากทับต่างชนิด = สลับ (ในแผง และมือ ↔ แผง) · <b>บนมือรวมเลเวลไม่ได้</b> ลากทับกัน = สลับตำแหน่ง · วางชนิดเดียวกันไว้คนละช่องไม่รวม · ช่องว่างไม่มีอะไรกัน การ์ดอีกฝ่ายเข้าเต็ม ๆ</li>
-    <li><b>เกจ (ลูกสีรุ้งใต้แถบ HP · สูงสุด ${GAUGE_MAX})</b> — ได้เกจเมื่อ: การ์ดตั้งรับ (Defence/Dodge) ที่วางรวมเลเวลครบ ${GAUGE_STACK} · การ์ดจู่โจมทำดาเมจสะสมครบ ${GAUGE_DMG} (นับรวมที่ชิลด์รับ) — สะสมข้ามรอบ เกจเต็มแล้วแต้มสะสมหาย · <b>ใช้ในเฟส Action</b> (แตะลูกเกจ): 1 เกจ = จั่ว 1 ใบ · 2 เกจ = เปลี่ยนการ์ดบนมือ 1 ใบเป็นชนิดไหนก็ได้ + เลเวล +1 (ใบ Lv3 = จั่ว 1 ใบแทน) · 3 เกจ (พลังเต็ม) = จั่วจนมือครบ ${HAND_MAX} → อัปเลเวลการ์ดบนมือทุกใบ +1 → รอบนั้นวางกี่ใบก็ได้ แต่รอบนั้นสะสม stack / ดาเมจ / เกจ ไม่ได้เลย · ใช้แล้วย้อนไม่ได้ · ทุกจั่วจากเกจ มือเต็ม = สุ่มเลเวลอัปแทน</li>
+    <li><b>เกจ (ลูกสีรุ้งใต้แถบ HP · สูงสุด ${GAUGE_MAX})</b> — ได้เกจเมื่อ: การ์ดตั้งรับ (Defence/Dodge) ที่วางรวมเลเวลครบ ${GAUGE_STACK} · การ์ดจู่โจมทำดาเมจสะสมครบ ${GAUGE_DMG} (นับรวมที่ชิลด์รับ) — สะสมข้ามรอบ เกจเต็มแล้วแต้มสะสมหาย · <b>ใช้ในเฟส Action</b> (แตะลูกเกจ): 1 เกจ = จั่ว 1 ใบ · 2 เกจ = เปลี่ยนการ์ดบนมือ 1 ใบเป็นชนิดไหนก็ได้ + เลเวล +1 (ใบ Lv3 = จั่ว 1 ใบแทน) · 3 เกจ (พลังเต็ม) = จั่วจนมือครบ ${HAND_MAX} (ครบแล้วไม่จั่ว) → เปลี่ยนการ์ดฟรี ${MAX_FREE_TR} ครั้ง (ชนิดไหนก็ได้ + เลเวล +1) → รอบนั้นผสมการ์ดบนมือได้ (ชนิดเดียวกัน · Lv1+Lv1 = Lv2 · Lv1+Lv2 = Lv3 · Lv2+Lv2 = Lv3 + Lv1) และวางกี่ใบก็ได้ แต่รอบนั้นสะสม stack / ดาเมจ / เกจ ไม่ได้เลย · ใช้แล้วย้อนไม่ได้ · ทุกจั่วจากเกจ มือเต็ม = สุ่มเลเวลอัปแทน</li>
     <li><b>บอท (ARCADE)</b> — สุ่มนิสัยทุกเกม: ${PERSONAS.map(k => BOT_STYLES[k].th).join(' · ')} · เปลี่ยนแผนกลางเกมได้ (ตามหลังมาก = บุก · นำมาก = ตั้งรับ · บางรอบเปลี่ยนเฉย ๆ ให้เดายาก) · ไม่แอบดูมือเรา แต่ "อ่านทาง" จำการ์ดที่เราเปิดแล้ว · เฉลยนิสัยตอนจบเกม</li>
     <li><b>UNDO</b> (ข้างปุ่ม PICK UP / FIGHT! หรือ Ctrl+Z) — ย้อนการเก็บ วาง ซ้อน สลับ ทีละขั้น จนกว่าจะกดยืนยัน</li>
     <li><b>แผง ${OPP} (อีกฝ่าย)</b> — คว่ำครบ 3 ช่องเสมอ ไม่บอกว่าช่องไหนมีการ์ด ว่าง หรือซ้อนกี่ใบ จนกว่าจะเปิดปะทะ</li>
@@ -4085,7 +4157,7 @@ document.addEventListener('click', e => {
     case 'gaugeMenu': if (gaugeUsable()) { ui.gmenu = 'menu'; render(); } break;
     case 'gaugeUse': gaugeChoose(t.dataset.k); break;
     case 'gaugeCard': gaugeCard(i); break;
-    case 'gaugeTo': if (ui.gmenu && ui.gmenu.id) gaugeDo({ k: 'tr', id: ui.gmenu.id, to: t.dataset.k }); break;
+    case 'gaugeTo': if (ui.gmenu && ui.gmenu.id) gaugeDo({ k: ui.gmenu.k || 'tr', id: ui.gmenu.id, to: t.dataset.k }); break;
     case 'nextRound': if (ui.mode === 'pvp') pvpReadyNext(); else nextRound(); break;
     case 'toStart': toStart('start'); break;
     case 'detail': ui.detail = i; render(); break;
@@ -4149,7 +4221,7 @@ document.addEventListener('keydown', e => {
    vdo = รอบที่เรากำลังดู VDO ฉากปะทะอยู่ (อีกฝ่ายหยุดนับเวลารอ) — ไม่มี = ไม่ได้ดู
    t0 = เวลาเริ่มแมตช์ (Date.now ของเรา) — ผู้ชมที่เข้ากลางเกมใช้ตั้งนาฬิกาแมตช์ · แสดงผลเท่านั้น
    inp เก็บทั้งแมตช์ (ผู้ชมที่เข้ากลางเกมย้อนคำนวณจากรอบ 1) · ผู้ชม: { watch: mid } อย่างเดียว ไม่ส่งอะไรให้ผู้เล่น */
-const PVP_V = 20; // เปลี่ยนกติกา/เอนจินเมื่อไหร่ต้องเพิ่มเลขนี้ — คนละเวอร์ชันจะไม่ถูกจับคู่ (เล่นคนละกติกา = ผลเพี้ยน) · 4 = Fight Phase เป็น VDO (ยาวขึ้นมาก + presence.vdo) · 5 = Dodge Lv3 มีเพดาน HP 10 + HP สูงสุด 100 → 150 (ตี้ 2026-10-22) · 6 = Lv2 + Lv2 คืนการ์ด Lv1 (validLock รับ id การ์ดคืน) · 7 = เกจ (การวางส่ง gauge ops ไปด้วย · newGame สุ่ม gseed) · 8 = Attack ทอยให้อีกฝ่ายทิ้งการ์ด (rollClash ใช้ตัวสุ่มเพิ่ม) · 9 = Dodge เจอ Ultimate หลบ 100% + Lv2-3 อีกฝ่ายทิ้ง/เสียเกจ · 10 = ชิลด์ (Defence) + Ultimate ใหม่ + เอาเกจชนะทางออก · 11 = Ultimate ดาเมจ 20/40/60 · 12 = Attack เจอ Defence ไม่ทอยทิ้ง (ตัวสุ่มหลักใช้น้อยลง) · 13 = มือว่างเสีย HP เฉพาะค่า Ultimate (Attack / Dodge บังคับทิ้งไม่เสีย HP) · 14 = Defence ชนะทาง Attack ชิลด์เพิ่ม 5/10/15 · 15 = รอบที่ใช้ 3 เกจ สะสมเกจไม่ได้ · 16 = ค่าจากตาราง: ดาเมจเพิ่มชนะทาง Attack/Ultimate 5/10/15 + มือว่าง 15 HP · 17 = Dodge หลบได้เฉพาะ Ultimate · Attack ไม่มีลดหลบ (ตัวสุ่มใช้น้อยลง) + มือว่างกลับเป็น 10 HP · 18 = Attack ดาเมจ 10/25/40 · 19 = Defence ชิลด์ 10/25/40 · 20 = Dodge จั่ว 1 + ขโมยการ์ด 0/1/2 (ตัวสุ่มหลักใช้ตอนขโมย) · เลิกทิ้ง/เสียเกจตอนเจอ Ultimate
+const PVP_V = 21; // เปลี่ยนกติกา/เอนจินเมื่อไหร่ต้องเพิ่มเลขนี้ — คนละเวอร์ชันจะไม่ถูกจับคู่ (เล่นคนละกติกา = ผลเพี้ยน) · 4 = Fight Phase เป็น VDO (ยาวขึ้นมาก + presence.vdo) · 5 = Dodge Lv3 มีเพดาน HP 10 + HP สูงสุด 100 → 150 (ตี้ 2026-10-22) · 6 = Lv2 + Lv2 คืนการ์ด Lv1 (validLock รับ id การ์ดคืน) · 7 = เกจ (การวางส่ง gauge ops ไปด้วย · newGame สุ่ม gseed) · 8 = Attack ทอยให้อีกฝ่ายทิ้งการ์ด (rollClash ใช้ตัวสุ่มเพิ่ม) · 9 = Dodge เจอ Ultimate หลบ 100% + Lv2-3 อีกฝ่ายทิ้ง/เสียเกจ · 10 = ชิลด์ (Defence) + Ultimate ใหม่ + เอาเกจชนะทางออก · 11 = Ultimate ดาเมจ 20/40/60 · 12 = Attack เจอ Defence ไม่ทอยทิ้ง (ตัวสุ่มหลักใช้น้อยลง) · 13 = มือว่างเสีย HP เฉพาะค่า Ultimate (Attack / Dodge บังคับทิ้งไม่เสีย HP) · 14 = Defence ชนะทาง Attack ชิลด์เพิ่ม 5/10/15 · 15 = รอบที่ใช้ 3 เกจ สะสมเกจไม่ได้ · 16 = ค่าจากตาราง: ดาเมจเพิ่มชนะทาง Attack/Ultimate 5/10/15 + มือว่าง 15 HP · 17 = Dodge หลบได้เฉพาะ Ultimate · Attack ไม่มีลดหลบ (ตัวสุ่มใช้น้อยลง) + มือว่างกลับเป็น 10 HP · 18 = Attack ดาเมจ 10/25/40 · 19 = Defence ชิลด์ 10/25/40 · 20 = Dodge จั่ว 1 + ขโมยการ์ด 0/1/2 (ตัวสุ่มหลักใช้ตอนขโมย) · เลิกทิ้ง/เสียเกจตอนเจอ Ultimate · 21 = 3 เกจใหม่: จั่วครบมือ + เปลี่ยนฟรี 2 + ผสมการ์ดบนมือ (op ftr / merge)
 const PVP_SEC = 60, PVP_CUT = 30, PVP_GONE_MS = 8000, PVP_NEXT_MS = 10000, PVP_WAIT_MS = 90000, VDO_HOLD_MS = 240000;
 // ที่ไหนก็ได้นอก claude.ai (เช่น GitHub Pages): ส่ง presence ผ่าน MQTT broker สาธารณะ 3 เจ้าพร้อมกัน ไม่ต้องล็อกอิน · เจ้าไหนล่มก็ยังคุยกันได้
 // บน claude.ai ต่อข้างนอกไม่ได้ (CSP connect-src 'self' + webrtc block) → ใช้ room ของ claude ได้เฉพาะคนในองค์กรเดียวกัน
