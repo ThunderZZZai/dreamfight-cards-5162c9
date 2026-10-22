@@ -68,6 +68,17 @@ body:not(.portrait) #rotateHint{display:none}
 .hp-trail.loss{background:#fff1bf} .hp-trail.gain{background:var(--heal)}
 @keyframes trail{0%,55%{opacity:1}100%{opacity:0}}
 .hpbar.hit{animation:barHit calc(.5s*var(--spd)) ease}
+/* ชิลด์ (ตี้ 2026-10-22): หลอดสีขาวเล็ก ๆ เหนือแถบ HP · ยาวตามชิลด์ / SHIELD_MAX · ตัวเลขข้างป้ายชื่อฝั่ง */
+.shbar{position:absolute;top:84px;height:7px;overflow:hidden;background:rgba(255,255,255,.06)}
+.shbar.red{left:324px;width:516px;transform:skewX(39.4deg)} .shbar.blue{left:1081px;width:516px;transform:skewX(-39.4deg)}
+.sh-fill{position:absolute;top:0;bottom:0;width:0;background:linear-gradient(180deg,#ffffff,#d9e4f5);box-shadow:0 0 10px rgba(255,255,255,.9);transition:width calc(.45s*var(--spd)) ease}
+.shbar.red .sh-fill{left:0} .shbar.blue .sh-fill{right:0}
+.shbar.flash{animation:shFlash calc(.6s*var(--spd)) ease}
+@keyframes shFlash{30%{background:rgba(255,255,255,.55);box-shadow:0 0 18px #fff}}
+.shnum{position:absolute;top:52px;display:flex;align-items:center;gap:5px;font-family:var(--font-disp);font-weight:700;font-size:20px;color:#fff;text-shadow:0 0 8px rgba(255,255,255,.7),0 1px 0 #000;pointer-events:none;white-space:nowrap}
+.shnum.red{left:446px} .shnum.blue{right:446px}
+.shnum svg{width:18px;height:18px}
+.hp-float.shield{color:#fff;text-shadow:0 0 10px rgba(255,255,255,.9),0 3px 0 rgba(0,0,0,.6)}
 @keyframes barHit{25%{filter:brightness(2.4)}}
 .hpbar.healed{animation:barHeal calc(.7s*var(--spd)) ease}
 @keyframes barHeal{30%{filter:brightness(1.8) drop-shadow(0 0 10px var(--heal))}}
@@ -639,6 +650,9 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
       <div class="tab blue">BLUE <small>บอท</small></div>
       <div class="hpbar red" id="barRed" role="img" aria-label="HP ของ RED"><div class="hp-fill"></div></div>
       <div class="hpbar blue" id="barBlue" role="img" aria-label="HP ของ BLUE"><div class="hp-fill"></div></div>
+      <div class="shbar red" id="shRED" role="img" aria-label="ชิลด์ของ RED"><div class="sh-fill"></div></div>
+      <div class="shbar blue" id="shBLUE" role="img" aria-label="ชิลด์ของ BLUE"><div class="sh-fill"></div></div>
+      <div class="shnum red" id="shnRED" hidden></div><div class="shnum blue" id="shnBLUE" hidden></div>
       <div class="plate red"><b id="hpRed">150</b></div>
       <div class="plate blue"><b id="hpBlue">150</b></div>
       <div class="hp-anchor red" id="anchorRed"></div>
@@ -772,32 +786,39 @@ const INFO = {
   DEF:   { name: 'Defence',  th: 'ป้องกัน',  off: false, beats: 'ATK' },
   DODGE: { name: 'Dodge',    th: 'หลบหลีก',  off: false, beats: 'ULT' },
 };
-// ค่าต่อเลเวล (Lv1, Lv2, Lv3): dmg ดาเมจ · guard ลดดาเมจ · evade โอกาสไม่รับดาเมจ
+// ค่าต่อเลเวล (Lv1, Lv2, Lv3): dmg ดาเมจ · shield ชิลด์ (รับดาเมจแทน HP) · evade โอกาสไม่รับดาเมจ
 // brk บังคับอีกฝ่ายทิ้งการ์ดสุ่ม · cost ทิ้งการ์ดสุ่มบนมือเรา · draw จั่วเพิ่ม
 // ตอนเจอคู่ปราบ: pierce ลดโอกาสหลบของอีกฝ่าย · bonus ดาเมจเพิ่ม (บวกก่อนหักค่ากัน/ทอยหลบ) · heal ได้ HP คืน · save ค่า Ultimate ทิ้งน้อยลง
 const LV = {
   ATK:   [{ dmg: 10, brkP: 0.5, brkN: 1, pierce: 0.25, bonus: 10 }, { dmg: 20, brkP: 0.55, brkN: 2, pierce: 0.50, bonus: 15 }, { dmg: 35, brkP: 0.6, brkN: 3, pierce: 0.75, bonus: 20 }],
-  ULT:   [{ dmg: 20, cost: 1, bonus: 10, save: 1 }, { dmg: 40, cost: 2, bonus: 15, save: 1 }, { dmg: 60, cost: 3, bonus: 20, save: 1 }],
-  DEF:   [{ guard: 5, brk: 1, heal: 10 }, { guard: 15, brk: 2, heal: 15 }, { guard: 25, brk: 3, heal: 20 }],
+  // Ultimate + Defence (ตี้ 2026-10-22): Ultimate 15/30/50 ทิ้งมือตัวเอง 1/2/3 · ชนะทาง Defence ดาเมจ +10/20/30
+  // Defence = ได้ชิลด์ 10/20/30 (ไม่บังคับอีกฝ่ายทิ้งแล้ว) · ชนะทาง Attack = ฝั่ง Defence จั่ว 1/2/3
+  ULT:   [{ dmg: 15, cost: 1, bonus: 10 }, { dmg: 30, cost: 2, bonus: 20 }, { dmg: 50, cost: 3, bonus: 30 }],
+  DEF:   [{ shield: 10, drawVs: 1 }, { shield: 20, drawVs: 2 }, { shield: 30, drawVs: 3 }],
   // Dodge เจอ Ultimate (ตี้ 2026-10-22): หลบ 100% ทุกเลเวล · Lv2 อีกฝ่ายทิ้ง 1 + เสีย 1 เกจ · Lv3 ทิ้ง 2 + เสีย 2 เกจ
   DODGE: [{ evade: 0.5, draw: 1, evadeVs: 1 }, { evade: 0.75, draw: 2, evadeVs: 1, brkVs: 1, gaugeVs: 1 }, { evade: 1, draw: 3, evadeVs: 1, brkVs: 2, gaugeVs: 2 }],
 };
 const HP_MAX = 150, COPIES = 10, DRAW_N = 2, FIRST_DRAW_N = 3, MARKET_N = 5, PICK_N = 2, SLOT_N = 3;
 const drawCount = round => (round === 1 ? FIRST_DRAW_N : DRAW_N); // รอบแรกจั่ว 3 · รอบต่อไปจั่ว 2
 const HAND_MAX = 6;        // มือเต็มแล้ว การ์ดที่ได้เพิ่มกลายเป็นสุ่มเลเวลอัปการ์ดบนมือ 1 ใบแทน
+// ชิลด์ (ตี้ 2026-10-22): หลอดสีขาวเหนือแถบ HP · ดาเมจทุกชนิด (การ์ด + มือว่าง) หักชิลด์ก่อน เหลือค่อยหัก HP
+// อยู่ข้ามรอบ สะสมได้ไม่เกิน SHIELD_MAX (สมมุติฐานของ V — ตี้ ยังไม่ได้กำหนดเพดาน/การหายตอนจบรอบ)
+const SHIELD_MAX = 50;
 const EMPTY_PENALTY = 10;  // ถูกบังคับทิ้งแต่มือว่าง: เสีย HP ต่อใบที่ทิ้งไม่ได้
 const PEN_FLOOR = 10;      // ...แต่ลด HP ให้ต่ำกว่านี้ไม่ได้ทุกกรณี (Defence / Attack / Dodge Lv2-3 บังคับ · ค่า Ultimate) — มือว่างทำให้ตายไม่ได้ (ตี้ 2026-10-22 · เดิม Dodge Lv3 ไม่มีเพดาน)
 const SIDES = ['RED', 'BLUE'];
 const FOE = { RED: 'BLUE', BLUE: 'RED' };
 const stat = c => LV[c.type][c.lv - 1];
 
-const BASE_KEYS = { ATK: ['dmg', 'brkP', 'brkN'], ULT: ['dmg', 'cost'], DEF: ['guard', 'brk', 'draw'], DODGE: ['evade', 'draw', 'brk'] };
-const COUNTER_KEYS = ['pierce', 'bonus', 'heal', 'evadeVs', 'brkVs', 'gaugeVs', 'save'];
+const BASE_KEYS = { ATK: ['dmg', 'brkP', 'brkN'], ULT: ['dmg', 'cost'], DEF: ['shield'], DODGE: ['evade', 'draw', 'brk'] };
+const COUNTER_KEYS = ['pierce', 'bonus', 'heal', 'evadeVs', 'brkVs', 'gaugeVs', 'drawVs', 'save'];
 const pctOf = p => `${Math.round(p * 100)}%`;
 const beatsName = t => INFO[INFO[t].beats].name;
 const EFF = {
   dmg:    { short: v => `ดาเมจ ${v}`,       label: 'ดาเมจ ',       fmt: v => v },
   guard:  { short: v => `กัน ${v}`,         label: 'กัน ',         fmt: v => v },
+  shield: { short: v => `ชิลด์ +${v}`,      label: 'ชิลด์ +',      fmt: v => v },
+  drawVs: { short: v => `จั่ว ${v}`,         label: 'จั่ว ',        fmt: v => v, unit: ' ใบ' },
   evade:  { short: v => `หลบ ${pctOf(v)}`,  label: 'หลบ ',        fmt: v => Math.round(v * 100), unit: '%' },
   brk:    { short: v => `อีกฝ่ายทิ้ง ${v}`,  label: 'อีกฝ่ายทิ้ง ',  fmt: v => v, unit: ' ใบ' },
   // Attack (ตี้ 2026-10-22): ทอยให้อีกฝ่ายทิ้งการ์ด 1 ใบ ทอย brkN ครั้ง ครั้งละ brkP
@@ -862,7 +883,7 @@ function freshDeck() {
 function newGame(log = () => {}) {
   cardSeq = 0; gotSeq = 0; // เริ่มนับ id ใหม่ทุกเกม — PVP ทั้งสองเครื่องต้องได้ id การ์ดตรงกัน
   // gauge = เกจที่มี · gStack / gDmg = แต้มสะสมไปหาเกจถัดไป · gOps = การใช้เกจในรอบ gRound (PVP ส่งไปกับการวาง) · unl = รอบที่ใช้ 3 เกจ (วางกี่ใบก็ได้)
-  const side = () => ({ hp: HP_MAX, hand: [], slots: [[], [], []], lanes: null, picks: [], gauge: 0, gStack: 0, gDmg: 0, gOps: [], gRound: 0, gNew: 0, unl: 0 });
+  const side = () => ({ hp: HP_MAX, shield: 0, hand: [], slots: [[], [], []], lanes: null, picks: [], gauge: 0, gStack: 0, gDmg: 0, gOps: [], gRound: 0, gNew: 0, unl: 0 });
   const g = { round: 0, deck: freshDeck(), market: [], p: { RED: side(), BLUE: side() }, log };
   g.gseed = Math.floor(rand() * 4294967296); // ตัวสุ่มของเกจ (PVP: ได้ค่าเดียวกันทั้งสองเครื่อง)
   // บอท: style = นิสัยที่ใช้รอบนี้ · persona = นิสัยประจำตัว (ARCADE สุ่มตอนเริ่มเกม) · styleLog = [รอบ, นิสัย] ที่เปลี่ยน
@@ -950,7 +971,7 @@ function stackLanes(stacks) {
 }
 
 /* ── เกจ (ตี้ 2026-10-22 · ปรับด้วยตัวจำลอง sim/gauge_v2.py) ──
-   ได้เกจ: การ์ดตั้งรับที่วาง (Defence/Dodge) รวมเลเวลครบ 4 = 1 เกจ · การ์ดจู่โจมชนะทาง = 1 เกจ ต่อช่อง · การ์ดจู่โจมทำดาเมจสะสมครบ 50 = 1 เกจ
+   ได้เกจ: การ์ดตั้งรับที่วาง (Defence/Dodge) รวมเลเวลครบ 4 = 1 เกจ · การ์ดจู่โจมทำดาเมจสะสมครบ 50 = 1 เกจ (กฎชนะทาง +1 เกจ เอาออก 2026-10-22)
    เกจสูงสุด 3 (เต็มแล้วแต้มสะสมทิ้ง) · ใช้ในเฟส Action ก่อนกด FIGHT!:
    1 เกจ = จั่ว 1 ใบ · 2 เกจ = เปลี่ยนการ์ดบนมือ 1 ใบเป็นชนิดไหนก็ได้ + เลเวล +1 (ใบ Lv3 = ไม่บวกเลเวล จั่ว 1 ใบแทน)
    3 เกจ = จั่วจนมือครบ 6 ใบ → อัปเลเวลการ์ดบนมือทุกใบ +1 (ใบ Lv3 = จั่ว 1 ใบแทน) → รอบนั้นวางกี่ใบก็ได้
@@ -966,7 +987,7 @@ function gaugeFill(P, key, need) {
   if (P.gauge >= GAUGE_MAX) P[key] = 0;
   return n;
 }
-// หลังปะทะช่อง r.i จบ: ตั้งรับที่วางในช่องนี้ → stack · จู่โจมชนะทาง +1 · ดาเมจจากการ์ดจู่โจม → สะสม · คืน { RED: n, BLUE: n } ที่ได้
+// หลังปะทะช่อง r.i จบ: ตั้งรับที่วางในช่องนี้ → stack · ดาเมจจากการ์ดจู่โจม → สะสม · คืน { RED: n, BLUE: n } ที่ได้
 function gaugeLane(g, r) {
   const got = {};
   for (const s of SIDES) {
@@ -974,8 +995,7 @@ function gaugeLane(g, r) {
     let n = 0;
     P.gStack += (P.slots[r.i] || []).reduce((a, x) => a + (INFO[x.type].off ? 0 : x.lv), 0);
     n += gaugeFill(P, 'gStack', GAUGE_STACK);
-    if (c && INFO[c.type].off) {
-      if (isCounter(c, r[FOE[s]].card) && P.gauge < GAUGE_MAX) { P.gauge++; n++; }
+    if (c && INFO[c.type].off) { // ตี้ 2026-10-22: เอากฎ "การ์ดจู่โจมชนะทาง +1 เกจ" ออก · ดาเมจนับรวมที่ชิลด์รับ
       P.gDmg += r[FOE[s]].taken || 0;
       n += gaugeFill(P, 'gDmg', GAUGE_DMG);
     }
@@ -1058,8 +1078,8 @@ function rollClash(g, i) {
     const o = r[s], mine = card[s] ? stat(card[s]) : {}, foe = card[FOE[s]];
     o.raw = rawVs(foe, card[s]);
     o.bonus = o.raw - dmgOf(foe);
-    o.taken = o.raw;
-    if (o.raw && mine.guard) { o.guard = mine.guard; o.taken = Math.max(0, o.raw - mine.guard); }
+    o.taken = o.raw; // ดาเมจที่เข้าตัว (หลังทอยหลบ) — หักชิลด์ก่อนใน applyDamage
+    o.shieldGain = mine.shield || 0;
     if (o.raw && mine.evade) {
       o.pierce = pierceOf(foe, card[s]);
       o.evBase = isCounter(card[s], foe) && mine.evadeVs ? mine.evadeVs : mine.evade; // Dodge เจอ Ultimate หลบง่ายขึ้น
@@ -1082,8 +1102,15 @@ function rollClash(g, i) {
 // sides = ฝั่งที่จะหัก (หน้าจอ VDO หักทีละฝั่งได้ — แต่ละฝั่งคิดจาก HP ของตัวเอง ผลรวมจึงเท่ากับหักพร้อมกัน)
 function applyDamage(g, r, sides = SIDES) {
   for (const s of sides) {
-    const P = g.p[s], o = r[s], hit = P.hp - o.taken;
+    const P = g.p[s], o = r[s];
     o.hp0 = P.hp;
+    o.sh0 = P.shield;
+    if (o.shieldGain) P.shield = Math.min(SHIELD_MAX, P.shield + o.shieldGain); // Defence ช่องนี้: ได้ชิลด์ก่อนรับดาเมจ
+    o.absorbed = Math.min(P.shield, o.taken);
+    P.shield -= o.absorbed;
+    o.hpLoss = o.taken - o.absorbed;
+    o.sh1 = P.shield;
+    const hit = P.hp - o.hpLoss;
     P.hp = o.heal ? Math.max(hit, Math.min(HP_MAX, hit + o.heal)) : hit;
     o.healed = P.hp - hit;
     o.hp1 = P.hp; // HP หลังจบช่องนี้ (อัปเดตอีกทีถ้าเสีย HP เพราะมือว่าง)
@@ -1095,9 +1122,11 @@ function forceDiscard(g, s, n, floor = PEN_FLOOR) {
   const P = g.p[s], cards = [];
   while (cards.length < n && P.hand.length) cards.push(P.hand.splice(Math.floor(rand() * P.hand.length), 1)[0]);
   const want = (n - cards.length) * EMPTY_PENALTY;
-  const pen = Math.max(0, Math.min(want, P.hp - floor));
+  const absorbed = Math.min(P.shield, want); // ดาเมจทุกชนิดหักชิลด์ก่อน
+  P.shield -= absorbed;
+  const pen = Math.max(0, Math.min(want - absorbed, P.hp - floor));
   P.hp -= pen;
-  return { cards, pen, want };
+  return { cards, pen, want, absorbed };
 }
 // ทิ้งก่อน (Defence บังคับอีกฝ่าย แล้วค่อยค่า Ultimate) แล้วค่อยจั่ว — ใบที่จั่วได้ใช้รอบหน้า
 function applyCards(g, r) {
@@ -1122,7 +1151,10 @@ function applyCards(g, r) {
     r[s].saved = st(s).cost - n;
     if (n) { r[s].paid = forceDiscard(g, s, n, PEN_FLOOR); any = true; }
   }
-  for (const s of SIDES) if (st(s).draw) { r[s].drew = gain(g, s, fromDeck(g, st(s).draw, g.round + 1)); any = true; }
+  for (const s of SIDES) {
+    const n = (st(s).draw || 0) + (isCounter(r[s].card, r[FOE[s]].card) ? st(s).drawVs || 0 : 0); // Dodge จั่วทุกครั้ง · Defence ชนะทาง Attack จั่ว
+    if (n) { r[s].drew = gain(g, s, fromDeck(g, n, g.round + 1)); any = true; }
+  }
   for (const s of SIDES) r[s].hp1 = g.p[s].hp;
   return any;
 }
@@ -1178,7 +1210,7 @@ const BOT_STYLES = {
   EVEN:   { th: 'สมดุล', note: 'เก็บทุกชนิดให้ครบ วางหลายชนิดในตาเดียว', pick: () => ({ ULT: 3.8, ATK: 3.9, DEF: 3.2, DODGE: 3.2 }), have: 0, lean: () => 0, kinds: 1, gauge: 'tr' },
   READ:   { th: 'อ่านทาง', note: 'จำว่าเราชอบวางอะไร แล้วเก็บ/วางตัวที่ชนะทาง', pick: (g, s) => { const f = g.seen[FOE[s]], n = TYPES.reduce((a, t) => a + f[t], 0) || 1, w = { ULT: 3.4, ATK: 3.6, DEF: 2.8, DODGE: 2.8 }; for (const t of TYPES) w[counterOf(t)] += 3 * f[t] / n; return w; },
             have: 0.6, lean: (g, s, t) => { const f = g.seen[FOE[s]], n = TYPES.reduce((a, x) => a + f[x], 0); return n ? 12 * f[INFO[t].beats] / n : 0; }, kinds: 0, gauge: 'tr' },
-  GAMBLE: { th: 'สายอัลติ', note: 'สะสม Ultimate ซ้อนให้เลเวลสูง เสี่ยงแต่แรง', pick: () => ({ ULT: 4.8, ATK: 3.2, DEF: 2, DODGE: 2.4 }), have: 1, lean: (g, s, t) => (t === 'ULT' ? 2.5 : 0), kinds: 0, gauge: 'max' },
+  GAMBLE: { th: 'สายอัลติ', note: 'สะสม Ultimate ซ้อนให้เลเวลสูง เสี่ยงแต่แรง', pick: () => ({ ULT: 4.3, ATK: 3.6, DEF: 2.6, DODGE: 2.6 }), have: 0.8, lean: (g, s, t) => (t === 'ULT' ? 1 : 0), kinds: 0, gauge: 'tr' },
 };
 const PERSONAS = ['RUSH', 'WALL', 'EVEN', 'READ', 'GAMBLE', 'STD'];
 const botStyle = (g, s) => BOT_STYLES[(g.style && g.style[s]) || 'STD'];
@@ -1217,7 +1249,7 @@ function laneValue(mine, w, ctx) {
   let v = 0;
   for (const foe of GUESS) {
     v += expTaken(mine, foe) * w.deal - expTaken(foe, mine) * w.take + healOf(mine, foe) * w.take;
-    if (isCounter(mine, foe)) v += (stat(mine).brkVs || 0) * 3 + (stat(mine).gaugeVs || 0) * 4;
+    if (isCounter(mine, foe)) v += (stat(mine).brkVs || 0) * 3 + (stat(mine).gaugeVs || 0) * 4 + (stat(mine).drawVs || 0) * 3;
   }
   v /= GUESS.length;
   if (!mine) return v;
@@ -1233,6 +1265,7 @@ function laneValue(mine, w, ctx) {
     v -= c / GUESS.length;
   }
   if (s.draw) v += s.draw * 3;
+  if (s.shield) v += Math.min(s.shield, Math.max(0, SHIELD_MAX - (ctx.shield || 0))) * 0.6 * w.take; // ชิลด์ ≈ HP ที่จะไม่เสียรอบต่อ ๆ ไป (เต็มเพดานแล้วไม่มีค่า)
   return v;
 }
 // แผนการวางของบอท: แต่ละช่อง = การ์ดชนิดเดียวกัน 1-3 ใบ (ซ้อนในช่อง เลเวลรวมไม่เกิน 3) หรือว่าง · วางรวม min(3, มือ) ใบพอดี
@@ -1245,7 +1278,7 @@ function botPlans(g, s, noise = true) {
   const need = Math.min(SLOT_N, H.length), unl = unlimitedNow(g, s);
   const w = { deal: foe.hp <= 40 ? 1.4 : 1, take: P.hp <= 40 ? 1.6 : P.hp <= 70 ? 1.2 : 1 };
   // อีกฝ่ายยังไม่วาง = มือยังรวม 3 ใบที่จะวาง · วางแล้ว (ใน simulate) = มือที่เห็นคือที่เหลือจริง
-  const ctx0 = { foeSpare: Math.max(0, foe.hand.length - (foe.lanes ? 0 : SLOT_N)), foeHp: foe.hp, hp: P.hp };
+  const ctx0 = { foeSpare: Math.max(0, foe.hand.length - (foe.lanes ? 0 : SLOT_N)), foeHp: foe.hp, hp: P.hp, shield: P.shield };
   const have = {};
   for (const c of H) have[c.type + c.lv] = (have[c.type + c.lv] || 0) + 1;
   const units = [];
@@ -1398,6 +1431,7 @@ const ui = {
   mode: 'arcade', pvp: null, picks: [], undo: [], pickShown: false, place: [], shown: -1, results: [], winner: null, peek: false, ko: null,
   detail: null, pending: null, // ช่องที่แผงผลปะทะกำลังแสดง · ผลที่ทอยแล้วแต่ยังไม่เฉลย
   drawer: null, k: 1, hpShown: {}, // ลิ้นชักที่เปิด · สเกลของกรอบ 16:9 · HP ที่แสดงอยู่ (ไว้ทำแถบหาย/เพิ่ม)
+  shShown: {}, // ชิลด์ที่โชว์อยู่ (กะพริบเมื่อเปลี่ยน)
   gShown: {}, gmenu: null, // เกจที่โชว์อยู่ (ลูกใหม่เด้ง / ลูกที่ใช้ไปกะพริบ) · เมนูใช้เกจ: null | 'menu' | 'tr' (เลือกการ์ด) | { id } (เลือกชนิด)
   // เอฟเฟกต์ชั่วคราว: ตั้งก่อน render() แล้ว render() ล้างเอง — แอนิเมชันเล่นครั้งเดียว
   // arrive / lvups = Map(card id → ลำดับที่บินมา) · oppArriveOrders = ลำดับของหลังการ์ด BLUE ที่บินมา
@@ -2441,7 +2475,7 @@ function vdoClips(r) {
 function vdoPlan(g, r, i) {
   const clips = vdoClips(r);
   if (!SIDES.every(s => r[s].card && HIT_VDO[r[s].card.type])) return clips.map(name => ({ name, hit: null }));
-  const side = s => ({ hp: g.p[s].hp - r[s].taken, lanes: g.p[s].lanes });
+  const side = s => ({ hp: g.p[s].hp - Math.max(0, r[s].taken - Math.min(SHIELD_MAX, g.p[s].shield + (r[s].shieldGain || 0))), lanes: g.p[s].lanes });
   const v = judge({ p: { RED: side('RED'), BLUE: side('BLUE') } }, i);
   const order = v.winner && v.winner !== 'DRAW' ? [FOE[v.winner], v.winner] : clips.map(n => (n.endsWith('-red') ? 'RED' : 'BLUE'));
   return order.map(s => ({ name: clips.find(n => n.endsWith(`-${s.toLowerCase()}`)), hit: FOE[s] }));
@@ -3033,9 +3067,11 @@ function floatText(s, text, kind, delay = 0) {
   }, delay);
 }
 function floatHp(s, o) {
-  if (o.taken > 0) floatText(s, `−${o.taken} HP`, 'dmg');
+  if (o.shieldGain) floatText(s, `ชิลด์ +${o.shieldGain}`, 'shield');
+  if (o.hpLoss > 0) floatText(s, `−${o.hpLoss} HP`, 'dmg', o.shieldGain ? 250 : 0);
   else if (o.evaded) floatText(s, 'หลบ!', 'ok');
-  else if (o.raw > 0) floatText(s, 'กันได้หมด', 'guard');
+  else if (o.absorbed > 0) floatText(s, 'ชิลด์รับไว้หมด', 'shield', o.shieldGain ? 250 : 0);
+  if (o.absorbed > 0 && o.hpLoss > 0) floatText(s, `ชิลด์ −${o.absorbed}`, 'shield', 450);
   if (o.healed > 0) floatText(s, `+${o.healed} HP`, 'heal', ui.fast ? 150 : 400);
 }
 const hpDelta = (from, to) => `${from} → ${to} (${to - from >= 0 ? '+' : '−'}${Math.abs(to - from)})`;
@@ -3159,6 +3195,7 @@ function changeCallouts(r) {
     if (won && st.brkVs) c[s].push(chgPlus('อีกฝ่ายทิ้ง', `+${st.brkVs}`));
     if (won && st.gaugeVs) c[s].push(chgPlus('อีกฝ่ายเสียเกจ', `−${st.gaugeVs}`));
     if (won && st.heal) c[s].push(chgPlus('ได้ HP คืน', `+${st.heal}`));
+    if (won && st.drawVs) c[s].push(chgPlus('จั่ว', `+${st.drawVs}`));
   }
   return { RED: c.RED.join(''), BLUE: c.BLUE.join('') };
 }
@@ -3236,10 +3273,10 @@ async function runFight() {
       if (final) {
         ui.results[i] = r;
         ui.pending = null;
-        const after = s => (r[s].taken > 0 ? 'fx-hurt' : r[s].healed > 0 ? 'fx-heal' : '');
+        const after = s => (r[s].hpLoss > 0 ? 'fx-hurt' : r[s].healed > 0 ? 'fx-heal' : '');
         ui.fx = { lane: i, resIn: true, cls: { RED: after('RED'), BLUE: after('BLUE') }, marks: resultMarks(r) };
       }
-      ui.hit = Object.fromEntries(sides.map(s => [s, r[s].taken > 0]));
+      ui.hit = Object.fromEntries(sides.map(s => [s, r[s].hpLoss > 0]));
       render();
       for (const s of sides) floatHp(s, r[s]);
       if (sides.some(s => r[s].taken > 0)) sfx.play('hurt');
@@ -3362,6 +3399,7 @@ function logClash(r) {
   const parts = [];
   for (const s of SIDES) {
     const o = r[s];
+    if (o.shieldGain) parts.push(`${tagOf(s)} ได้ชิลด์ +${o.shieldGain} (${INFO[o.card.type].name} Lv${o.card.lv}) → ชิลด์ ${Math.min(SHIELD_MAX, o.sh0 + o.shieldGain)}${o.sh0 + o.shieldGain > SHIELD_MAX ? ` (เต็ม ${SHIELD_MAX})` : ''}`);
     if (o.raw) {
       const foeName = INFO[r[FOE[s]].card.type].name;
       const odds = o.chance != null ? `โอกาสหลบ ${pctOf(o.chance)}${o.pierce ? ` (${foeName} ลด ${pctOf(o.pierce)})` : ''}` : '';
@@ -3369,9 +3407,9 @@ function logClash(r) {
       else {
         const notes = [];
         if (o.bonus) notes.push(`${foeName} เจอ ${INFO[o.card.type].name} ดาเมจ +${o.bonus}`);
-        if (o.guard) notes.push(`กันไว้ ${Math.min(o.guard, o.raw)}`);
+        if (o.absorbed) notes.push(`ชิลด์รับ ${o.absorbed} เหลือ ${o.sh1}`);
         if (odds) notes.push(`หลบพลาด · ${odds}`);
-        parts.push(`${tagOf(s)} −${o.taken} HP${notes.length ? ` (${notes.join(', ')})` : ''}`);
+        parts.push(`${tagOf(s)} ${o.hpLoss ? `−${o.hpLoss} HP` : 'ไม่เสีย HP'} จากดาเมจ ${o.taken}${notes.length ? ` (${notes.join(', ')})` : ''}`);
       }
     }
     if (o.heal) parts.push(o.healed ? `${tagOf(s)} +${o.healed} HP (${INFO[o.card.type].name} เจอ ${INFO[r[FOE[s]].card.type].name})` : `${tagOf(s)} HP เต็ม ${HP_MAX} อยู่แล้ว`);
@@ -3410,7 +3448,7 @@ const backHTML = (cls = '', style = '') => `<div class="card back ${cls}"${style
 const REVEAL_GAP = 110;
 const flipHTML = (front, d = 0) => `<div class="flip3d" style="--d:${d}ms"><div class="fl">${front}${backHTML()}</div></div>`;
 // คำอธิบายใต้การ์ด: ผลหลักของเลเวลนั้น + ปราบใคร (ค่าเต็มดูในลิ้นชักกติกา/คู่มือ)
-const CAP = { dmg: v => `ดาเมจ ${v}`, cost: v => `ทิ้งเรา ${v}`, guard: v => `กัน ${v}`, brk: v => `อีกฝ่ายทิ้ง ${v}`, evade: v => `หลบ ${pctOf(v)}`, draw: v => `จั่ว ${v}`,
+const CAP = { dmg: v => `ดาเมจ ${v}`, cost: v => `ทิ้งเรา ${v}`, guard: v => `กัน ${v}`, shield: v => `ชิลด์ ${v}`, brk: v => `อีกฝ่ายทิ้ง ${v}`, evade: v => `หลบ ${pctOf(v)}`, draw: v => `จั่ว ${v}`,
   brkP: (v, s) => `ทิ้ง ${pctOf(v)}${s.brkN > 1 ? `×${s.brkN}` : ''}`, brkN: () => '' };
 function capHTML(t, lv) {
   const s = LV[t][lv - 1];
@@ -3461,11 +3499,10 @@ function badgeHTML(s, i) {
 function calcSideHTML(s, r, done) {
   const o = r[s], me = o.card, foe = r[FOE[s]].card, rows = [];
   if (o.raw) {
-    const base = dmgOf(foe), fin = o.guard ? Math.max(0, o.raw - o.guard) : o.raw;
+    const base = dmgOf(foe), fin = o.raw;
     const terms = [`<span class="term src k-${foe.type}">${INFO[foe.type].name} ${base}</span>`];
     if (o.bonus) terms.push(`<span class="term mod up">▲ +${o.bonus} ชนะทาง</span>`);
-    if (o.guard) terms.push(`<span class="term mod down">▼ −${Math.min(o.guard, o.raw)} กัน</span>`);
-    if (o.bonus || o.guard) terms.push(`<span class="term res ${fin > base ? 'up' : fin < base ? 'down' : ''}">= ${fin}</span>`);
+    if (o.bonus) terms.push(`<span class="term res ${fin > base ? 'up' : ''}">= ${fin}</span>`);
     rows.push(`<div class="eq"><span class="eq-label">ดาเมจเข้า</span>${terms.join('')}</div>`);
     if (o.chance != null) {
       const ev = stat(me).evade, changed = o.chance !== ev;
@@ -3481,7 +3518,8 @@ function calcSideHTML(s, r, done) {
   } else rows.push('<div class="calc-none">ไม่โดนโจมตี</div>');
   if (done) {
     const fins = [];
-    if (o.raw) fins.push(o.taken > 0 ? `<span class="fin dmg">−${o.taken} HP</span>` : `<span class="fin ok">${o.evaded ? 'หลบได้' : 'กันได้หมด'}</span>`);
+    if (o.sh0 != null && (o.shieldGain || o.absorbed)) rows.push(`<div class="eq"><span class="eq-label">ชิลด์</span><span class="term src k-DEF">${o.sh0}</span>${o.shieldGain ? `<span class="term mod up">▲ +${o.shieldGain} Defence</span>` : ''}${o.absorbed ? `<span class="term mod down">▼ −${o.absorbed} รับดาเมจ</span>` : ''}<span class="term res">= ${o.sh1}</span></div>`);
+    if (o.raw) fins.push(o.hpLoss > 0 ? `<span class="fin dmg">−${o.hpLoss} HP</span>` : `<span class="fin ok">${o.evaded ? 'หลบได้' : 'ชิลด์รับไว้หมด'}</span>`);
     if (o.heal) fins.push(o.healed ? `<span class="fin heal">+${o.healed} HP</span><small>${INFO[me.type].name} ปราบ ${INFO[foe.type].name}</small>` : '<small>HP เต็มแล้ว ไม่ได้เพิ่ม</small>');
     if (fins.length) rows.push(`<div class="fins">${fins.join('')}</div>`);
     const fx = [], forced = r[FOE[s]].broke, pen = (forced ? forced.pen : 0) + (o.paid ? o.paid.pen : 0);
@@ -3493,7 +3531,9 @@ function calcSideHTML(s, r, done) {
     if (o.paid) fx.push(`ค่า Ultimate ทิ้งการ์ดเรา ${o.paid.cards.length} ใบ`);
     if (o.saved) fx.push(`ปราบ ${INFO[foe.type].name} ค่า Ultimate ลด ${o.saved} ใบ${o.paid ? '' : ' ไม่ต้องทิ้ง'}`);
     if (pen) fx.push(`<b class="bad">มือว่าง −${pen} HP</b>`);
-    const floored = [forced && forced.want > forced.pen && INFO[foe.type].name, o.paid && o.paid.want > o.paid.pen && 'ค่า Ultimate'].filter(Boolean);
+    const floored = [forced && forced.want - (forced.absorbed || 0) > forced.pen && INFO[foe.type].name, o.paid && o.paid.want - (o.paid.absorbed || 0) > o.paid.pen && 'ค่า Ultimate'].filter(Boolean);
+    const penSh = (forced ? forced.absorbed || 0 : 0) + (o.paid ? o.paid.absorbed || 0 : 0);
+    if (penSh) fx.push(`มือว่าง: ชิลด์รับ ${penSh}`);
     if (floored.length) fx.push(`${floored.join(' / ')} ลด HP ต่ำกว่า ${PEN_FLOOR} ไม่ได้`);
     if (o.drew && o.drew.got.length) fx.push(`จั่ว +${o.drew.got.length}`);
     if (o.drew && o.drew.ups.length) fx.push(`มือเต็ม → เลเวลอัป ${o.drew.ups.length}`);
@@ -3583,7 +3623,18 @@ function renderHud(s) {
     placed = ui.mode === 'spec' ? stackCount(P.slots) : s === OPP ? (P.lanes ? SLOT_N : 0) : ui.phase === 'action' && !P.lanes ? ui.place.length : stackCount(P.slots);
   }
   document.querySelectorAll(`.dot.${s.toLowerCase()}`).forEach((d, k) => d.classList.toggle('on', k < placed));
+  renderShield(s, inGame ? ui.g.p[s].shield : 0, inGame && !ui.intro);
   renderGauge(s);
+}
+// ชิลด์เหนือแถบ HP (ตี้ 2026-10-22) · เปลี่ยนเมื่อไหร่หลอดกะพริบ
+function renderShield(s, sh, show) {
+  const bar = $(`#sh${s}`), num = $(`#shn${s}`), prev = ui.shShown[s];
+  bar.querySelector('.sh-fill').style.width = `${Math.min(100, (sh / SHIELD_MAX) * 100)}%`;
+  bar.setAttribute('aria-label', `ชิลด์ของ ${s} ${sh}/${SHIELD_MAX}`);
+  num.hidden = !show || sh <= 0;
+  num.innerHTML = `${icon('DEF')}${sh}`;
+  if (prev != null && prev !== sh) { bar.classList.remove('flash'); void bar.offsetWidth; bar.classList.add('flash'); }
+  ui.shShown[s] = show ? sh : null;
 }
 // เกจใต้แถบ HP (ตี้ 2026-10-22): ลูกสีรุ้ง 3 ลูก + แต้มสะสม (ตั้งรับ x/4 · ดาเมจ x/50) · ของเราในเฟส Action = ปุ่มเปิดเมนูใช้เกจ
 const gaugeUsable = () => { const g = ui.g; return !!g && ui.screen === 'game' && (ui.mode === 'arcade' || ui.mode === 'pvp') && ui.phase === 'action' && !ui.busy && !g.p[ME].lanes && g.p[ME].gauge > 0 && !pvpWaiting(); };
@@ -3934,15 +3985,15 @@ function rulesCompactHTML() {
 function rulesListHTML() {
   return `<ul class="rules-list">
     <li><b>จู่โจมชนจู่โจม</b> (Attack/Ultimate) — โดนดาเมจทั้งสองฝ่าย</li>
-    <li><b>จู่โจมชน Defence</b> — ดาเมจลดลงตามค่ากัน</li>
+    <li><b>ชิลด์</b> (หลอดสีขาวเหนือแถบ HP) — Defence เปิดเมื่อไหร่ได้ชิลด์ Lv1/2/3 = +10/20/30 ก่อนรับดาเมจของช่องนั้น · ดาเมจทุกชนิด (การ์ด + มือว่าง) หักชิลด์ก่อน เหลือค่อยหัก HP · ชิลด์อยู่ข้ามรอบ สะสมได้สูงสุด ${SHIELD_MAX}</li>
     <li><b>จู่โจมชน Dodge</b> — ทอยหลบ ถ้าหลบได้ไม่โดนเลย</li>
-    <li><b>Ultimate</b> ทิ้งการ์ดสุ่มบนมือเรา · <b>Defence</b> บังคับอีกฝ่ายทิ้งการ์ดสุ่ม · <b>Attack</b> ทอยให้อีกฝ่ายทิ้งการ์ด 1 ใบ (Lv1 50% · Lv2 55% ทอย 2 ครั้ง · Lv3 60% ทอย 3 ครั้ง) · <b>Dodge</b> จั่วเพิ่ม — เกิดทุกครั้งที่เปิด</li>
-    <li><b>คู่ปราบ (วนเป็นวง)</b> — Attack ปราบ Dodge (หลบยากขึ้น + ดาเมจเพิ่มถ้าโดน) · Dodge ปราบ Ultimate (หลบ 100% ทุกเลเวล · Lv2 อีกฝ่ายทิ้ง 1 ใบ + เสีย 1 เกจ · Lv3 ทิ้ง 2 ใบ + เสีย 2 เกจ) · Ultimate ปราบ Defence (ดาเมจเพิ่มก่อนหักค่ากัน + ทิ้งการ์ดเราน้อยลง 1 ใบ) · Defence ปราบ Attack (ได้ HP คืน) · HP สูงสุด ${HP_MAX}</li>
+    <li><b>Ultimate</b> ทิ้งการ์ดสุ่มบนมือเรา 1/2/3 ใบ · <b>Attack</b> ทอยให้อีกฝ่ายทิ้งการ์ด 1 ใบ (Lv1 50% · Lv2 55% ทอย 2 ครั้ง · Lv3 60% ทอย 3 ครั้ง) · <b>Dodge</b> จั่วเพิ่ม — เกิดทุกครั้งที่เปิด</li>
+    <li><b>คู่ปราบ (วนเป็นวง)</b> — Attack ปราบ Dodge (หลบยากขึ้น + ดาเมจเพิ่มถ้าโดน) · Dodge ปราบ Ultimate (หลบ 100% ทุกเลเวล · Lv2 อีกฝ่ายทิ้ง 1 ใบ + เสีย 1 เกจ · Lv3 ทิ้ง 2 ใบ + เสีย 2 เกจ) · Ultimate ปราบ Defence (ดาเมจเพิ่ม +10/20/30) · Defence ปราบ Attack (ฝั่ง Defence จั่ว 1/2/3 ใบ) · HP สูงสุด ${HP_MAX}</li>
     <li><b>มือสูงสุด ${HAND_MAX} ใบ</b> — ได้การ์ดเกิน (จั่ว / เก็บ / Dodge) ใบที่เกินกลายเป็นสุ่มเลเวลอัปการ์ดบนมือ 1 ใบแทน (สูงสุด Lv3)</li>
-    <li><b>ถูกบังคับทิ้งแต่มือว่าง</b> — เสีย ${EMPTY_PENALTY} HP ต่อใบที่ทิ้งไม่ได้ แต่ลด HP ให้ต่ำกว่า ${PEN_FLOOR} ไม่ได้ทุกกรณี (Defence · Attack · Dodge Lv2-3 · ค่า Ultimate) — มือว่างทำให้แพ้ไม่ได้</li>
+    <li><b>ถูกบังคับทิ้งแต่มือว่าง</b> — เสีย ${EMPTY_PENALTY} HP ต่อใบที่ทิ้งไม่ได้ แต่ลด HP ให้ต่ำกว่า ${PEN_FLOOR} ไม่ได้ทุกกรณี (Attack · Dodge Lv2-3 · ค่า Ultimate) — มือว่างทำให้แพ้ไม่ได้ · มีชิลด์ = หักชิลด์ก่อน</li>
     <li><b>เก็บการ์ด</b> — แตะหรือลากการ์ดกองกลางเข้ามือ = เข้าขวาสุด · มือเต็ม ${HAND_MAX} ใบแล้วเก็บ = เหมือนจั่ว: สุ่มเลเวลอัปการ์ดบนมือ 1 ใบแทน (สุ่มตอนกด PICK UP ไม่รู้ล่วงหน้าว่าใบไหน) · <b>เปลี่ยนใจ</b>: ก่อนกด PICK UP แตะหรือลากใบที่เพิ่งเก็บ (ป้ายแดง "เก็บ") กลับกองกลางได้</li>
     <li><b>วางการ์ด</b> — แตะการ์ดบนมือ = ลงช่องว่างถัดไป · ลาก = ลงช่องที่ต้องการ · <b>เลเวลอัป</b> = ลากทับการ์ดชนิดเดียวกันในแผงเท่านั้น (สูงสุด Lv3) · <b>Lv2 + Lv2</b> = Lv3 + ได้การ์ด Lv1 ชนิดเดียวกันคืนขึ้นมือทันที (วางต่อช่องอื่นได้) · ลากทับต่างชนิด = สลับ (ในแผง และมือ ↔ แผง) · <b>บนมือรวมเลเวลไม่ได้</b> ลากทับกัน = สลับตำแหน่ง · วางชนิดเดียวกันไว้คนละช่องไม่รวม · ช่องว่างไม่มีอะไรกัน การ์ดอีกฝ่ายเข้าเต็ม ๆ</li>
-    <li><b>เกจ (ลูกสีรุ้งใต้แถบ HP · สูงสุด ${GAUGE_MAX})</b> — ได้เกจเมื่อ: การ์ดตั้งรับ (Defence/Dodge) ที่วางรวมเลเวลครบ ${GAUGE_STACK} · การ์ดจู่โจม (Attack/Ultimate) ชนะทาง 1 ช่อง · การ์ดจู่โจมทำดาเมจสะสมครบ ${GAUGE_DMG} — สะสมข้ามรอบ เกจเต็มแล้วแต้มสะสมหาย · <b>ใช้ในเฟส Action</b> (แตะลูกเกจ): 1 เกจ = จั่ว 1 ใบ · 2 เกจ = เปลี่ยนการ์ดบนมือ 1 ใบเป็นชนิดไหนก็ได้ + เลเวล +1 (ใบ Lv3 = จั่ว 1 ใบแทน) · 3 เกจ (พลังเต็ม) = จั่วจนมือครบ ${HAND_MAX} → อัปเลเวลการ์ดบนมือทุกใบ +1 → รอบนั้นวางกี่ใบก็ได้ · ใช้แล้วย้อนไม่ได้ · ทุกจั่วจากเกจ มือเต็ม = สุ่มเลเวลอัปแทน</li>
+    <li><b>เกจ (ลูกสีรุ้งใต้แถบ HP · สูงสุด ${GAUGE_MAX})</b> — ได้เกจเมื่อ: การ์ดตั้งรับ (Defence/Dodge) ที่วางรวมเลเวลครบ ${GAUGE_STACK} · การ์ดจู่โจมทำดาเมจสะสมครบ ${GAUGE_DMG} (นับรวมที่ชิลด์รับ) — สะสมข้ามรอบ เกจเต็มแล้วแต้มสะสมหาย · <b>ใช้ในเฟส Action</b> (แตะลูกเกจ): 1 เกจ = จั่ว 1 ใบ · 2 เกจ = เปลี่ยนการ์ดบนมือ 1 ใบเป็นชนิดไหนก็ได้ + เลเวล +1 (ใบ Lv3 = จั่ว 1 ใบแทน) · 3 เกจ (พลังเต็ม) = จั่วจนมือครบ ${HAND_MAX} → อัปเลเวลการ์ดบนมือทุกใบ +1 → รอบนั้นวางกี่ใบก็ได้ · ใช้แล้วย้อนไม่ได้ · ทุกจั่วจากเกจ มือเต็ม = สุ่มเลเวลอัปแทน</li>
     <li><b>บอท (ARCADE)</b> — สุ่มนิสัยทุกเกม: ${PERSONAS.map(k => BOT_STYLES[k].th).join(' · ')} · เปลี่ยนแผนกลางเกมได้ (ตามหลังมาก = บุก · นำมาก = ตั้งรับ · บางรอบเปลี่ยนเฉย ๆ ให้เดายาก) · ไม่แอบดูมือเรา แต่ "อ่านทาง" จำการ์ดที่เราเปิดแล้ว · เฉลยนิสัยตอนจบเกม</li>
     <li><b>UNDO</b> (ข้างปุ่ม PICK UP / FIGHT! หรือ Ctrl+Z) — ย้อนการเก็บ วาง ซ้อน สลับ ทีละขั้น จนกว่าจะกดยืนยัน</li>
     <li><b>แผง ${OPP} (อีกฝ่าย)</b> — คว่ำครบ 3 ช่องเสมอ ไม่บอกว่าช่องไหนมีการ์ด ว่าง หรือซ้อนกี่ใบ จนกว่าจะเปิดปะทะ</li>
@@ -4055,7 +4106,7 @@ document.addEventListener('keydown', e => {
    vdo = รอบที่เรากำลังดู VDO ฉากปะทะอยู่ (อีกฝ่ายหยุดนับเวลารอ) — ไม่มี = ไม่ได้ดู
    t0 = เวลาเริ่มแมตช์ (Date.now ของเรา) — ผู้ชมที่เข้ากลางเกมใช้ตั้งนาฬิกาแมตช์ · แสดงผลเท่านั้น
    inp เก็บทั้งแมตช์ (ผู้ชมที่เข้ากลางเกมย้อนคำนวณจากรอบ 1) · ผู้ชม: { watch: mid } อย่างเดียว ไม่ส่งอะไรให้ผู้เล่น */
-const PVP_V = 9; // เปลี่ยนกติกา/เอนจินเมื่อไหร่ต้องเพิ่มเลขนี้ — คนละเวอร์ชันจะไม่ถูกจับคู่ (เล่นคนละกติกา = ผลเพี้ยน) · 4 = Fight Phase เป็น VDO (ยาวขึ้นมาก + presence.vdo) · 5 = Dodge Lv3 มีเพดาน HP 10 + HP สูงสุด 100 → 150 (ตี้ 2026-10-22) · 6 = Lv2 + Lv2 คืนการ์ด Lv1 (validLock รับ id การ์ดคืน) · 7 = เกจ (การวางส่ง gauge ops ไปด้วย · newGame สุ่ม gseed) · 8 = Attack ทอยให้อีกฝ่ายทิ้งการ์ด (rollClash ใช้ตัวสุ่มเพิ่ม) · 9 = Dodge เจอ Ultimate หลบ 100% + Lv2-3 อีกฝ่ายทิ้ง/เสียเกจ
+const PVP_V = 10; // เปลี่ยนกติกา/เอนจินเมื่อไหร่ต้องเพิ่มเลขนี้ — คนละเวอร์ชันจะไม่ถูกจับคู่ (เล่นคนละกติกา = ผลเพี้ยน) · 4 = Fight Phase เป็น VDO (ยาวขึ้นมาก + presence.vdo) · 5 = Dodge Lv3 มีเพดาน HP 10 + HP สูงสุด 100 → 150 (ตี้ 2026-10-22) · 6 = Lv2 + Lv2 คืนการ์ด Lv1 (validLock รับ id การ์ดคืน) · 7 = เกจ (การวางส่ง gauge ops ไปด้วย · newGame สุ่ม gseed) · 8 = Attack ทอยให้อีกฝ่ายทิ้งการ์ด (rollClash ใช้ตัวสุ่มเพิ่ม) · 9 = Dodge เจอ Ultimate หลบ 100% + Lv2-3 อีกฝ่ายทิ้ง/เสียเกจ · 10 = ชิลด์ (Defence) + Ultimate ใหม่ + เอาเกจชนะทางออก
 const PVP_SEC = 60, PVP_CUT = 30, PVP_GONE_MS = 8000, PVP_NEXT_MS = 10000, PVP_WAIT_MS = 90000, VDO_HOLD_MS = 240000;
 // ที่ไหนก็ได้นอก claude.ai (เช่น GitHub Pages): ส่ง presence ผ่าน MQTT broker สาธารณะ 3 เจ้าพร้อมกัน ไม่ต้องล็อกอิน · เจ้าไหนล่มก็ยังคุยกันได้
 // บน claude.ai ต่อข้างนอกไม่ได้ (CSP connect-src 'self' + webrtc block) → ใช้ room ของ claude ได้เฉพาะคนในองค์กรเดียวกัน
@@ -4913,7 +4964,7 @@ addEventListener('resize', fitStage);
 setInterval(clockTick, 250);
 fitStage();
 // ลายนิ้วมือสถานะเกม (ทดสอบว่า PVP สองเครื่องตรงกัน) — ลำดับการ์ดในมือตามอาร์เรย์ (ส่วนที่กระทบผลสุ่ม)
-const stateHash = () => { const g = ui.g; return g ? JSON.stringify({ r: g.round, hp: SIDES.map(s => g.p[s].hp), ga: SIDES.map(s => `${g.p[s].gauge}/${g.p[s].gStack}/${g.p[s].gDmg}`), h: SIDES.map(s => g.p[s].hand.map(c => `${c.id}${c.type[0]}${c.lv}`).join(',')), d: g.deck.length, m: g.market.map(c => c.type[0]).join('') }) : null; };
+const stateHash = () => { const g = ui.g; return g ? JSON.stringify({ r: g.round, hp: SIDES.map(s => g.p[s].hp), sh: SIDES.map(s => g.p[s].shield), ga: SIDES.map(s => `${g.p[s].gauge}/${g.p[s].gStack}/${g.p[s].gDmg}`), h: SIDES.map(s => g.p[s].hand.map(c => `${c.id}${c.type[0]}${c.lv}`).join(',')), d: g.deck.length, m: g.market.map(c => c.type[0]).join('') }) : null; };
 window.__dreamfight = { bgm, vdo, vdoBg, vdoClips, vdoPlan, stateHash, ui: () => ui, simulate, stackLanes, pickOne, swapHand, botAction, newGame, doLock, clash, effText, gain, forceDiscard, judge, sfx, calcSideHTML, discardText, drawCount, fitStage };
 render();
 })();
