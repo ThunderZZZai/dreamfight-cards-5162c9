@@ -2447,7 +2447,7 @@ const bgm = (() => {
    ปุ่ม VDO มุมซ้ายล่างปิดได้ — ปิด = เปิดปะทะด้วยแอนิเมชันการ์ดแบบเดิม */
 const VDO_DIR = 'assets/vdo/', VDO_CACHE = 'df-vdo-1';
 // ชื่อ: [ไบต์, วินาที] — สร้างด้วย python3 vdo-src/build_vdo.py --js
-const VDO_FILES = {"atk1-blue":[2784391,14.38],"atk1-red":[2274480,12.31],"atk2-blue":[3841758,17.39],"atk2-red":[3624140,15.81],"atk3-blue":[4266115,17.68],"atk3-red":[4204064,18.18],"def-atk1-blue":[2642941,14.06],"def-atk1-red":[3288671,14.06],"def-atk2-blue":[3234334,16.9],"def-atk2-red":[3439380,16.9],"def-atk3-blue":[4312138,20.14],"def-atk3-red":[3663390,16.55],"def-ult1-blue":[5126350,19.05],"def-ult1-red":[4979010,19.05],"def-ult2-blue":[4131356,19.84],"def-ult2-red":[4479200,19.84],"def-ult3-blue":[4293736,18.05],"def-ult3-red":[4831034,18.05],"dod-atk1-blue":[2479584,13.46],"dod-atk1-red":[3285123,17.09],"dod-atk2-blue":[2595384,14.34],"dod-atk2-red":[2333567,14.34],"dod-atk3-blue":[3388210,16.55],"dod-atk3-red":[3360603,18.0],"dod-ult1-blue":[3842048,18.0],"dod-ult1-red":[3598827,18.0],"dod-ult2-blue":[3694462,18.0],"dod-ult2-red":[3581419,18.0],"dod-ult3-blue":[5184227,19.52],"dod-ult3-red":[4242115,19.52],"idle-blue":[1553975,15.02],"idle-red":[1582345,15.02],"taunt-blue":[2994883,18.08],"taunt-red":[2334424,18.08],"ult1-blue":[2908848,15.47],"ult1-red":[4085286,17.68],"ult2-blue":[3808362,17.39],"ult2-red":[3820167,17.51],"ult3-blue":[3859138,18.18],"ult3-red":[4740295,21.46]};
+const VDO_FILES = {"atk1-blue":[2784391,14.38],"atk1-red":[2274480,12.31],"atk2-blue":[3841758,17.39],"atk2-red":[3624140,15.81],"atk3-blue":[4266115,17.68],"atk3-red":[4204064,18.18],"def-atk1-blue":[2642941,14.06],"def-atk1-red":[3288671,14.06],"def-atk2-blue":[3234334,16.9],"def-atk2-red":[3439380,16.9],"def-atk3-blue":[4312138,20.14],"def-atk3-red":[3663390,16.55],"def-ult1-blue":[5126350,19.05],"def-ult1-red":[4979010,19.05],"def-ult2-blue":[4131356,19.84],"def-ult2-red":[4479200,19.84],"def-ult3-blue":[4293736,18.05],"def-ult3-red":[4831034,18.05],"dod-atk1-blue":[2479584,13.46],"dod-atk1-red":[3285123,17.09],"dod-atk2-blue":[2595384,14.34],"dod-atk2-red":[2333567,14.34],"dod-atk3-blue":[3388210,16.55],"dod-atk3-red":[3360603,18.0],"dod-ult1-blue":[3842048,18.0],"dod-ult1-red":[3598827,18.0],"dod-ult2-blue":[3727149,18.0],"dod-ult2-red":[3581419,18.0],"dod-ult3-blue":[5184227,19.52],"dod-ult3-red":[4242115,19.52],"idle-blue":[1553975,15.02],"idle-red":[1582345,15.02],"taunt-blue":[2994883,18.08],"taunt-red":[2334424,18.08],"ult1-blue":[2908848,15.47],"ult1-red":[4085286,17.68],"ult2-blue":[3808362,17.39],"ult2-red":[3820167,17.51],"ult3-blue":[3859138,18.18],"ult3-red":[4740295,21.46]};
 const VDO_REVEAL_MS = 2000; // เปิด VDO แล้วโชว์การ์ดสองฝั่งก่อนเก็บ UI ลง
 const VDO_HP_LEAD = 3;      // แถบ HP กลับลงมาโชว์ผลก่อน VDO จบกี่วินาที
 const VDO_DUCK = 0.15;      // ระหว่าง VDO เพลงประกอบเบาลงเหลือเท่านี้ (เสียงใน VDO นำ)
@@ -2470,7 +2470,7 @@ const vdo = (() => {
       const b = await res.blob();
       if (b.size === want) { add(b.size); return b; }
     }
-    res = await fetch(url);
+    res = await fetch(url, { cache: 'no-cache' }); // ถามเซิร์ฟเวอร์ทุกครั้ง — VDO ที่อัปเดตชื่อเดิมไม่ติดไฟล์เก่าใน HTTP cache (ขนาดไม่ตรง = error)
     if (!res.ok || !res.body) throw new Error(`${name}: HTTP ${res.status}`);
     const reader = res.body.getReader(), parts = [];
     for (;;) {
