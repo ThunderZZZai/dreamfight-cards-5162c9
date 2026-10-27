@@ -633,6 +633,128 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 .wt-sub{font-size:19px;color:#c3cad6;font-variant-numeric:tabular-nums}
 .wt-rounds{font-size:17px;color:var(--muted);font-variant-numeric:tabular-nums}
 @keyframes quakeHard{10%{transform:translate(-18px,9px) rotate(-.5deg)}20%{transform:translate(16px,-9px) rotate(.5deg)}32%{transform:translate(-13px,-6px)}44%{transform:translate(11px,6px)}58%{transform:translate(-7px,3px)}72%{transform:translate(4px,-2px)}86%{transform:translate(-2px,0)}}
+/* ═════════ เลย์เอาต์ผู้เล่น / ผู้ชม (ตี้ 2026-10-27 · ม็อกอัป artifact X2iF5zKGwXLoa9nTpTDXUd) ═════════
+   ผู้เล่น (.lay-player): มือกลางล่างกางเป็นพัด · CARD ORDER ของเราเป็นช่องแนวตั้งด้านข้างลดลงต่ำ (RED ขวา / BLUE ซ้าย)
+   · ไม่เห็นแผงและมือของอีกฝ่าย · กองกลางเล็กลง
+   ผู้ชม (.lay-spec): CARD ORDER แบบบางทั้งสองฝั่ง · กองกลางแถวล่างกลาง (ช่วง PICK UP) · มือสองฝั่งเป็นพัดมุมล่าง
+   · การ์ดที่ผู้เล่นวางเห็นเป็น ? จนช่องนั้นเปิดปะทะ */
+.order.red{--k:var(--red)} .order.blue{--k:var(--blue)}
+#world.lay-player .order > img,#world.lay-spec .order > img{display:none}
+#world.lay-player:not(.me-blue) .order.blue,#world.lay-player.me-blue .order.red{display:none}
+#world.lay-player .order::before,#world.lay-spec .order::before{content:"CARD ORDER";position:absolute;left:50%;top:0;transform:translateX(-50%);padding:1px 12px;border-radius:6px;background:var(--k);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:19px;letter-spacing:.06em;white-space:nowrap}
+#world.lay-player .oslot,#world.lay-spec .oslot{border-radius:14px;background:rgba(8,6,10,.5);box-shadow:0 0 0 3px var(--k),0 0 14px color-mix(in srgb,var(--k) 45%,transparent)}
+#world.lay-player .lane-dia,#world.lay-spec .lane-dia{width:40px;height:40px;border-radius:8px;transform:rotate(45deg);background:var(--k);box-shadow:0 0 12px var(--k);display:grid;place-items:center;z-index:2}
+#world.lay-player .lane-dia::after,#world.lay-spec .lane-dia::after{content:"1";transform:rotate(-45deg);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:22px}
+#world.lay-player .lane-dia[data-i="1"]::after,#world.lay-spec .lane-dia[data-i="1"]::after{content:"2"}
+#world.lay-player .lane-dia[data-i="2"]::after,#world.lay-spec .lane-dia[data-i="2"]::after{content:"3"}
+#world.lay-player .lane-dia.on,#world.lay-spec .lane-dia.on{box-shadow:0 0 0 3px var(--gold),0 0 22px var(--gold)}
+#world.lay-player .tools,#world.lay-spec .tools{top:170px}
+
+#world.lay-player .order{top:372px;width:190px;height:700px}
+#world.lay-player .order.red{left:1714px} #world.lay-player .order.blue{left:16px}
+#world.lay-player .oslot{left:46px}
+#world.lay-player .oslot[data-lane="0"]{top:46px} #world.lay-player .oslot[data-lane="1"]{top:256px} #world.lay-player .oslot[data-lane="2"]{top:466px}
+#world.lay-player .order.red .lane-dia{left:26px} #world.lay-player .order.blue .lane-dia{left:146px}
+#world.lay-player .lane-dia[data-i="0"]{top:121px} #world.lay-player .lane-dia[data-i="1"]{top:331px} #world.lay-player .lane-dia[data-i="2"]{top:541px}
+#world.lay-player.vdo-full .order.red{transform:translateX(340px)} #world.lay-player.vdo-full .order.blue{transform:translateX(-340px)}
+#world.lay-player .opp-hand{display:none}
+#world.lay-player .mk{width:128px} #world.lay-player .mk .card{--cw:117px} #world.lay-player .market{gap:22px}
+#world.lay-player .mk .cap{font-size:14px}
+#world.lay-player #hand{left:360px;top:736px;width:1200px;height:344px}
+#world.lay-player #hand .hand-head{justify-content:center}
+#world.lay-player #hand .hand-sum{margin-left:16px}
+#world.lay-player #hand .hand-cards{position:relative;display:block;height:296px}
+#world.lay-player #hand .hc{position:absolute;left:50%;bottom:-40px;width:150px;margin-left:-75px;transform-origin:50% 230%;rotate:calc((var(--i,0) - (var(--n,1) - 1) / 2) * 9deg)}
+#world.lay-player #hand .hc:hover{z-index:5}
+#world.lay-player #hand .hc .cap{display:none}
+
+#world.lay-spec .order{top:296px;width:150px;height:560px}
+#world.lay-spec .order.red{left:12px} #world.lay-spec .order.blue{left:1758px}
+#world.lay-spec .oslot{--cw:99px;width:99px;height:157px}
+#world.lay-spec .order.red .oslot{left:12px} #world.lay-spec .order.blue .oslot{left:39px}
+#world.lay-spec .oslot[data-lane="0"]{top:44px} #world.lay-spec .oslot[data-lane="1"]{top:215px} #world.lay-spec .oslot[data-lane="2"]{top:386px}
+#world.lay-spec .order.red .lane-dia{left:91px} #world.lay-spec .order.blue .lane-dia{left:19px}
+#world.lay-spec .lane-dia[data-i="0"]{top:102px} #world.lay-spec .lane-dia[data-i="1"]{top:273px} #world.lay-spec .lane-dia[data-i="2"]{top:444px}
+#world.lay-spec[data-phase="pick"] #main{left:640px;top:772px;width:640px;height:250px}
+#world.lay-spec .mk{width:96px} #world.lay-spec .mk .card{--cw:81px} #world.lay-spec .mk .cap{display:none} #world.lay-spec .market{gap:12px}
+#world.lay-spec #hand{left:0;top:700px;width:1920px;height:380px}
+#world.lay-spec .spec-hands{position:relative;display:block;height:100%}
+#world.lay-spec .spec-hand{position:absolute;bottom:0;width:640px;height:380px;padding:0;background:none}
+#world.lay-spec .spec-hand.side-red{left:20px} #world.lay-spec .spec-hand.side-blue{right:20px}
+#world.lay-spec .spec-hand .hand-head{position:absolute;bottom:12px;z-index:3;height:auto;padding:2px 14px;border-radius:999px;background:rgba(5,7,11,.72)}
+#world.lay-spec .spec-hand.side-red .hand-head{left:420px} #world.lay-spec .spec-hand.side-blue .hand-head{right:420px}
+#world.lay-spec .spec-hand .hand-head > b{font-size:17px;white-space:nowrap}
+#world.lay-spec .spec-hand .hand-head{white-space:nowrap}
+#world.lay-spec .match-clock{top:250px;bottom:auto}
+#world.lay-spec .spec-hand .hand-cards{position:absolute;inset:0;display:block}
+#world.lay-spec .spec-hand .hc{position:absolute;bottom:-30px;width:99px;margin-left:-50px;transform-origin:50% 230%;rotate:calc((var(--i,0) - (var(--n,1) - 1) / 2) * 11deg)}
+#world.lay-spec .spec-hand.side-red .hc{left:255px} #world.lay-spec .spec-hand.side-blue .hc{left:385px}
+#world.lay-spec .spec-hand .hc .card{--cw:99px} #world.lay-spec .spec-hand .hc .cap{display:none}
+.q-card{width:var(--cw,120px);aspect-ratio:820/1302;border-radius:12px;display:grid;place-items:center;background:#0f1729;box-shadow:inset 0 0 0 3px var(--k,var(--gold)),0 0 16px var(--k,var(--gold));color:var(--gold);font-family:var(--font-disp);font-weight:700;font-size:calc(var(--cw,120px) * .5);line-height:1;animation:qPulse 1.6s ease-in-out infinite}
+@keyframes qPulse{0%,100%{text-shadow:0 0 8px rgba(255,200,61,.5)}50%{text-shadow:0 0 22px rgba(255,200,61,1)}}
+
+/* การ์ดบน VDO: เด้งมุมล่างตอนตัวละครทำท่า → ก่อน VDO จบพุ่งเข้าเกจ HP (ดู vcFinale) */
+#vdoCards{position:absolute;inset:0;z-index:20;pointer-events:none}
+.vc-pop{position:absolute;top:690px;width:172px;--cw:172px;opacity:0;transition:transform .5s cubic-bezier(.2,.9,.3,1.25),opacity .3s ease}
+.vc-pop.red{left:60px;--k:var(--red);transform:translate(-200px,60px) rotate(-12deg)}
+.vc-pop.blue{left:1688px;--k:var(--blue);transform:translate(200px,60px) rotate(12deg)}
+.vc-pop.on{opacity:1;transform:none}
+.vc-pop .card{box-shadow:0 0 0 3px var(--k),0 0 30px var(--k),0 16px 40px rgba(0,0,0,.7);border-radius:14px}
+.vc-pop.on .card{animation:vcGlow 1s ease-out}
+@keyframes vcGlow{0%{filter:brightness(2.2)}35%{filter:brightness(1.3)}100%{filter:none}}
+.vc-who{position:absolute;left:50%;top:-44px;transform:translateX(-50%);white-space:nowrap;padding:3px 16px;border-radius:999px;background:var(--k);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:20px;box-shadow:0 0 14px var(--k)}
+.vc-pop.fly{z-index:3;transition:transform .38s cubic-bezier(.55,0,.9,.55),opacity .1s ease .33s}
+.vc-pop.fly .vc-who{display:none}
+.vc-pop.gone{opacity:0}
+.vc-pop.drawn .card{box-shadow:0 0 0 4px #3cdc82,0 0 36px #3cdc82,0 16px 40px rgba(0,0,0,.7)}
+.vc-fx{position:absolute;z-index:4;transform:translateX(-50%)}
+.vc-fx .bu{position:absolute;left:50%;top:-195px;width:390px;height:390px;margin-left:-195px;border-radius:50%;animation:vcBurst .55s ease-out forwards}
+.vc-fx .ri{position:absolute;left:50%;top:-110px;width:180px;height:180px;margin-left:-90px;border-radius:50%;border:7px solid #fff;opacity:0;animation:vcRing .5s ease-out .04s forwards}
+.vc-fx .ri.b{animation-delay:.14s;border-width:4px}
+.vc-fx.hit .bu{background:radial-gradient(circle,#fff 0 10%,rgba(255,230,150,.95) 20%,rgba(255,100,40,.8) 36%,rgba(255,30,30,.35) 54%,rgba(255,30,30,0) 70%)}
+.vc-fx.hit .ri{border-color:#ffb08a;box-shadow:0 0 30px #ff4b3a}
+.vc-fx.shield .bu,.vc-fx.block .bu{background:radial-gradient(circle,#fff 0 12%,rgba(210,240,255,.95) 24%,rgba(110,180,255,.55) 44%,rgba(110,180,255,0) 70%)}
+.vc-fx.shield .ri,.vc-fx.block .ri{border-color:#cfe8ff;box-shadow:0 0 30px #6fb4ff}
+.vc-fx.steal .bu{background:radial-gradient(circle,#fff 0 12%,rgba(170,255,200,.9) 24%,rgba(60,220,130,.45) 44%,rgba(60,220,130,0) 70%)}
+.vc-fx.steal .ri{border-color:#b8ffd0;box-shadow:0 0 30px #3cdc82}
+.vc-fx.miss .bu{background:radial-gradient(circle,rgba(255,255,255,.8) 0 10%,rgba(200,210,225,.4) 30%,rgba(200,210,225,0) 60%)}
+.vc-fx.miss .ri{border-color:#c9d2de}
+@keyframes vcBurst{0%{transform:scale(.15);opacity:1}100%{transform:scale(1.6);opacity:0}}
+@keyframes vcRing{0%{transform:scale(.3);opacity:1}100%{transform:scale(3.2);opacity:0}}
+.vc-fx .sd{position:absolute;left:0;top:-45px;width:21px;height:12px;opacity:0;clip-path:polygon(0 0,100% 30%,70% 100%,10% 80%);animation:vcShard .7s cubic-bezier(.2,.7,.4,1) forwards}
+.vc-fx.hit .sd{background:linear-gradient(135deg,#fff,#ff8a5c 40%,#e0141f)}
+.vc-fx.block .sd,.vc-fx.shield .sd{background:linear-gradient(135deg,#fff,#bfe2ff 50%,#5aa6ff)}
+.vc-fx.steal .sd{background:linear-gradient(135deg,#fff,#b8ffd0 50%,#2fbf6e)}
+.vc-fx.miss .sd{display:none}
+.vc-fx .sd:nth-child(3){--dx:-225px;--dy:-90px;--r:-260deg}.vc-fx .sd:nth-child(4){--dx:-165px;--dy:105px;--r:200deg}
+.vc-fx .sd:nth-child(5){--dx:-90px;--dy:-165px;--r:320deg}.vc-fx .sd:nth-child(6){--dx:-30px;--dy:180px;--r:-180deg}
+.vc-fx .sd:nth-child(7){--dx:60px;--dy:-180px;--r:240deg}.vc-fx .sd:nth-child(8){--dx:120px;--dy:150px;--r:-300deg}
+.vc-fx .sd:nth-child(9){--dx:195px;--dy:-75px;--r:280deg}.vc-fx .sd:nth-child(10){--dx:240px;--dy:75px;--r:-220deg}
+.vc-fx .sd:nth-child(11){--dx:-270px;--dy:30px;--r:150deg}.vc-fx .sd:nth-child(12){--dx:285px;--dy:-15px;--r:-150deg}
+@keyframes vcShard{0%{opacity:1;transform:translate(0,0) rotate(0) scale(1.3)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(var(--r)) scale(.6)}}
+.vc-fx .ck{display:none;position:absolute;left:-135px;top:-60px;width:270px;height:60px;animation:vcCrack .7s ease-out forwards}
+.vc-fx.hit .ck,.vc-fx.block .ck{display:block}
+@keyframes vcCrack{0%{opacity:0;transform:scale(.6)}15%{opacity:1;transform:scale(1.05)}70%{opacity:1}100%{opacity:0}}
+.vc-fx .ch{display:none;position:absolute;left:-39px;top:-18px;width:78px;height:20px;clip-path:polygon(0 0,100% 8%,88% 100%,6% 86%);animation:vcChunk .8s cubic-bezier(.3,0,.8,.6) forwards}
+.vc-fx.hit.on-red .ch{display:block;background:linear-gradient(180deg,#ff8a90,#a90e18);box-shadow:0 0 12px #ff2d36}
+.vc-fx.hit.on-blue .ch{display:block;background:linear-gradient(180deg,#8ab8ff,#0e3aa8);box-shadow:0 0 12px #2f74ff}
+@keyframes vcChunk{0%{transform:none}100%{transform:translate(60px,280px) rotate(130deg);opacity:0}}
+.vc-tag{position:absolute;z-index:5;transform:translateX(-50%);white-space:nowrap;padding:3px 16px;border-radius:999px;font-family:var(--font-disp);font-weight:700;font-size:26px;animation:vcTag .45s cubic-bezier(.2,.9,.3,1.5) backwards}
+.vc-tag.draw{background:rgba(5,30,15,.8);border:2px solid #3cdc82;color:#9ff0b5;box-shadow:0 0 18px rgba(60,220,130,.7)}
+.vc-tag.lose{background:#2a1013;border:2px solid #ff5a62;color:#ffd0d3;font-size:22px}
+.vc-tag.miss{background:#1b2028;border:2px solid #7a828f;color:#c9d2de;font-size:22px}
+.vc-tag.red{background:var(--red);color:#fff;font-size:20px} .vc-tag.blue{background:var(--blue);color:#fff;font-size:20px}
+@keyframes vcTag{0%{opacity:0;transform:translateX(-50%) scale(.3) translateY(20px)}100%{opacity:1;transform:translateX(-50%)}}
+.vc-steal{position:absolute;width:96px;z-index:4;--cw:96px;animation:vcSteal .75s cubic-bezier(.4,0,.2,1) forwards}
+.vc-steal .card{box-shadow:0 0 0 3px var(--gold),0 0 22px rgba(255,200,61,.85)}
+@keyframes vcSteal{0%{left:var(--x0);top:var(--y0);transform:scale(.4) rotate(0)}30%{transform:scale(1.1) rotate(var(--r1))}100%{left:var(--x1);top:var(--y1);transform:scale(1.2) rotate(var(--r2))}}
+.vc-lose{position:absolute;top:720px;width:120px;height:190px;z-index:4}
+.vc-lose i{position:absolute;inset:0;border-radius:12px;border:3px solid #ff5a62;background:#101a30 url(assets/logo-df-mini.webp) center/70% no-repeat;box-shadow:0 0 22px rgba(255,60,60,.85)}
+.vc-lose i:first-child{clip-path:polygon(0 0,62% 0,40% 38%,58% 60%,34% 100%,0 100%);animation:vcLoseL 1.15s ease-in forwards}
+.vc-lose i:last-child{clip-path:polygon(62% 0,100% 0,100% 100%,34% 100%,58% 60%,40% 38%);animation:vcLoseR 1.15s ease-in forwards}
+@keyframes vcLoseL{0%{opacity:0;transform:translateY(70px) scale(.6)}18%{opacity:1;transform:none}26%{transform:translateX(-7px) rotate(-4deg)}34%{transform:translateX(7px) rotate(4deg)}42%{transform:none;filter:brightness(2.6)}100%{opacity:0;transform:translate(-105px,165px) rotate(-60deg);filter:grayscale(1) brightness(.35)}}
+@keyframes vcLoseR{0%{opacity:0;transform:translateY(70px) scale(.6)}18%{opacity:1;transform:none}26%{transform:translateX(-7px) rotate(-4deg)}34%{transform:translateX(7px) rotate(4deg)}42%{transform:none;filter:brightness(2.6)}100%{opacity:0;transform:translate(105px,180px) rotate(55deg);filter:grayscale(1) brightness(.35)}}
+
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 
@@ -766,6 +888,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
       </aside>
       <div id="winner" class="win-layer" hidden></div>
       <div class="match-clock" id="matchClock" role="timer" aria-label="เวลาที่ใช้ในแมตช์นี้" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="9.2" r="5.6"/><path d="M6.2 1.6h3.6M8 1.6v2M8 9.2V6.4M12.4 4.2l1.1-1.1"/></svg><b>00:00</b></div>
+      <div id="vdoCards" aria-hidden="true"></div>
       <div class="vdo-bar" id="vdoBar" hidden><span class="vdo-lane" id="vdoLane"></span><button type="button" class="vdo-skip" data-act="vdoSkip">SKIP <i>▶▶</i></button></div>
     </div>
     <div id="fxLayer" class="fx-layer"></div>
@@ -2526,15 +2649,18 @@ const vdo = (() => {
 })();
 const vdoNeed = () => vdo.on && vdo.state !== 'ready';
 // เลือก VDO ของช่องนี้ (ชื่อตามไฟล์ใน Drive): ATKn/ULTn-<ฝั่งที่ตี> · Def|Dod ATKn/ULTn-<ฝั่งที่กัน/หลบ> (เลข = เลเวลการ์ดที่ตีเข้ามา)
-// ตีกันทั้งคู่ = 2 VDO ต่อกัน เลเวลต่ำก่อน Ultimate ไว้ท้าย (เท่ากัน RED ก่อน) · หลบไม่พ้น = VDO ของฝั่งที่ตี (โดนเต็ม ๆ)
-// ไม่มีใครตี = Taunt ของฝั่งที่ใช้การ์ดป้องกัน (ใช้ทั้งคู่ = RED ก่อน) · ว่างทั้งคู่ = ไม่มี VDO
+// ตีกันทั้งคู่ = 2 VDO ต่อกัน · หลบไม่พ้น = VDO ของฝั่งที่ตี (โดนเต็ม ๆ) · ตีฝั่งเดียว = VDO ไฟล์เดียว (มีทั้งสองตัวละคร)
+// ไม่มีใครตี = Taunt ของฝั่งที่ใช้การ์ดป้องกัน · ว่างทั้งคู่ = ไม่มี VDO
 const HIT_VDO = { ATK: 'atk', ULT: 'ult' };
-function vdoClips(r) {
+// ตี้ 2026-10-27: ตีกันทั้งคู่ Attack เจอ Ultimate → Attack ก่อนเสมอ ปิดด้วย Ultimate · ชนิดเดียวกัน → สุ่ม (ตัวสุ่มจาก gseed ทุกเครื่องได้เหมือนกัน)
+// ไม่มีใครตีและใช้การ์ดทั้งคู่ → Taunt สลับฟันปลากับช่องก่อน (ช่องก่อนเริ่มฝั่งไหน ช่องนี้เริ่มอีกฝั่ง · ช่องแรกเริ่ม RED)
+function vdoClips(r, g, i) {
   const tag = s => s.toLowerCase(), mv = c => HIT_VDO[c.type] + c.lv;
   const hitters = SIDES.filter(s => r[s].card && HIT_VDO[r[s].card.type]);
   if (hitters.length === 2) {
-    const rank = s => (r[s].card.type === 'ULT' ? 10 : 0) + r[s].card.lv;
-    return hitters.slice().sort((a, b) => rank(a) - rank(b)).map(s => `${mv(r[s].card)}-${tag(s)}`);
+    const [a, b] = hitters, ta = r[a].card.type, tb = r[b].card.type;
+    const first = ta !== tb ? (ta === 'ATK' ? a : b) : hashStr(`${g.gseed}|vdo|${g.round}|${i}`) & 1 ? 'BLUE' : 'RED';
+    return [first, FOE[first]].map(s => `${mv(r[s].card)}-${tag(s)}`);
   }
   if (hitters.length === 1) {
     const s = hitters[0], t = FOE[s], c = r[s].card, d = r[t].card;
@@ -2542,19 +2668,21 @@ function vdoClips(r) {
     if (d && d.type === 'DODGE' && r[t].evaded) return [`dod-${mv(c)}-${tag(t)}`];
     return [`${mv(c)}-${tag(s)}`];
   }
-  return SIDES.filter(s => r[s].card).map(s => `taunt-${tag(s)}`);
+  const has = SIDES.filter(s => r[s].card);
+  if (has.length < 2) return has.map(s => `taunt-${tag(s)}`);
+  const first = i && ui.vdoFirst ? FOE[ui.vdoFirst] : 'RED';
+  return [first, FOE[first]].map(s => `taunt-${tag(s)}`);
 }
-// ลำดับ VDO ของช่อง i + ฝั่งที่ HP ลดหลังจบแต่ละ VDO (hit) — ใช้กับช่องที่ตีกันทั้งคู่ (ตี้ 2026-10-21):
-// HP ลดทีละฝั่งหลังจบ VDO ของฝั่งที่ตี (เล่น VDO ฝั่งไหน อีกฝั่งเสีย HP) · ช่องนี้มีคนแพ้ → เล่น VDO ของคนแพ้ก่อน ให้คนชนะปิดท้าย
-// รู้ผลล่วงหน้าโดยไม่แตะตัวสุ่ม: ช่องที่ตีกันทั้งคู่ HP เปลี่ยนแค่ดาเมจ (ค่า Ultimate ลด HP ต่ำกว่า PEN_FLOOR ไม่ได้ ไม่ทำให้ใครแพ้)
-// → ส่ง HP หลังดาเมจเข้า judge ตัวจริง · ไม่มีคนแพ้ (หรือเสมอ) = ลำดับเดิมของ vdoClips
+// ลำดับ VDO ของช่อง i + ฝั่งที่ HP ลดใน VDO นั้น (hit) — ช่องที่ตีกันทั้งคู่: เล่น VDO ฝั่งไหน อีกฝั่งเสีย HP (ตี้ 2026-10-21)
+// (ตี้ 2026-10-27 เลิกเรียงตามผู้ชนะ — ใช้ลำดับของ vdoClips ตรง ๆ) · ui.vdoFirst = ฝั่งที่เริ่มช่องนี้ ไว้ให้ช่องถัดไปสลับฟันปลา
+const clipSide = name => (name.endsWith('-red') ? 'RED' : 'BLUE');
 function vdoPlan(g, r, i) {
-  const clips = vdoClips(r);
-  if (!SIDES.every(s => r[s].card && HIT_VDO[r[s].card.type])) return clips.map(name => ({ name, hit: null }));
-  const side = s => ({ hp: g.p[s].hp - Math.max(0, r[s].taken - Math.min(SHIELD_MAX, g.p[s].shield + (r[s].shieldGain || 0))), lanes: g.p[s].lanes });
-  const v = judge({ p: { RED: side('RED'), BLUE: side('BLUE') } }, i);
-  const order = v.winner && v.winner !== 'DRAW' ? [FOE[v.winner], v.winner] : clips.map(n => (n.endsWith('-red') ? 'RED' : 'BLUE'));
-  return order.map(s => ({ name: clips.find(n => n.endsWith(`-${s.toLowerCase()}`)), hit: FOE[s] }));
+  const clips = vdoClips(r, g, i);
+  const hitters = SIDES.filter(s => r[s].card && HIT_VDO[r[s].card.type]);
+  if (hitters.length === 1) ui.vdoFirst = hitters[0];
+  else if (clips.length) ui.vdoFirst = clipSide(clips[0]);
+  if (hitters.length < 2) return clips.map(name => ({ name, hit: null }));
+  return clips.map(name => ({ name, hit: FOE[clipSide(name)] }));
 }
 // Idle วนเป็นพื้นหลัง (ไม่มีเสียง): ฝั่งเรา → อีกฝั่ง → … สลับด้วยครอสเฟดระหว่าง <video> 2 ตัว
 const vdoBg = (() => {
@@ -2605,9 +2733,130 @@ function vdoPrime() {
 // setTimeout จริง (ไม่ผ่าน wait — โหมดเร่งความเร็วไม่ย่อเวลา VDO) · until = รอจนเงื่อนไขเป็นจริง (เช็กทุก 80 ms)
 const sleep = ms => new Promise(res => setTimeout(res, ms));
 const until = cond => new Promise(res => { const t = () => (cond() ? res() : setTimeout(t, 80)); t(); });
-// เล่น VDO ของช่อง i: การ์ดขึ้นบน VDO VDO_REVEAL_MS → เก็บ UI ลง → VDO ไหนมี hp: ก่อนจบ VDO_HP_LEAD วิ แถบ HP ลงมา + hp()
+/* ───────── การ์ดบน VDO (ตี้ 2026-10-27 · ม็อกอัป artifact X2iF5zKGwXLoa9nTpTDXUd) ─────────
+   ระหว่าง VDO ปะทะ การ์ดของแต่ละฝั่งเด้งขึ้นมุมล่าง (แดงซ้าย น้ำเงินขวา) ตอนตัวละครทำท่า — วินาทีจาก popAt()
+   ช่วงท้าย VDO (VDO ไม่หยุด) การ์ดพุ่งเข้าเกจ HP ทีละใบ — Defence ก่อนเสมอ → เคลือบโล่เกจตัวเอง
+   · Attack/Ultimate → ชนเกจอีกฝ่าย (HP ลดตอนชน) · Dodge Lv2+ → ชนเกจอีกฝ่ายแล้วดึงการ์ดมาฝั่งตัวเอง
+   · Dodge Lv1 ไม่พุ่ง (ขึ้น +1 จั่ว ข้างการ์ด — กันคนดูเข้าใจผิดว่า Lv1 ขโมยได้)
+   · Attack ทอยทิ้งติด / Ultimate ทิ้งการ์ดตัวเอง → การ์ดแตกที่มุมของฝั่งที่เสีย
+   ทุกอย่างอ่านจากผลที่คำนวณแล้ว (rollClash) — ไม่แตะตัวสุ่ม PVP จึงตรงกันทุกเครื่อง */
+// วินาทีที่การ์ดเด้งขึ้นใน VDO แต่ละไฟล์ แบบเป๊ะ: 'def-atk1-red:BLUE': 3.2 (ชื่อไฟล์:ฝั่ง) · ไม่ใส่ = popAt เดาจากชนิดไฟล์
+const VDO_POP = {};
+function popAt(clip, side) {
+  const exact = VDO_POP[`${clip}:${side}`];
+  if (exact != null) return exact;
+  const m = clip.match(/^(?:(def|dod)-)?(atk|ult|taunt)\d?-(red|blue)$/);
+  if (!m || m[2] === 'taunt') return 1;
+  const own = m[3].toUpperCase() === side;
+  if (m[1]) return own ? (m[1] === 'def' ? 5.5 : 5) : 3; // VDO ฝั่งรับ: ฝั่งตีโผล่ก่อน · ฝั่งรับตอนยกโล่/หลบ
+  return own ? (m[2] === 'ult' ? 3 : 3.5) : 6;           // VDO ฝั่งตี (ไฟล์เดียว: อีกฝ่ายโผล่ตอนโดน)
+}
+const VC_FLY = 380, VC_GAP = 950, VC_STEAL = 1350, VC_DRAW = 650, VC_LOSE = 750, VC_HUD = 450, VC_PAD = 600;
+const VC_POP = { RED: [146, 826], BLUE: [1774, 826] }; // จุดกึ่งกลางการ์ดมุมล่าง (.vc-pop)
+const VC_BAR = { RED: [579, 104], BLUE: [1343, 104] }; // จุดกึ่งกลางแถบ HP
+const VC_FX_HTML = `<span class="bu"></span><span class="ri"></span>${'<span class="sd"></span>'.repeat(10)}<span class="ri b"></span><span class="ch"></span>`
+  + '<svg class="ck" viewBox="0 0 180 40" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M90 20 L72 8 L58 14 L40 4M90 20 L104 6 L122 12 L140 2M90 20 L80 34 L64 30M90 20 L110 32 L128 28 L150 38M72 8 L66 0"/></svg>';
+// สิ่งที่การ์ดแต่ละใบทำตอนพุ่งเข้าเกจ — เรียง Defence ก่อน → การ์ดตี → Dodge
+function vcActs(g, r) {
+  const acts = [];
+  for (const s of SIDES) {
+    const c = r[s].card;
+    if (!c) continue;
+    const f = FOE[s], st = stat(c), a = { s, card: c };
+    if (c.type === 'DEF') Object.assign(a, { fx: 'shield', to: s, rank: 0 });
+    else if (c.type === 'DODGE') Object.assign(a, st.steal ? { fx: 'steal', to: f, n: st.steal, rank: 2 } : { fx: 'draw', to: s, rank: 2 });
+    else {
+      Object.assign(a, { fx: 'hit', to: f, rank: 1 });
+      const brk = (st.brk || 0) + (isCounter(c, r[f].card) ? st.brkVs || 0 : 0) + (r[s].atkBrk ? r[s].atkBrk.hit : 0);
+      if (brk) a.brk = Math.min(brk, g.p[f].hand.length); else if (r[s].atkBrk) a.brkMiss = true;
+      const cost = costOf(c, r[f].card);
+      if (cost) a.cost = Math.min(cost, g.p[s].hand.length);
+    }
+    acts.push(a);
+  }
+  return acts.sort((x, y) => x.rank - y.rank);
+}
+const vcMs = a => (a.fx === 'draw' ? VC_DRAW : a.fx === 'steal' ? VC_STEAL : VC_GAP) + (a.brk || a.brkMiss ? VC_LOSE : 0) + (a.cost ? VC_LOSE : 0);
+const vc = { pops: {} };
+function vcAdd(cls, html, style) {
+  const d = document.createElement('div');
+  d.className = cls;
+  if (html) d.innerHTML = html;
+  if (style) d.setAttribute('style', style);
+  $('#vdoCards').appendChild(d);
+  return d;
+}
+function vcPop(s, c) {
+  if (vc.pops[s] || !c) return;
+  const d = vcAdd(`vc-pop ${s.toLowerCase()}`, `${cardHTML({ type: c.type, lv: c.lv })}<b class="vc-who">${s} · ${INFO[c.type].name} Lv${c.lv}</b>`);
+  vc.pops[s] = d;
+  void d.offsetWidth;
+  d.classList.add('on');
+  sfx.play('flip');
+}
+function vcReset() { vc.pops = {}; $('#vdoCards').innerHTML = ''; }
+// การ์ดแตกที่มุมของฝั่ง victim n ใบ
+function vcLose(victim, n, text) {
+  const x = victim === 'RED' ? 250 : 1550, step = victim === 'RED' ? 44 : -44;
+  for (let k = 0; k < Math.min(n, 3); k++) vcAdd('vc-lose', '<i></i><i></i>', `left:${x + k * step}px`);
+  vcAdd('vc-tag lose', text, `left:${x + 60}px;top:660px`);
+  sfx.play('discard');
+}
+// พุ่งเข้าเกจตามลำดับ acts · hit(a) = ให้ HP ลดตอนการ์ดชน · stop() = SKIP/ออกจากเกม
+async function vcFinale(g, r, acts, hit, stop) {
+  await sleep(VC_HUD); // รอแถบ HP เลื่อนลงมาก่อน
+  for (const a of acts) {
+    if (stop()) return;
+    const { s, to } = a, [x0, y0] = VC_POP[s], [x1, y1] = VC_BAR[to];
+    vcPop(s, a.card);
+    const d = vc.pops[s];
+    if (a.fx === 'draw') {
+      d.classList.add('drawn');
+      vcAdd('vc-tag draw', '+1 จั่ว', `left:${s === 'RED' ? x0 + 200 : x0 - 200}px;top:${y0 - 30}px`);
+      sfx.play('draw');
+      await sleep(VC_DRAW);
+      continue;
+    }
+    d.classList.add('fly');
+    d.style.transform = `translate(${x1 - x0}px,${y1 - y0}px) scale(.33) rotate(${s === 'RED' ? 28 : -28}deg)`;
+    sfx.play('flip');
+    await sleep(VC_FLY);
+    if (stop()) return;
+    d.classList.add('gone');
+    hit(a);
+    let fx = a.fx;
+    if (fx === 'hit') { const o = r[to]; fx = o.evaded ? 'miss' : o.hpLoss > 0 ? 'hit' : o.absorbed > 0 ? 'block' : 'miss'; }
+    vcAdd(`vc-fx ${fx} on-${to.toLowerCase()}`, VC_FX_HTML, `left:${x1}px;top:${y1}px`);
+    if (fx === 'hit' || fx === 'steal') { quake(true); flashStage(s); }
+    sfx.play(fx === 'hit' ? `ctr${a.card.type}` : fx === 'block' ? 'defend' : fx === 'shield' ? 'ctrDEF' : fx === 'steal' ? 'ctrDODGE' : 'miss');
+    let rest = vcMs(a) - VC_FLY;
+    if (fx === 'steal') {
+      const n = Math.min(a.n, g.p[to].hand.length), [xp, yp] = VC_POP[s];
+      if (n) {
+        vcAdd('vc-steal', backHTML(), `--x0:${x1 - 48}px;--y0:${y1 - 76}px;--x1:${xp - 48}px;--y1:${yp - 76}px;--r1:${s === 'RED' ? -25 : 25}deg;--r2:${s === 'RED' ? -360 : 360}deg`);
+        setTimeout(() => { vcAdd(`vc-tag ${s.toLowerCase()}`, `ขโมยมา +${n}`, `left:${xp}px;top:${yp - 150}px`); sfx.play('swap'); }, 700);
+      } else vcAdd('vc-tag miss', 'มืออีกฝ่ายว่าง · จั่วแทน', `left:${x1}px;top:${y1 + 90}px`);
+    }
+    if (a.brk || a.brkMiss) {
+      await sleep(420);
+      if (stop()) return;
+      if (a.brk) vcLose(to, a.brk, `เสียการ์ด ${a.brk} ใบ · Attack ทอยติด`);
+      else vcAdd('vc-tag miss', 'ทอยทิ้งไม่ติด', `left:${to === 'RED' ? 310 : 1610}px;top:660px`);
+      rest -= 420;
+    }
+    if (a.cost) {
+      await sleep(a.brk || a.brkMiss ? VC_LOSE : 420);
+      if (stop()) return;
+      vcLose(s, a.cost, `Ultimate ทิ้งการ์ดตัวเอง ${a.cost} ใบ`);
+      rest -= a.brk || a.brkMiss ? VC_LOSE : 420;
+    }
+    await sleep(Math.max(0, rest));
+  }
+}
+// เล่น VDO ของช่อง i: การ์ดขึ้นบน VDO VDO_REVEAL_MS → เก็บ UI ลง → การ์ดของแต่ละฝั่งเด้งมุมล่างตาม popAt
+// → ช่วงท้าย VDO การ์ดพุ่งเข้าเกจ (vcFinale) แถบ HP ลงมา + hp() ตอนการ์ดชน · VDO ไม่มีการ์ดให้พุ่ง = ก่อนจบ VDO_HP_LEAD วิ hp()
 // VDO ถัดไปเริ่ม = แถบ HP เก็บขึ้นอีกรอบ · plan = [{ name, hp }] · SKIP = hp() ที่เหลือเรียงตามลำดับทันที · คืน false ถ้าออกจากเกมกลางทาง
-async function laneVdo(i, plan, gid) {
+async function laneVdo(i, plan, gid, r) {
   const W = $('#world'), el = $('#vdoFight'), clips = plan.map(p => p.name), lv = { skip: false, failed: false, clips };
   const gone = () => gid !== ui.gid, shown = new Set();
   const hpNow = async k => {
@@ -2617,12 +2866,19 @@ async function laneVdo(i, plan, gid) {
     if (W.classList.contains('vdo-full')) await sleep(450); // ให้แถบ HP เลื่อนลงมาก่อน ตัวเลขค่อยวิ่ง
     if (!gone()) plan[k].hp();
   };
+  const stop = () => lv.skip || gone() || lv.failed;
+  // การ์ดของใครพุ่งท้าย VDO ไหน: ตีกันทั้งคู่ = ท้าย VDO ของเจ้าของการ์ด · นอกนั้น = ท้าย VDO สุดท้ายของช่อง
+  const acts = r ? vcActs(ui.g, r) : [], twoHit = clips.length === 2 && plan.every(p => p.hit), fin = clips.map(() => []);
+  for (const a of acts) { const k = twoHit ? clips.findIndex(n => clipSide(n) === a.s) : -1; fin[k < 0 ? clips.length - 1 : k].push(a); }
+  // การ์ดเด้งใน VDO ไหน: ไฟล์เดียว = ทั้งสองฝั่ง · หลายไฟล์ = ฝั่งเจ้าของไฟล์
+  const popSides = clips.map(n => (r ? (clips.length === 1 ? SIDES : [clipSide(n)]).filter(s => r[s].card) : []));
   ui.vdo = lv;
   const v0 = Date.now();
   $('#vdoLane').textContent = `ช่อง ${i + 1}`;
   $('#vdoBar').hidden = false;
   vdoBg.sync(false);
   duckMusic(true);
+  vcReset();
   W.classList.add('vdo-fight');
   try {
     for (let k = 0; k < clips.length && !lv.skip; k++) {
@@ -2634,19 +2890,36 @@ async function laneVdo(i, plan, gid) {
       el.muted = !sfx.on;
       el.classList.add('on');
       el.play().catch(() => { el.muted = true; el.play().catch(() => { lv.failed = true; }); });
-      if (k === 0) {
-        await until(() => lv.skip || gone() || lv.failed || Date.now() - t0 >= VDO_REVEAL_MS);
+      const tick = setInterval(() => { for (const s of popSides[k]) if (el.currentTime >= popAt(clips[k], s)) vcPop(s, r[s].card); }, 80);
+      try {
+        if (k === 0) {
+          await until(() => stop() || Date.now() - t0 >= VDO_REVEAL_MS);
+          if (gone()) return false;
+          if (!lv.skip && !lv.failed) W.classList.add('vdo-full');
+        }
+        if (fin[k].length) {
+          // เริ่มพุ่งก่อน VDO จบพอดีให้ทันทุกใบ — VDO เล่นต่อจนจบ ไม่หยุดรอ
+          const lead = (fin[k].reduce((t, a) => t + vcMs(a), 0) + VC_HUD + VC_PAD) / 1000;
+          const at = Math.max(0, VDO_FILES[clips[k]][1] - lead);
+          await until(() => stop() || el.ended || el.currentTime >= at);
+          if (gone()) return false;
+          if (!stop()) {
+            W.classList.add('vdo-hp');
+            const anyHit = fin[k].some(a => a.fx === 'hit');
+            const apply = () => { if (!shown.has(k) && plan[k].hp) { shown.add(k); plan[k].hp(); } };
+            await vcFinale(ui.g, r, fin[k], a => { if (a.fx === 'hit' || !anyHit) apply(); }, stop);
+            if (gone()) return false;
+            if (!stop()) apply();
+          }
+        } else if (plan[k].hp) {
+          const at = VDO_FILES[clips[k]][1] - VDO_HP_LEAD;
+          await until(() => stop() || el.ended || el.currentTime >= at);
+          if (gone()) return false;
+          await hpNow(k);
+        }
+        await until(() => stop() || el.ended);
         if (gone()) return false;
-        if (!lv.skip && !lv.failed) W.classList.add('vdo-full');
-      }
-      if (plan[k].hp) {
-        const at = VDO_FILES[clips[k]][1] - VDO_HP_LEAD;
-        await until(() => lv.skip || gone() || lv.failed || el.ended || el.currentTime >= at);
-        if (gone()) return false;
-        await hpNow(k);
-      }
-      await until(() => lv.skip || gone() || lv.failed || el.ended);
-      if (gone()) return false;
+      } finally { clearInterval(tick); }
     }
     // ข้าม/เล่นไม่ได้: หัก HP ที่ยังค้างตามลำดับเดิม (เว้นจังหวะให้เห็นทีละฝั่ง)
     for (let k = 0; k < plan.length; k++) {
@@ -2661,6 +2934,7 @@ async function laneVdo(i, plan, gid) {
     el.pause();
     el.classList.remove('on');
     W.classList.remove('vdo-fight', 'vdo-full', 'vdo-hp');
+    vcReset();
     $('#vdoBar').hidden = true;
     ui.vdo = null;
     clock.vdoMs += Date.now() - v0;
@@ -3380,7 +3654,7 @@ async function runFight() {
         name: p.name,
         hp: p.hit ? () => showResult([p.hit], k === last) : k === last ? () => showResult() : null,
       }));
-      if (!(await laneVdo(i, steps, gid))) return;
+      if (!(await laneVdo(i, steps, gid, r))) return;
     } else {
       clashFx(r);
       await wait(ctr ? 1450 : 900); // ชนะทาง = ค้างให้เห็นป้ายและค่าที่เปลี่ยนนานขึ้น
@@ -3537,6 +3811,8 @@ function cardHTML(c, o = {}) {
   return `<${el} class="${cls}"${attrs}${extra}><img class="c-art" src="${ART[c.type]}" alt="" draggable="false"><span class="c-lv"><small>LV</small>${c.lv}</span><span class="c-name">${INFO[c.type].name}</span>${o.picked ? '<span class="c-new c-pick">เก็บ</span>' : o.back ? '<span class="c-new c-back">คืน</span>' : o.fresh ? '<span class="c-new">ใหม่</span>' : ''}</${el}>`;
 }
 const backHTML = (cls = '', style = '') => `<div class="card back ${cls}"${style ? ` style="${style}"` : ''}><img class="back-logo" src="assets/logo-df.webp" alt="" draggable="false"></div>`;
+// ผู้ชมเห็นการ์ดที่วางแล้วเป็น ? (ตี้ 2026-10-27: ให้ลุ้นว่าผู้เล่นจะใช้การ์ดอะไร)
+const Q_CARD = '<div class="q-card" role="img" aria-label="การ์ดที่วางแล้ว ยังไม่เปิด">?</div>';
 // เปิดการ์ด: เริ่มจากหลังการ์ดแล้วพลิกเป็นหน้าการ์ด (d = หน่วงก่อนพลิก ms) · กองกลางพลิกห่างกันใบละ REVEAL_GAP
 const REVEAL_GAP = 110;
 const flipHTML = (front, d = 0) => `<div class="flip3d" style="--d:${d}ms"><div class="fl">${front}${backHTML()}</div></div>`;
@@ -3555,7 +3831,12 @@ function laneHTML(l, o = {}) {
 function slotHTML(s, i) {
   const P = ui.g.p[s];
   if (ui.mode === 'spec') {
-    if (!P.lanes) return ui.phase === 'action' ? '<div class="slot-empty wait">รอ…</div>' : '';
+    // ผู้ชม (ตี้ 2026-10-27): ผู้เล่นกด FIGHT! แล้ว = ทั้ง 3 ช่องเป็น ? (ไม่บอกว่าช่องไหนว่าง) จนช่องนั้นเปิดปะทะ
+    const locked = !!P.lanes || specIn(s, `${ui.g.round}a`) !== undefined;
+    if (ui.phase === 'action') return locked ? Q_CARD : '<div class="slot-empty wait">รอ…</div>';
+    if (!P.lanes) return '';
+    if (ui.phase === 'fight' && ui.shown < i) return Q_CARD;
+    if (ui.phase === 'fight' && ui.shown === i && !ui.results[i]) return flipHTML(P.lanes[i] ? cardHTML(P.lanes[i]) : '<div class="slot-empty">ว่าง</div>');
     return laneHTML(P.lanes[i], { cls: ui.slotArrive ? 'arrive' : '', style: ui.slotArrive ? `--d:${landAt(i)}ms` : '' });
   }
   if (s === OPP) {
@@ -3919,11 +4200,11 @@ function specHandHTML(s) {
   const g = ui.g, dying = s === ME ? ui.dying : ui.dyingOpp || [], dyingIds = new Set(dying.map(c => c.id));
   const cards = g.p[s].hand.concat(dying).sort((a, b) => (a.got || 0) - (b.got || 0) || a.id - b.id);
   return `<div class="spec-hand side-${s.toLowerCase()}"><div class="hand-head"><b class="t-${s.toLowerCase()}">มือ ${s} · ${esc(ui.spec.nick[s])}</b><span class="hud-meta" id="specMeta${s}"><span class="meta-txt">${g.p[s].hand.length}/${HAND_MAX} ใบ</span></span></div>
-    <div class="hand-cards">${cards.length ? cards.map(c => {
+    <div class="hand-cards">${cards.length ? cards.map((c, k) => {
       const gone = dyingIds.has(c.id), up = ui.lvups.get(c.id), arr = ui.arrive.get(c.id);
       const land = up != null ? landAt(up) : arr != null ? landAt(arr) : null;
       const cls = gone ? 'leaving' : up != null ? 'lvup' : arr != null ? 'arrive' : '';
-      return `<div class="hc ${cls}"${land != null && !gone ? ` style="--d:${land}ms"` : ''}>${cardHTML({ type: c.type, lv: c.lv }, { cid: c.id, fresh: !gone && c.fresh >= g.round, picked: !gone && c.picked === g.round })}${capHTML(c.type, c.lv)}</div>`;
+      return `<div class="hc ${cls}" style="--i:${k};--n:${cards.length}${land != null && !gone ? `;--d:${land}ms` : ''}">${cardHTML({ type: c.type, lv: c.lv }, { cid: c.id, fresh: !gone && c.fresh >= g.round, picked: !gone && c.picked === g.round })}${capHTML(c.type, c.lv)}</div>`;
     }).join('') : '<p class="hand-empty">มือว่าง</p>'}</div></div>`;
 }
 function renderHand() {
@@ -3940,7 +4221,7 @@ function renderHand() {
   $('#hand').innerHTML = `<div class="hand-head"><b class="t-${ME.toLowerCase()}">การ์ดบนมือ ${ME}</b><span class="hud-meta" id="myMeta"><span class="meta-txt">${alive.length}/${HAND_MAX} ใบ</span></span>${pendingUps() ? (canUnpick() ? `<button type="button" class="pend-up" id="pendUp" data-act="unpickOver" title="แตะเพื่อคืนใบนี้กลับกองกลาง">${lvTokenHTML} ×${pendingUps()} สุ่มเลเวลอัปตอนกด PICK UP · แตะเพื่อคืน</button>` : `<span class="pend-up" id="pendUp">${lvTokenHTML} ×${pendingUps()} สุ่มเลเวลอัปตอนกด PICK UP</span>`) : ''}
       <span class="hand-sum">${TYPES.map(t => `<span class="chip k-${t}" title="${INFO[t].name}">${icon(t)}${n[t]}</span>`).join('')}</span></div>
     <div class="hand-cards">${cards.length
-      ? cards.map(c => {
+      ? cards.map((c, k) => {
         const dying = dyingIds.has(c.id), up = ui.lvups.get(c.id), arr = ui.arrive.get(c.id);
         const land = up != null ? landAt(up) : arr != null ? landAt(arr) : null;
         const cls = dying ? 'leaving' : up != null ? 'lvup' : arr != null ? 'arrive' : '';
@@ -3950,7 +4231,7 @@ function renderHand() {
         const gpick = usable && gmode && !c.refund, gsel = gmode && !!gm && gm.id === c.id;
         const act = gpick ? 'gaugeCard' : !usable || gmode ? null : ui.phase === 'action' ? 'place' : pickOf(c.id) ? 'unpick' : null;
         const card = cardHTML({ type: c.type, lv: c.lv }, { cid: c.id, fresh: !dying && c.fresh >= g.round, picked: !dying && c.picked === g.round, back: !dying && c.refund === g.round, cls: usable && !gmode ? 'draggable' : '', act, data: c.id });
-        return `<div class="hc ${cls}${gpick ? ' gpick' : ''}${gsel ? ' gsel' : ''}"${land != null && !dying ? ` style="--d:${land}ms"` : ''}>${card}${capHTML(c.type, c.lv)}</div>`;
+        return `<div class="hc ${cls}${gpick ? ' gpick' : ''}${gsel ? ' gsel' : ''}" style="--i:${k};--n:${cards.length}${land != null && !dying ? `;--d:${land}ms` : ''}">${card}${capHTML(c.type, c.lv)}</div>`;
       }).join('')
       : `<p class="hand-empty">ไม่มีการ์ดบนมือ — ค่า Ultimate ที่ทิ้งไม่ได้ เสีย ${EMPTY_PENALTY} HP ต่อใบ · โดนอีกฝ่ายบังคับทิ้ง ไม่เสีย HP</p>`}</div>`;
 }
@@ -4053,6 +4334,11 @@ function render() {
   $('.tab.red small').textContent = inGame ? who('RED') : 'คุณ';
   $('.tab.blue small').textContent = inGame ? who('BLUE') : 'บอท';
   $('#world').classList.toggle('is-game', inGame);
+  // เลย์เอาต์ผู้เล่น / ผู้ชม (ตี้ 2026-10-27) — ตำแหน่งทั้งหมดอยู่ใน CSS .lay-player / .lay-spec
+  $('#world').classList.toggle('lay-player', inGame && ui.mode !== 'spec');
+  $('#world').classList.toggle('lay-spec', inGame && ui.mode === 'spec');
+  $('#world').classList.toggle('me-blue', ME === 'BLUE');
+  $('#world').dataset.phase = inGame ? ui.phase || '' : '';
   // VDO: ชั้นวิดีโอโผล่เมื่ออยู่ในเกม (หลังฉากเปิด) · Idle วนเป็นพื้นหลังเมื่อไม่ได้เล่น VDO ปะทะ
   $('#world').classList.toggle('has-vdo', inGame && !ui.intro && vdo.ready);
   vdoBg.sync(inGame && !ui.intro && vdo.ready && !ui.vdo);
@@ -4874,7 +5160,7 @@ function specTick() {
     if (ui.phase === 'end' && specBoth(`${r}n`)) { nextRound(); return; }
   }
   const txt = specStatus();
-  if (txt !== S.status) { S.status = txt; renderControls(); if (ui.phase === 'action') renderMain(); }
+  if (txt !== S.status) { S.status = txt; renderControls(); if (ui.phase === 'action') { renderMain(); renderOrders(); } } // renderOrders: ฝั่งที่กด FIGHT! แล้วขึ้น ?
 }
 function specLeave() {
   presence({ watch: null });
