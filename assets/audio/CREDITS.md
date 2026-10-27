@@ -35,7 +35,7 @@ Layered sounds list every source they use.
 | hurt | `sfx-hurt.mp3` | Power Punch (192118) | Universfield | https://pixabay.com/sound-effects/film-special-effects-power-punch-192118/ |
 | heal | `sfx-heal.mp3` | Spell Casting (229208) | Universfield | https://pixabay.com/sound-effects/film-special-effects-spell-casting-229208/ |
 | levelup3 | `sfx-levelup3.mp3` | Brass Fanfare (144755) | Universfield | https://pixabay.com/sound-effects/film-special-effects-brass-fanfare-144755/ |
-| levelup | `sfx-levelup.mp3` | Gaming victory (464016) | EAGLAXLE | https://pixabay.com/sound-effects/gaming-victory-464016/ |
+| levelup | `sfx-levelup.mp3` | Level Up 02 (528919) | Tithuh | https://pixabay.com/sound-effects/film-special-effects-level-up-02-528919/ |
 | win | `sfx-win.mp3` | Turbo / Action Powerful Rock Logo (122875) | SoulProdMusic | https://pixabay.com/music/rock-turbo-action-powerful-rock-logo-intro-outro-rock-music-122875/ |
 |  |  | Aggressive Huge Hit Logo (139134) | Alex_Kizenkov | https://pixabay.com/sound-effects/film-special-effects-aggressive-huge-hit-logo-139134/ |
 | lose | `sfx-lose.mp3` | Fail Trumpet (144746) | Universfield | https://pixabay.com/sound-effects/film-special-effects-fail-trumpet-144746/ |
@@ -69,3 +69,4 @@ Alex_Kizenkov, AlexGrohl, AudioPapkin, DavidDumaisAudio, DRAGON-STUDIO, florapho
 
 2026-10-28: ตี้เลือกเสียงใหม่ — `ult` = Epic Spell Impact (ตัด 2.1 วิ เฟดท้าย), `levelup3` = Brass Fanfare (ตัด 2.2 วิ เฟดท้าย) · ระดับ max momentary −16 LUFS เท่าเดิม · ไฟล์ต้นฉบับใน audio-src/raw-new/
 2026-10-28: `levelup` = Gaming victory (ตัด 1.8 วิ เฟดท้าย, max momentary −18 LUFS — เบากว่า levelup3 −16)
+2026-10-28 (รอบ 2): `levelup` เปลี่ยนเป็น Level Up 02 by Tithuh (แนวทุ้ม · ตัด 2.0 วิ เฟดท้าย, max momentary −18 LUFS)
