@@ -133,13 +133,13 @@
    "page": "https://pixabay.com/sound-effects/film-special-effects-brass-fanfare-144755/"
   },
   "levelup": {
-   "file": "assets/audio/sfx-levelup.mp3",
+   "file": "assets/audio/sfx-levelup.mp3?v=20261028",
    "gain": 1.0,
-   "dur": 0.738,
-   "source": 199574,
-   "title": "Level Up 02",
-   "author": "Universfield",
-   "page": "https://pixabay.com/sound-effects/film-special-effects-level-up-02-199574/"
+   "dur": 1.8,
+   "source": 464016,
+   "title": "Gaming victory",
+   "author": "EAGLAXLE",
+   "page": "https://pixabay.com/sound-effects/gaming-victory-464016/"
   },
   "win": {
    "file": "assets/audio/sfx-win.mp3",
