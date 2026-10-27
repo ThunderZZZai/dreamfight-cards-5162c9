@@ -694,6 +694,19 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 #world.lay-spec .spec-hand.side-red .hand-head{left:330px} #world.lay-spec .spec-hand.side-blue .hand-head{right:308px}
 #world.lay-spec .spec-hand .hand-head > b{font-size:17px;white-space:nowrap}
 #world.lay-spec .spec-hand .hand-head{white-space:nowrap}
+/* ผู้ชม (ตี้ 2026-10-27): ช่วงรอผู้เล่นให้เห็น VDO ชัด — ไม่มีม่านดำ · ข้อความเฟสเหลือหัวข้อเล็ก ๆ · แถบ OBSERVE เล็กลงขึ้นไปใต้แถบเฟส */
+/* ตี้ 2026-10-27: ทั้งผู้ชมและผู้เล่นไม่ต้องม่านดำทับ VDO — ให้เห็น VDO ชัด ๆ · ตัวหนังสือบนกระดานใส่เงาแทน */
+#vdoLayer::after{display:none}
+#strip,#main,.hand-head,.order,.gauge{text-shadow:0 1px 3px rgba(0,0,0,.85),0 0 10px rgba(0,0,0,.5)}
+/* แถบ OBSERVE (ตี้: บังจอ) → ป้ายเล็กมุมขวาบนใต้ HUD · จบเกมกลับเป็นแถบเต็มเพราะมีปุ่มดูอีกเกม */
+#world.lay-spec #controls.spec-mini{left:auto;right:16px;top:138px;width:auto;max-width:620px;height:36px;display:flex;gap:10px;padding:0 4px 0 12px;border-radius:999px;background:rgba(5,7,11,.42);border-color:rgba(255,255,255,.1)}
+#world.lay-spec #controls.spec-mini .hint{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#d6dde8}
+#world.lay-spec #controls.spec-mini .spec-badge{font-size:11px;padding:0 8px;margin-right:6px}
+#world.lay-spec #controls.spec-mini .btns-main:empty{display:none}
+#world.lay-spec #controls.spec-mini .btn{min-height:30px;padding:0 12px;font-size:13px;border-radius:999px}
+#world.lay-spec[data-phase="draw"] #main,#world.lay-spec[data-phase="action"] #main{top:318px;height:60px}
+#world.lay-spec[data-phase="draw"] #main .msg > :not(b),#world.lay-spec[data-phase="action"] #main .msg > :not(b){display:none}
+#world.lay-spec #main .msg b{font-size:28px;text-shadow:0 2px 10px rgba(0,0,0,.8)}
 /* นาฬิกาแมตช์ (ตี้ 2026-10-27: บังจอ) — มุมซ้ายบนสุดข้าง HUD · ซ่อนตอนดู VDO เต็มจอ */
 #world.lay-player .match-clock,#world.lay-spec .match-clock{left:14px;top:12px;bottom:auto;opacity:.8;transition:opacity .3s}
 #world.vdo-full .match-clock{opacity:0}
@@ -2810,6 +2823,8 @@ function popAt(clip, side) {
   const m = clip.match(/^(?:(def|dod)-)?(atk|ult|taunt)\d?-(red|blue)$/);
   if (!m || m[2] === 'taunt') return 1;
   const own = m[3].toUpperCase() === side;
+  // ตี้ 2026-10-27: Ultimate เจอหลบ → อันติโผล่ก่อน ฝั่งหลบค่อยเฉลยตอนท่าอันติกำลังเข้า (60% ของคลิป) ให้ลุ้น
+  if (m[1] === 'dod' && m[2] === 'ult' && own) return +(VDO_FILES[clip][1] * 0.6).toFixed(1);
   if (m[1]) return own ? (m[1] === 'def' ? 5.5 : 5) : 3; // VDO ฝั่งรับ: ฝั่งตีโผล่ก่อน · ฝั่งรับตอนยกโล่/หลบ
   return own ? (m[2] === 'ult' ? 3 : 3.5) : 6;           // VDO ฝั่งตี (ไฟล์เดียว: อีกฝ่ายโผล่ตอนโดน)
 }
@@ -4349,6 +4364,7 @@ function renderControls() {
   const g = ui.g;
   if (ui.mode === 'spec') {
     $('#controls').classList.remove('has-clock');
+    $('#controls').classList.toggle('spec-mini', !ui.winner);
     $('#controls').innerHTML = `<div class="hint"><span class="spec-badge">OBSERVE</span>${specStatus()}</div>
       <div class="btns-main">${ui.winner ? (ui.spec.bot ? '<button type="button" class="btn primary cta" data-act="bvb">ดูอีกเกม</button>' : '<button type="button" class="btn primary cta" data-act="toPvp">กลับห้อง PVP</button>') : ''}</div>
       <div class="btns">${ui.winner ? '<button type="button" class="btn ghost" data-act="unpeek">ดูผลแพ้ชนะ</button>' : `<button type="button" class="btn ghost" data-act="${ui.spec.bot ? 'toLobby' : 'toPvp'}">ออกจากการชม</button>`}</div>`;
@@ -4401,6 +4417,7 @@ function renderControls() {
       hint += ready ? ` · รอ ${OPP} พร้อมรอบถัดไป…` : ` · ไปรอบถัดไปอัตโนมัติใน <b id="pvpNext">${pvpNextLeft()}</b> วิ`;
     }
   }
+  $('#controls').classList.remove('spec-mini');
   $('#controls').classList.toggle('has-clock', !!clock);
   $('#controls').innerHTML = `<div class="hint">${hint}</div><div class="btns-main">${clock}${main}</div><div class="btns">${btns}</div>`;
 }
