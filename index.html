@@ -2954,9 +2954,12 @@ async function laneVdo(i, plan, gid, r, keep = false) {
     if (!gone()) plan[k].hp();
   };
   const stop = () => lv.skip || gone() || lv.failed;
-  // การ์ดของใครพุ่งท้าย VDO ไหน: ตีกันทั้งคู่ = ท้าย VDO ของเจ้าของการ์ด · นอกนั้น = ท้าย VDO สุดท้ายของช่อง
+  // การ์ดพุ่งท้าย VDO สุดท้ายของช่องเสมอ (ตี้ 2026-10-27: ตีกันทั้งคู่ต้องรอตัวละครใช้สกิลครบทั้ง 2 ตัวก่อน — ตัวแรกจบแล้วก็ยังไม่ชน)
+  // ตีกันทั้งคู่: พุ่งตามลำดับ VDO (เจ้าของ VDO แรกชนก่อน) · การ์ดชน = หัก HP ของ VDO เจ้าของการ์ดใบนั้น
   const acts = r ? vcActs(ui.g, r) : [], twoHit = clips.length === 2 && plan.every(p => p.hit), fin = clips.map(() => []);
-  for (const a of acts) { const k = twoHit ? clips.findIndex(n => clipSide(n) === a.s) : -1; fin[k < 0 ? clips.length - 1 : k].push(a); }
+  const clipOf = s => clips.findIndex(n => clipSide(n) === s);
+  if (twoHit) acts.sort((x, y) => clipOf(x.s) - clipOf(y.s));
+  if (clips.length) fin[clips.length - 1].push(...acts);
   // การ์ดเด้งใน VDO ไหน: ไฟล์เดียว = ทั้งสองฝั่ง · หลายไฟล์ = ฝั่งเจ้าของไฟล์
   const popSides = clips.map(n => (r ? (clips.length === 1 ? SIDES : [clipSide(n)]).filter(s => r[s].card) : []));
   // ตี้ 2026-10-27: เลือดไม่ลดจนกว่าการ์ดจะพุ่งไปชน — SKIP / VDO เล่นไม่ได้ ก็ยังพุ่งก่อนแล้วค่อย hp() (SKIP ข้ามแค่ VDO)
@@ -2966,8 +2969,8 @@ async function laneVdo(i, plan, gid, r, keep = false) {
     ran.add(k);
     W.classList.add('vdo-hp');
     const anyHit = fin[k].some(a => a.fx === 'hit');
-    await vcFinale(ui.g, r, fin[k], a => { if (a.fx === 'hit' || !anyHit) apply(k); }, gone);
-    if (!gone()) apply(k);
+    await vcFinale(ui.g, r, fin[k], a => { if (twoHit) { if (a.fx === 'hit') apply(clipOf(a.s)); } else if (a.fx === 'hit' || !anyHit) apply(k); }, gone);
+    if (!gone()) for (let j = 0; j <= k; j++) apply(j);
   };
   ui.vdo = lv;
   const v0 = Date.now();
@@ -3003,7 +3006,7 @@ async function laneVdo(i, plan, gid, r, keep = false) {
           if (gone()) return false;
           await runFin(k);
           if (gone()) return false;
-        } else if (plan[k].hp) {
+        } else if (plan[k].hp && !twoHit) {
           const at = VDO_FILES[clips[k]][1] - VDO_HP_LEAD;
           await until(() => stop() || el.ended || el.currentTime >= at);
           if (gone()) return false;
@@ -3031,6 +3034,7 @@ async function laneVdo(i, plan, gid, r, keep = false) {
   } finally {
     el.pause();
     if (!keep || gone()) vdoUncover();
+    else { el.classList.remove('on'); vdoBg.sync(true); } // ผู้ชมค้างจอ VDO ข้ามช่อง: VDO จบแล้วอย่าค้างเฟรมสุดท้าย → ครอสเฟดเป็น Idle วนระหว่างรอช่องถัดไป (ตี้ 2026-10-27)
     vcReset();
     $('#vdoBar').hidden = true;
     ui.vdo = null;
@@ -3756,6 +3760,7 @@ async function runFight() {
       const last = plan.length - 1;
       const steps = plan.map((p, k) => ({
         name: p.name,
+        hit: p.hit, // laneVdo ใช้แยกช่องตีกันทั้งคู่ (twoHit) — เดิมไม่ได้ส่งมา twoHit เลยเป็น false ตลอด
         hp: p.hit ? () => showResult([p.hit], k === last) : k === last ? () => showResult() : null,
       }));
       if (!(await laneVdo(i, steps, gid, r, ui.mode === 'spec'))) return;
