@@ -26,7 +26,7 @@ Layered sounds list every source they use.
 | place | `sfx-place.mp3` | Placing playing card (522514) | OxidVideos | https://pixabay.com/sound-effects/film-special-effects-placing-playing-card-522514/ |
 | flip | `sfx-flip.mp3` | flipCard (91468) | freesound_community | https://pixabay.com/sound-effects/film-special-effects-flipcard-91468/ |
 | attack | `sfx-attack.mp3` | Sword Slash and Swing (185432) | DavidDumaisAudio | https://pixabay.com/sound-effects/film-special-effects-sword-slash-and-swing-185432/ |
-| ult | `sfx-ult.mp3` | Elemental Magic Spell Impact Outgoing (228342) | RescopicSound | https://pixabay.com/sound-effects/film-special-effects-elemental-magic-spell-impact-outgoing-228342/ |
+| ult | `sfx-ult.mp3` | Epic Spell Impact (478364) | DRAGON-STUDIO | https://pixabay.com/sound-effects/film-special-effects-epic-spell-impact-478364/ |
 | defend | `sfx-defend.mp3` | Sword Slash With Metal Shield Impact (185433) | DavidDumaisAudio | https://pixabay.com/sound-effects/film-special-effects-sword-slash-with-metal-shield-impact-185433/ |
 | dodge | `sfx-dodge.mp3` | Whoosh Effect (405447) | DRAGON-STUDIO | https://pixabay.com/sound-effects/film-special-effects-whoosh-effect-405447/ |
 | miss | `sfx-miss.mp3` | Near Miss Swing Whoosh 18 (233442) | floraphonic | https://pixabay.com/sound-effects/film-special-effects-near-miss-swing-whoosh-18-233442/ |
@@ -34,8 +34,7 @@ Layered sounds list every source they use.
 |  |  | Fire Torch Whoosh 2 (186586) | floraphonic | https://pixabay.com/sound-effects/film-special-effects-fire-torch-whoosh-2-186586/ |
 | hurt | `sfx-hurt.mp3` | Power Punch (192118) | Universfield | https://pixabay.com/sound-effects/film-special-effects-power-punch-192118/ |
 | heal | `sfx-heal.mp3` | Spell Casting (229208) | Universfield | https://pixabay.com/sound-effects/film-special-effects-spell-casting-229208/ |
-| levelup3 | `sfx-levelup3.mp3` | Power Up Sparkle 1 (177983) | floraphonic | https://pixabay.com/sound-effects/film-special-effects-power-up-sparkle-1-177983/ |
-|  |  | Level Complete (143022) | Universfield | https://pixabay.com/sound-effects/film-special-effects-level-complete-143022/ |
+| levelup3 | `sfx-levelup3.mp3` | Brass Fanfare (144755) | Universfield | https://pixabay.com/sound-effects/film-special-effects-brass-fanfare-144755/ |
 | levelup | `sfx-levelup.mp3` | Level Up 02 (199574) | Universfield | https://pixabay.com/sound-effects/film-special-effects-level-up-02-199574/ |
 | win | `sfx-win.mp3` | Turbo / Action Powerful Rock Logo (122875) | SoulProdMusic | https://pixabay.com/music/rock-turbo-action-powerful-rock-logo-intro-outro-rock-music-122875/ |
 |  |  | Aggressive Huge Hit Logo (139134) | Alex_Kizenkov | https://pixabay.com/sound-effects/film-special-effects-aggressive-huge-hit-logo-139134/ |
@@ -67,3 +66,5 @@ Layered sounds list every source they use.
 ## Authors (15), 41 Pixabay sources in total
 
 Alex_Kizenkov, AlexGrohl, AudioPapkin, DavidDumaisAudio, DRAGON-STUDIO, floraphonic, freesound_community, Kulakovka, LordSonny, OxidVideos, RescopicSound, SoulProdMusic, TanwerAman, u_fe12rqkbth, Universfield
+
+2026-10-28: ตี้เลือกเสียงใหม่ — `ult` = Epic Spell Impact (ตัด 2.1 วิ เฟดท้าย), `levelup3` = Brass Fanfare (ตัด 2.2 วิ เฟดท้าย) · ระดับ max momentary −16 LUFS เท่าเดิม · ไฟล์ต้นฉบับใน audio-src/raw-new/

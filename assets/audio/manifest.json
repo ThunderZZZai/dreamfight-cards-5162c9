@@ -47,13 +47,13 @@
    "page": "https://pixabay.com/sound-effects/film-special-effects-sword-slash-and-swing-185432/"
   },
   "ult": {
-   "file": "assets/audio/sfx-ult.mp3",
-   "gain": 1.002,
-   "dur": 2.29,
-   "source": 228342,
-   "title": "Elemental Magic Spell Impact Outgoing",
-   "author": "RescopicSound",
-   "page": "https://pixabay.com/sound-effects/film-special-effects-elemental-magic-spell-impact-outgoing-228342/"
+   "file": "assets/audio/sfx-ult.mp3?v=20261028",
+   "gain": 1.0,
+   "dur": 2.09,
+   "source": 478364,
+   "title": "Epic Spell Impact",
+   "author": "DRAGON-STUDIO",
+   "page": "https://pixabay.com/sound-effects/film-special-effects-epic-spell-impact-478364/"
   },
   "defend": {
    "file": "assets/audio/sfx-defend.mp3",
@@ -124,27 +124,13 @@
    "page": "https://pixabay.com/sound-effects/film-special-effects-spell-casting-229208/"
   },
   "levelup3": {
-   "file": "assets/audio/sfx-levelup3.mp3",
-   "gain": 1.416,
-   "dur": 1.514,
-   "source": 143022,
-   "title": "Level Complete",
+   "file": "assets/audio/sfx-levelup3.mp3?v=20261028",
+   "gain": 1.0,
+   "dur": 2.2,
+   "source": 144755,
+   "title": "Brass Fanfare",
    "author": "Universfield",
-   "page": "https://pixabay.com/sound-effects/film-special-effects-level-complete-143022/",
-   "sources": [
-    {
-     "id": 177983,
-     "title": "Power Up Sparkle 1",
-     "author": "floraphonic",
-     "page": "https://pixabay.com/sound-effects/film-special-effects-power-up-sparkle-1-177983/"
-    },
-    {
-     "id": 143022,
-     "title": "Level Complete",
-     "author": "Universfield",
-     "page": "https://pixabay.com/sound-effects/film-special-effects-level-complete-143022/"
-    }
-   ]
+   "page": "https://pixabay.com/sound-effects/film-special-effects-brass-fanfare-144755/"
   },
   "levelup": {
    "file": "assets/audio/sfx-levelup.mp3",
