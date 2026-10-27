@@ -643,7 +643,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 .order.red{--k:var(--red)} .order.blue{--k:var(--blue)}
 #world.lay-player .order > img,#world.lay-spec .order > img{display:none}
 #world.lay-player:not(.me-blue) .order.blue,#world.lay-player.me-blue .order.red{display:none}
-#world.lay-player .order::before,#world.lay-spec .order::before{content:"CARD ORDER";position:absolute;left:50%;top:0;transform:translateX(-50%);padding:1px 12px;border-radius:6px;background:var(--k);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:19px;letter-spacing:.06em;white-space:nowrap}
+#world.lay-player .order::before,#world.lay-spec .order::before{content:"ACTION ORDER";position:absolute;left:50%;top:0;transform:translateX(-50%);padding:1px 12px;border-radius:6px;background:var(--k);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:19px;letter-spacing:.06em;white-space:nowrap}
 #world.lay-player .oslot,#world.lay-spec .oslot{border-radius:14px;background:rgba(8,6,10,.5);box-shadow:0 0 0 3px var(--k),0 0 14px color-mix(in srgb,var(--k) 45%,transparent)}
 #world.lay-player .lane-dia,#world.lay-spec .lane-dia{width:40px;height:40px;border-radius:8px;transform:rotate(45deg);background:var(--k);box-shadow:0 0 12px var(--k);display:grid;place-items:center;z-index:2}
 #world.lay-player .lane-dia::after,#world.lay-spec .lane-dia::after{content:"1";transform:rotate(-45deg);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:22px}
@@ -652,7 +652,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 #world.lay-player .lane-dia.on,#world.lay-spec .lane-dia.on{box-shadow:0 0 0 3px var(--gold),0 0 22px var(--gold)}
 #world.lay-player .tools,#world.lay-spec .tools{top:170px}
 
-#world.lay-player .order{top:200px;width:190px;height:600px}
+#world.lay-player .order{top:180px;width:190px;height:600px}
 #world.lay-player .order.red{left:16px} #world.lay-player .order.blue{left:1714px}
 #world.lay-player .oslot{left:24px;--cw:110px;width:110px;height:175px}
 #world.lay-player .order.blue .oslot{left:56px}
@@ -663,6 +663,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 #world.lay-player .tools.left{top:auto;bottom:14px;left:auto;right:16px;justify-content:flex-end}
 #world.lay-player.me-blue .tools.left{right:auto;left:16px;justify-content:flex-start}
 #world.lay-player .tools.right{top:158px}
+#world.lay-player.me-blue .tools.right{left:16px;justify-content:flex-start} /* BLUE: แผงอยู่ขวา → ปุ่มบันทึก/กติกาย้ายไปซ้าย ไม่ทับป้าย ACTION ORDER */
 /* ผู้ชม: ปุ่มทั้งสองกลุ่มอยู่แถวล่างกลาง (ด้านข้างเป็นแผง CARD ORDER) */
 #world.lay-spec .tools.left{top:auto;bottom:12px;left:680px}
 #world.lay-spec .tools.right{top:auto;bottom:12px;left:980px;justify-content:flex-start}
@@ -719,15 +720,16 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 
 /* ป้าย ACTION 1/2/3 กลางจอตอนเริ่มเปิดแต่ละช่อง (ตี้ 2026-10-27) — ขึ้นแป๊บเดียวแล้วหาย */
 #laneCall{position:absolute;left:0;right:0;top:420px;z-index:25;text-align:center;pointer-events:none;opacity:0;font-family:var(--font-disp);font-weight:700;font-size:120px;line-height:1;letter-spacing:.08em;color:#fff;-webkit-text-stroke:3px var(--gold);text-shadow:0 0 30px rgba(255,200,61,.85),0 6px 0 rgba(0,0,0,.6)}
-#laneCall.on{animation:laneCall calc(1.4s*var(--spd)) cubic-bezier(.2,.9,.3,1) forwards}
-@keyframes laneCall{0%{opacity:0;transform:scale(2.4)}15%{opacity:1;transform:scale(.95)}22%{transform:scale(1.03)}28%,72%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.1)}}
+#laneCall.on{animation:laneCall calc(2.2s*var(--spd)) cubic-bezier(.2,.9,.3,1) forwards} /* ตี้ 2026-10-28: ค้างนานขึ้น (เดิม 1.4 วิ) */
+@keyframes laneCall{0%{opacity:0;transform:scale(2.4)}10%{opacity:1;transform:scale(.95)}15%{transform:scale(1.03)}19%,84%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.1)}}
 
 /* เกจพร (ตี้ 2026-10-27 · ม็อกอัป GaugeFx): กรอบเงิน 3 ช่องใต้แผงของเรา (ผู้ชม: มุมล่างทั้งสองฝั่ง) เติมสีรุ้งทีละขั้นล่างขึ้นบน
    มีเกจ = กรอบเรืองรุ้ง · ใช้พร = คลื่นรุ้ง · การ์ดที่ได้/เปลี่ยนจากพร = กรอบรุ้งแว้บ · รอบพลังเต็ม = การ์ดบนมือ + ช่องวางเรืองรุ้ง */
 #world.lay-player .gauge,#world.lay-spec .gauge{align-items:flex-end;gap:10px}
 #world.lay-player .gin,#world.lay-spec .gin,#world.lay-player .gbtn,#world.lay-spec .gbtn{align-items:flex-end}
 #world.lay-player:not(.me-blue) #gaugeBLUE,#world.lay-player.me-blue #gaugeRED{display:none}
-#world.lay-player .gauge.red{left:77px;right:auto;top:813px} #world.lay-player .gauge.blue{left:auto;right:77px;top:813px}
+/* ตี้ 2026-10-28: กรอบเกจชิดขอบนอกช่องการ์ด (RED ขอบซ้าย 40 · BLUE ขอบขวา 1880) */
+#world.lay-player .gauge.red{left:40px;right:auto;top:793px} #world.lay-player .gauge.blue{left:auto;right:40px;top:793px}
 #world.lay-spec .gauge.red{left:35px;right:auto;top:811px} #world.lay-spec .gauge.blue{left:auto;right:35px;top:811px}
 #world.vdo-fight .gauge{opacity:0}
 .gfr{position:relative;flex:none;width:35px;height:243px}
@@ -818,9 +820,10 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 .vc-tag.miss{background:#1b2028;border:2px solid #7a828f;color:#c9d2de;font-size:22px}
 .vc-tag.red{background:var(--red);color:#fff;font-size:20px} .vc-tag.blue{background:var(--blue);color:#fff;font-size:20px}
 @keyframes vcTag{0%{opacity:0;transform:translateX(-50%) scale(.3) translateY(20px)}100%{opacity:1;transform:translateX(-50%)}}
-.vc-steal{position:absolute;width:96px;z-index:4;--cw:96px;animation:vcSteal .75s cubic-bezier(.4,0,.2,1) forwards}
+.vc-steal{position:absolute;width:96px;z-index:4;--cw:96px;animation:vcSteal 1.05s linear forwards}
 .vc-steal .card{box-shadow:0 0 0 3px var(--gold),0 0 22px rgba(255,200,61,.85)}
-@keyframes vcSteal{0%{left:var(--x0);top:var(--y0);transform:scale(.4) rotate(0)}30%{transform:scale(1.1) rotate(var(--r1))}100%{left:var(--x1);top:var(--y1);transform:scale(1.2) rotate(var(--r2))}}
+/* ม้วนกลับฝั่งเรา (ตี้ 2026-10-28): ขึ้นโค้งกลางจอ หมุน 3 รอบ แล้วลงมุมของเรา */
+@keyframes vcSteal{0%{left:var(--x0);top:var(--y0);transform:scale(.5) rotate(0);animation-timing-function:cubic-bezier(.3,.6,.5,1)}50%{left:var(--xm);top:var(--ym);transform:scale(1.15) rotate(calc(var(--r2) / 2));animation-timing-function:cubic-bezier(.5,0,.7,.4)}100%{left:var(--x1);top:var(--y1);transform:scale(1.2) rotate(var(--r2))}}
 .vc-lose{position:absolute;top:720px;width:120px;height:190px;z-index:4}
 .vc-lose i{position:absolute;inset:0;border-radius:12px;border:3px solid #ff5a62;background:#101a30 url(assets/logo-df-mini.webp) center/70% no-repeat;box-shadow:0 0 22px rgba(255,60,60,.85)}
 .vc-lose i:first-child{clip-path:polygon(0 0,62% 0,40% 38%,58% 60%,34% 100%,0 100%);animation:vcLoseL 1.15s ease-in forwards}
@@ -881,7 +884,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
       <section id="start" class="start" aria-label="หน้าเริ่มเกม">
         <p class="st-eyebrow">RED VS BLUE · CARD BATTLE</p>
         <h1 class="st-title"><span class="r">DREAM</span><span class="b">FIGHT</span></h1>
-        <p class="st-lead">คุณคือ <b class="t-red">RED</b> ดวลกับบอท <b class="t-blue">BLUE</b> · HP คนละ 150 · ทุกรอบจั่ว เก็บ แล้ววางการ์ด 3 ใบลงแผง CARD ORDER จากนั้นเปิดปะทะทีละช่อง ใคร HP หมดก่อนแพ้</p>
+        <p class="st-lead">คุณคือ <b class="t-red">RED</b> ดวลกับบอท <b class="t-blue">BLUE</b> · HP คนละ 150 · ทุกรอบจั่ว เก็บ แล้ววางการ์ด 3 ใบลงแผง ACTION ORDER จากนั้นเปิดปะทะทีละช่อง ใคร HP หมดก่อนแพ้</p>
         <div class="st-cards" id="stCards"></div>
         <div class="st-cta">
           <form class="gate" id="gate" autocomplete="off" novalidate hidden>
@@ -2828,7 +2831,7 @@ function popAt(clip, side) {
   if (m[1]) return own ? (m[1] === 'def' ? 5.5 : 5) : 3; // VDO ฝั่งรับ: ฝั่งตีโผล่ก่อน · ฝั่งรับตอนยกโล่/หลบ
   return own ? (m[2] === 'ult' ? 3 : 3.5) : 6;           // VDO ฝั่งตี (ไฟล์เดียว: อีกฝ่ายโผล่ตอนโดน)
 }
-const VC_FLY = 380, VC_GAP = 950, VC_STEAL = 1350, VC_DRAW = 650, VC_LOSE = 750, VC_HUD = 450, VC_PAD = 600;
+const VC_FLY = 380, VC_GAP = 950, VC_STEAL = 1650, VC_DRAW = 650, VC_LOSE = 750, VC_HUD = 450, VC_PAD = 600;
 const VC_POP = { RED: [146, 826], BLUE: [1774, 826] }; // จุดกึ่งกลางการ์ดมุมล่าง (.vc-pop)
 const VC_BAR = { RED: [579, 104], BLUE: [1343, 104] }; // จุดกึ่งกลางแถบ HP
 const VC_FX_HTML = `<span class="bu"></span><span class="ri"></span>${'<span class="sd"></span>'.repeat(10)}<span class="ri b"></span><span class="ch"></span>`
@@ -2893,7 +2896,8 @@ async function vcFinale(g, r, acts, hit, stop) {
   await sleep(VC_HUD); // รอแถบ HP เลื่อนลงมาก่อน
   for (const a of acts) {
     if (stop()) return;
-    const { s, to } = a, [x0, y0] = VC_POP[s], [x1, y1] = VC_BAR[to];
+    // ตี้ 2026-10-28: Dodge ขโมยพุ่งไปที่การ์ดอีกฝ่าย (มุมล่างฝั่งตรงข้าม) ไม่ใช่แถบ HP
+    const { s, to } = a, [x0, y0] = VC_POP[s], [x1, y1] = a.fx === 'steal' ? VC_POP[to] : VC_BAR[to];
     vcPop(s, a.card);
     const d = vc.pops[s];
     if (a.fx === 'draw') {
@@ -2904,7 +2908,7 @@ async function vcFinale(g, r, acts, hit, stop) {
       continue;
     }
     d.classList.add('fly');
-    d.style.transform = `translate(${x1 - x0}px,${y1 - y0}px) scale(.33) rotate(${s === 'RED' ? 28 : -28}deg)`;
+    d.style.transform = `translate(${x1 - x0}px,${y1 - y0}px) scale(${a.fx === 'steal' ? .7 : .33}) rotate(${s === 'RED' ? 28 : -28}deg)`;
     sfx.play('flip');
     await sleep(VC_FLY);
     if (stop()) return;
@@ -2919,8 +2923,9 @@ async function vcFinale(g, r, acts, hit, stop) {
     if (fx === 'steal') {
       const n = Math.min(a.n, g.p[to].hand.length), [xp, yp] = VC_POP[s];
       if (n) {
-        vcAdd('vc-steal', backHTML(), `--x0:${x1 - 48}px;--y0:${y1 - 76}px;--x1:${xp - 48}px;--y1:${yp - 76}px;--r1:${s === 'RED' ? -25 : 25}deg;--r2:${s === 'RED' ? -360 : 360}deg`);
-        setTimeout(() => { vcAdd(`vc-tag ${s.toLowerCase()}`, `ขโมยมา +${n}`, `left:${xp}px;top:${yp - 150}px`); sfx.play('swap'); }, 700);
+        // การ์ดที่ขโมยม้วนตีลังกาเป็นโค้งกลับมาฝั่งเรา
+        vcAdd('vc-steal', backHTML(), `--x0:${x1 - 48}px;--y0:${y1 - 76}px;--x1:${xp - 48}px;--y1:${yp - 76}px;--xm:${(x1 + xp) / 2 - 48}px;--ym:${y1 - 330}px;--r2:${s === 'RED' ? -1080 : 1080}deg`);
+        setTimeout(() => { vcAdd(`vc-tag ${s.toLowerCase()}`, `ขโมยมา +${n}`, `left:${xp}px;top:${yp - 150}px`); sfx.play('swap'); }, 1000);
       } else vcAdd('vc-tag miss', 'มืออีกฝ่ายว่าง · จั่วแทน', `left:${x1}px;top:${y1 + 90}px`);
     }
     if (a.brk || a.brkMiss) {
@@ -3764,6 +3769,7 @@ async function runFight() {
         hp: p.hit ? () => showResult([p.hit], k === last) : k === last ? () => showResult() : null,
       }));
       if (!(await laneVdo(i, steps, gid, r, ui.mode === 'spec'))) return;
+      if (ui.mode === 'spec') { await sleep(1500); if (gid !== ui.gid) return; } // ตี้ 2026-10-28: ผู้ชม VDO จบแล้วค้าง Idle วนอีก 1.5 วิ ก่อนไปต่อ
     } else {
       clashFx(r);
       await wait(ctr ? 1450 : 900); // ชนะทาง = ค้างให้เห็นป้ายและค่าที่เปลี่ยนนานขึ้น
@@ -4087,9 +4093,9 @@ function renderMain() {
     html = `<div class="msg"><div class="deck-big" id="deckBig">${backHTML()}</div><b>Draw Phase</b><span>RED และ BLUE จั่วคนละ ${n} ใบ${g.round === 1 ? ` (เฉพาะรอบแรก · รอบต่อไปจั่ว ${DRAW_N})` : ''} · มือเต็ม ${HAND_MAX} ใบแล้ว ใบที่เกินกลายเป็นเลเวลอัป</span></div>`;
   } else if (ui.phase === 'pick') html = marketHTML();
   else if (ui.phase === 'action' && ui.mode === 'spec') {
-    html = `<div class="msg"><b>Action Phase</b><span>ผู้เล่นกำลังวางการ์ดลงแผง CARD ORDER — แผงของทั้งสองฝ่ายเปิดให้ผู้ชมเห็นเมื่อกด FIGHT! ครบทั้งคู่</span><span>${specStatus()}</span></div>`;
+    html = `<div class="msg"><b>Action Phase</b><span>ผู้เล่นกำลังวางการ์ดลงแผง ACTION ORDER — แผงของทั้งสองฝ่ายเปิดให้ผู้ชมเห็นเมื่อกด FIGHT! ครบทั้งคู่</span><span>${specStatus()}</span></div>`;
   } else if (ui.phase === 'action') {
-    html = `<div class="msg"><b>Action Phase</b><span>แตะการ์ดเพื่อวางลงช่องว่างถัดไป หรือลากไปวางช่องที่ต้องการบนแผง CARD ORDER · ลากทับชนิดเดียวกันในแผง = เลเวลอัป (Lv2 + Lv2 = Lv3 + ได้ Lv1 คืนขึ้นมือ) · ลากทับต่างชนิด = สลับ (มือ ↔ แผง และในแผง) · ลากการ์ดบนมือทับกัน = สลับตำแหน่ง</span><span class="t-${OPP.toLowerCase()}">${ui.mode !== 'pvp' || g.p[OPP].lanes ? `${OPP} คว่ำการ์ดลงแผงแล้ว — จะรู้ว่ามีอะไรตอนเปิดปะทะ` : `รอ ${OPP} วางการ์ด…`}</span></div>`;
+    html = `<div class="msg"><b>Action Phase</b><span>แตะการ์ดเพื่อวางลงช่องว่างถัดไป หรือลากไปวางช่องที่ต้องการบนแผง ACTION ORDER · ลากทับชนิดเดียวกันในแผง = เลเวลอัป (Lv2 + Lv2 = Lv3 + ได้ Lv1 คืนขึ้นมือ) · ลากทับต่างชนิด = สลับ (มือ ↔ แผง และในแผง) · ลากการ์ดบนมือทับกัน = สลับตำแหน่ง</span><span class="t-${OPP.toLowerCase()}">${ui.mode !== 'pvp' || g.p[OPP].lanes ? `${OPP} คว่ำการ์ดลงแผงแล้ว — จะรู้ว่ามีอะไรตอนเปิดปะทะ` : `รอ ${OPP} วางการ์ด…`}</span></div>`;
   } else if (ui.phase === 'fight' && vdo.ready) html = ''; // ตี้ 2026-10-27: เปิดปะทะดูที่ VDO อย่างเดียว ไม่ขึ้นแผงผลปะทะ
   else if (ui.phase === 'end' && ui.mode === 'spec' && vdo.ready) html = ''; // ตี้ 2026-10-27: ผู้ชมไม่ต้องเห็นแผงสรุปผลปะทะตอนจบรอบ — ดู VDO อย่างเดียว
   else html = clashHTML();
