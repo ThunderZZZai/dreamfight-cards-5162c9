@@ -2887,6 +2887,16 @@ async function laneVdo(i, plan, gid, r) {
   for (const a of acts) { const k = twoHit ? clips.findIndex(n => clipSide(n) === a.s) : -1; fin[k < 0 ? clips.length - 1 : k].push(a); }
   // การ์ดเด้งใน VDO ไหน: ไฟล์เดียว = ทั้งสองฝั่ง · หลายไฟล์ = ฝั่งเจ้าของไฟล์
   const popSides = clips.map(n => (r ? (clips.length === 1 ? SIDES : [clipSide(n)]).filter(s => r[s].card) : []));
+  // ตี้ 2026-10-27: เลือดไม่ลดจนกว่าการ์ดจะพุ่งไปชน — SKIP / VDO เล่นไม่ได้ ก็ยังพุ่งก่อนแล้วค่อย hp() (SKIP ข้ามแค่ VDO)
+  const ran = new Set();
+  const apply = k => { if (!shown.has(k) && plan[k].hp) { shown.add(k); plan[k].hp(); } };
+  const runFin = async k => {
+    ran.add(k);
+    W.classList.add('vdo-hp');
+    const anyHit = fin[k].some(a => a.fx === 'hit');
+    await vcFinale(ui.g, r, fin[k], a => { if (a.fx === 'hit' || !anyHit) apply(k); }, gone);
+    if (!gone()) apply(k);
+  };
   ui.vdo = lv;
   const v0 = Date.now();
   $('#vdoLane').textContent = `ช่อง ${i + 1}`;
@@ -2918,14 +2928,8 @@ async function laneVdo(i, plan, gid, r) {
           const at = Math.max(0, VDO_FILES[clips[k]][1] - lead);
           await until(() => stop() || el.ended || el.currentTime >= at);
           if (gone()) return false;
-          if (!stop()) {
-            W.classList.add('vdo-hp');
-            const anyHit = fin[k].some(a => a.fx === 'hit');
-            const apply = () => { if (!shown.has(k) && plan[k].hp) { shown.add(k); plan[k].hp(); } };
-            await vcFinale(ui.g, r, fin[k], a => { if (a.fx === 'hit' || !anyHit) apply(); }, stop);
-            if (gone()) return false;
-            if (!stop()) apply();
-          }
+          await runFin(k);
+          if (gone()) return false;
         } else if (plan[k].hp) {
           const at = VDO_FILES[clips[k]][1] - VDO_HP_LEAD;
           await until(() => stop() || el.ended || el.currentTime >= at);
@@ -2936,7 +2940,13 @@ async function laneVdo(i, plan, gid, r) {
         if (gone()) return false;
       } finally { clearInterval(tick); }
     }
-    // ข้าม/เล่นไม่ได้: หัก HP ที่ยังค้างตามลำดับเดิม (เว้นจังหวะให้เห็นทีละฝั่ง)
+    // ข้าม/เล่นไม่ได้: VDO ที่ยังไม่ได้เล่น — การ์ดพุ่งเข้าเกจก่อนแล้วค่อยหัก HP (ตามลำดับเดิม)
+    for (let k = 0; k < clips.length; k++) {
+      if (!fin[k].length || ran.has(k)) continue;
+      await runFin(k);
+      if (gone()) return false;
+    }
+    // VDO ที่ไม่มีการ์ดให้พุ่ง: หัก HP ที่ยังค้างตามลำดับเดิม (เว้นจังหวะให้เห็นทีละฝั่ง)
     for (let k = 0; k < plan.length; k++) {
       if (!plan[k].hp || shown.has(k)) continue;
       if (shown.size) await sleep(700);
