@@ -4086,6 +4086,7 @@ function renderMain() {
   } else if (ui.phase === 'action') {
     html = `<div class="msg"><b>Action Phase</b><span>แตะการ์ดเพื่อวางลงช่องว่างถัดไป หรือลากไปวางช่องที่ต้องการบนแผง CARD ORDER · ลากทับชนิดเดียวกันในแผง = เลเวลอัป (Lv2 + Lv2 = Lv3 + ได้ Lv1 คืนขึ้นมือ) · ลากทับต่างชนิด = สลับ (มือ ↔ แผง และในแผง) · ลากการ์ดบนมือทับกัน = สลับตำแหน่ง</span><span class="t-${OPP.toLowerCase()}">${ui.mode !== 'pvp' || g.p[OPP].lanes ? `${OPP} คว่ำการ์ดลงแผงแล้ว — จะรู้ว่ามีอะไรตอนเปิดปะทะ` : `รอ ${OPP} วางการ์ด…`}</span></div>`;
   } else if (ui.phase === 'fight' && vdo.ready) html = ''; // ตี้ 2026-10-27: เปิดปะทะดูที่ VDO อย่างเดียว ไม่ขึ้นแผงผลปะทะ
+  else if (ui.phase === 'end' && ui.mode === 'spec' && vdo.ready) html = ''; // ตี้ 2026-10-27: ผู้ชมไม่ต้องเห็นแผงสรุปผลปะทะตอนจบรอบ — ดู VDO อย่างเดียว
   else html = clashHTML();
   $('#main').innerHTML = html;
 }
