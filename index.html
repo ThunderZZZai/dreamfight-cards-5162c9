@@ -694,7 +694,9 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 #world.lay-spec .spec-hand.side-red .hand-head{left:330px} #world.lay-spec .spec-hand.side-blue .hand-head{right:308px}
 #world.lay-spec .spec-hand .hand-head > b{font-size:17px;white-space:nowrap}
 #world.lay-spec .spec-hand .hand-head{white-space:nowrap}
-#world.lay-spec .match-clock{top:250px;bottom:auto}
+/* นาฬิกาแมตช์ (ตี้ 2026-10-27: บังจอ) — มุมซ้ายบนสุดข้าง HUD · ซ่อนตอนดู VDO เต็มจอ */
+#world.lay-player .match-clock,#world.lay-spec .match-clock{left:14px;top:12px;bottom:auto;opacity:.8;transition:opacity .3s}
+#world.vdo-full .match-clock{opacity:0}
 #world.lay-spec .spec-hand .hand-cards{position:absolute;inset:0;display:block}
 #world.lay-spec .spec-hand .hc{position:absolute;bottom:-30px;width:99px;margin-left:-50px;transform-origin:50% 230%;rotate:calc((var(--i,0) - (var(--n,1) - 1) / 2) * 11deg)}
 #world.lay-spec .spec-hand.side-red .hc{left:405px} #world.lay-spec .spec-hand.side-blue .hc{left:257px}
@@ -2925,7 +2927,8 @@ async function vcFinale(g, r, acts, hit, stop) {
 // เล่น VDO ของช่อง i: การ์ดขึ้นบน VDO VDO_REVEAL_MS → เก็บ UI ลง → การ์ดของแต่ละฝั่งเด้งมุมล่างตาม popAt
 // → ช่วงท้าย VDO การ์ดพุ่งเข้าเกจ (vcFinale) แถบ HP ลงมา + hp() ตอนการ์ดชน · VDO ไม่มีการ์ดให้พุ่ง = ก่อนจบ VDO_HP_LEAD วิ hp()
 // VDO ถัดไปเริ่ม = แถบ HP เก็บขึ้นอีกรอบ · plan = [{ name, hp }] · SKIP = hp() ที่เหลือเรียงตามลำดับทันที · คืน false ถ้าออกจากเกมกลางทาง
-async function laneVdo(i, plan, gid, r) {
+// keep (ผู้ชม · ตี้ 2026-10-27): จบช่องแล้วค้างจอ VDO ไว้ ไม่กลับกระดาน — กันเห็นการ์ดในแผงก่อนช่องนั้นเปิด · runFight เปิดกระดานเองเมื่อเปิดครบ (vdoUncover)
+async function laneVdo(i, plan, gid, r, keep = false) {
   const W = $('#world'), el = $('#vdoFight'), clips = plan.map(p => p.name), lv = { skip: false, failed: false, clips };
   const gone = () => gid !== ui.gid, shown = new Set();
   const hpNow = async k => {
@@ -3011,14 +3014,18 @@ async function laneVdo(i, plan, gid, r) {
     return !gone();
   } finally {
     el.pause();
-    el.classList.remove('on');
-    W.classList.remove('vdo-fight', 'vdo-full', 'vdo-hp');
+    if (!keep || gone()) vdoUncover();
     vcReset();
     $('#vdoBar').hidden = true;
     ui.vdo = null;
     clock.vdoMs += Date.now() - v0;
     duckMusic(false);
   }
+}
+// เก็บจอ VDO กลับเป็นกระดาน
+function vdoUncover() {
+  $('#vdoFight').classList.remove('on');
+  $('#world').classList.remove('vdo-fight', 'vdo-full', 'vdo-hp');
 }
 // หน้าเริ่ม: แถบโหลด VDO · START GAME กดได้เมื่อโหลดครบ (หรือปิด VDO)
 function renderVdoLoad() {
@@ -3735,7 +3742,7 @@ async function runFight() {
         name: p.name,
         hp: p.hit ? () => showResult([p.hit], k === last) : k === last ? () => showResult() : null,
       }));
-      if (!(await laneVdo(i, steps, gid, r))) return;
+      if (!(await laneVdo(i, steps, gid, r, ui.mode === 'spec'))) return;
     } else {
       clashFx(r);
       await wait(ctr ? 1450 : 900); // ชนะทาง = ค้างให้เห็นป้ายและค่าที่เปลี่ยนนานขึ้น
@@ -3774,6 +3781,7 @@ async function runFight() {
     // HP หมดหลังจบช่องนี้ → รู้ผลทันที (ช่อง 1-2 ไม่ต้องเปิดช่องที่เหลือ)
     if (judge(g, i).winner) { last = i; break; }
   }
+  vdoUncover(); // ผู้ชม: เปิดกระดานหลังเปิดครบทุกช่อง (ระหว่างช่องค้างจอ VDO ไว้)
   const verdict = judge(g, last);
   if (verdict.winner) {
     ui.ko = { lane: last, sides: verdict.ko };
