@@ -634,7 +634,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 .wt-rounds{font-size:17px;color:var(--muted);font-variant-numeric:tabular-nums}
 @keyframes quakeHard{10%{transform:translate(-18px,9px) rotate(-.5deg)}20%{transform:translate(16px,-9px) rotate(.5deg)}32%{transform:translate(-13px,-6px)}44%{transform:translate(11px,6px)}58%{transform:translate(-7px,3px)}72%{transform:translate(4px,-2px)}86%{transform:translate(-2px,0)}}
 /* ═════════ เลย์เอาต์ผู้เล่น / ผู้ชม (ตี้ 2026-10-27 · ม็อกอัป artifact X2iF5zKGwXLoa9nTpTDXUd) ═════════
-   ผู้เล่น (.lay-player): มือกลางล่างกางเป็นพัด · CARD ORDER ของเราเป็นช่องแนวตั้งด้านข้างลดลงต่ำ (RED ขวา / BLUE ซ้าย)
+   ผู้เล่น (.lay-player): มือกลางล่างกางเป็นพัด · CARD ORDER ของเราเป็นช่องแนวตั้งด้านข้างลดลงต่ำ (RED ซ้าย / BLUE ขวา)
    · ไม่เห็นแผงและมือของอีกฝ่าย · กองกลางเล็กลง
    ผู้ชม (.lay-spec): CARD ORDER แบบบางทั้งสองฝั่ง · กองกลางแถวล่างกลาง (ช่วง PICK UP) · มือสองฝั่งเป็นพัดมุมล่าง
    · การ์ดที่ผู้เล่นวางเห็นเป็น ? จนช่องนั้นเปิดปะทะ */
@@ -651,12 +651,12 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 #world.lay-player .tools,#world.lay-spec .tools{top:170px}
 
 #world.lay-player .order{top:372px;width:190px;height:700px}
-#world.lay-player .order.red{left:1714px} #world.lay-player .order.blue{left:16px}
-#world.lay-player .oslot{left:46px}
+#world.lay-player .order.red{left:16px} #world.lay-player .order.blue{left:1714px}
+#world.lay-player .oslot{left:24px}
 #world.lay-player .oslot[data-lane="0"]{top:46px} #world.lay-player .oslot[data-lane="1"]{top:256px} #world.lay-player .oslot[data-lane="2"]{top:466px}
-#world.lay-player .order.red .lane-dia{left:26px} #world.lay-player .order.blue .lane-dia{left:146px}
+#world.lay-player .order.red .lane-dia{left:124px} #world.lay-player .order.blue .lane-dia{left:26px}
+#world.lay-player .order.blue .oslot{left:46px}
 #world.lay-player .lane-dia[data-i="0"]{top:121px} #world.lay-player .lane-dia[data-i="1"]{top:331px} #world.lay-player .lane-dia[data-i="2"]{top:541px}
-#world.lay-player.vdo-full .order.red{transform:translateX(340px)} #world.lay-player.vdo-full .order.blue{transform:translateX(-340px)}
 #world.lay-player .opp-hand{display:none}
 #world.lay-player .mk{width:128px} #world.lay-player .mk .card{--cw:117px} #world.lay-player .market{gap:22px}
 #world.lay-player .mk .cap{font-size:14px}
@@ -2572,7 +2572,7 @@ const bgm = (() => {
 const VDO_DIR = 'assets/vdo/', VDO_CACHE = 'df-vdo-1';
 // ชื่อ: [ไบต์, วินาที] — สร้างด้วย python3 vdo-src/build_vdo.py --js
 const VDO_FILES = {"atk1-blue":[2784391,14.38],"atk1-red":[2274480,12.31],"atk2-blue":[3841758,17.39],"atk2-red":[3624140,15.81],"atk3-blue":[4266115,17.68],"atk3-red":[4204064,18.18],"def-atk1-blue":[2642941,14.06],"def-atk1-red":[3288671,14.06],"def-atk2-blue":[3234334,16.9],"def-atk2-red":[3439380,16.9],"def-atk3-blue":[4312138,20.14],"def-atk3-red":[3663390,16.55],"def-ult1-blue":[5126350,19.05],"def-ult1-red":[4979010,19.05],"def-ult2-blue":[4131356,19.84],"def-ult2-red":[4479200,19.84],"def-ult3-blue":[4293736,18.05],"def-ult3-red":[4831034,18.05],"dod-atk1-blue":[2479584,13.46],"dod-atk1-red":[3285123,17.09],"dod-atk2-blue":[2595384,14.34],"dod-atk2-red":[2333567,14.34],"dod-atk3-blue":[3388210,16.55],"dod-atk3-red":[3360603,18.0],"dod-ult1-blue":[3842048,18.0],"dod-ult1-red":[3598827,18.0],"dod-ult2-blue":[3727149,18.0],"dod-ult2-red":[3581419,18.0],"dod-ult3-blue":[5184227,19.52],"dod-ult3-red":[4242115,19.52],"idle-blue":[1553975,15.02],"idle-red":[1582345,15.02],"taunt-blue":[2994883,18.08],"taunt-red":[2334424,18.08],"ult1-blue":[2908848,15.47],"ult1-red":[4085286,17.68],"ult2-blue":[3808362,17.39],"ult2-red":[3820167,17.51],"ult3-blue":[3859138,18.18],"ult3-red":[4740295,21.46]};
-const VDO_REVEAL_MS = 2000; // เปิด VDO แล้วโชว์การ์ดสองฝั่งก่อนเก็บ UI ลง
+const VDO_REVEAL_MS = 0;    // เปิด VDO แล้วโชว์การ์ดสองฝั่งก่อนเก็บ UI ลง (ตี้ 2026-10-27: 0 = เข้า VDO เลย การ์ดไปเด้งบน VDO แทน)
 const VDO_HP_LEAD = 3;      // แถบ HP กลับลงมาโชว์ผลก่อน VDO จบกี่วินาที
 const VDO_DUCK = 0.15;      // ระหว่าง VDO เพลงประกอบเบาลงเหลือเท่านี้ (เสียงใน VDO นำ)
 const vdo = (() => {
@@ -3980,7 +3980,8 @@ function renderMain() {
     html = `<div class="msg"><b>Action Phase</b><span>ผู้เล่นกำลังวางการ์ดลงแผง CARD ORDER — แผงของทั้งสองฝ่ายเปิดให้ผู้ชมเห็นเมื่อกด FIGHT! ครบทั้งคู่</span><span>${specStatus()}</span></div>`;
   } else if (ui.phase === 'action') {
     html = `<div class="msg"><b>Action Phase</b><span>แตะการ์ดเพื่อวางลงช่องว่างถัดไป หรือลากไปวางช่องที่ต้องการบนแผง CARD ORDER · ลากทับชนิดเดียวกันในแผง = เลเวลอัป (Lv2 + Lv2 = Lv3 + ได้ Lv1 คืนขึ้นมือ) · ลากทับต่างชนิด = สลับ (มือ ↔ แผง และในแผง) · ลากการ์ดบนมือทับกัน = สลับตำแหน่ง</span><span class="t-${OPP.toLowerCase()}">${ui.mode !== 'pvp' || g.p[OPP].lanes ? `${OPP} คว่ำการ์ดลงแผงแล้ว — จะรู้ว่ามีอะไรตอนเปิดปะทะ` : `รอ ${OPP} วางการ์ด…`}</span></div>`;
-  } else html = clashHTML();
+  } else if (ui.phase === 'fight' && vdo.ready) html = ''; // ตี้ 2026-10-27: เปิดปะทะดูที่ VDO อย่างเดียว ไม่ขึ้นแผงผลปะทะ
+  else html = clashHTML();
   $('#main').innerHTML = html;
 }
 const hpPct = hp => Math.max(0, Math.min(100, (hp / HP_MAX) * 100));
