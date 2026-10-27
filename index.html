@@ -3038,8 +3038,8 @@ async function laneVdo(i, plan, gid, r, keep = false) {
     return !gone();
   } finally {
     el.pause();
-    if (!keep || gone()) vdoUncover();
-    else { el.classList.remove('on'); vdoBg.sync(true); } // ผู้ชมค้างจอ VDO ข้ามช่อง: VDO จบแล้วอย่าค้างเฟรมสุดท้าย → ครอสเฟดเป็น Idle วนระหว่างรอช่องถัดไป (ตี้ 2026-10-27)
+    if (gone() || (!keep && !koNow())) vdoUncover();
+    else if (!koNow()) { el.classList.remove('on'); vdoBg.sync(true); } // ผู้ชมค้างจอ VDO ข้ามช่อง: VDO จบแล้วอย่าค้างเฟรมสุดท้าย → ครอสเฟดเป็น Idle วนระหว่างรอช่องถัดไป (ตี้ 2026-10-27)
     vcReset();
     $('#vdoBar').hidden = true;
     ui.vdo = null;
@@ -3047,6 +3047,8 @@ async function laneVdo(i, plan, gid, r, keep = false) {
     duckMusic(false);
   }
 }
+// มีฝั่งที่ HP หมดแล้ว (จบช่องนี้ = K.O.)
+const koNow = () => !!ui.g && SIDES.some(s => ui.g.p[s].hp <= 0);
 // เก็บจอ VDO กลับเป็นกระดาน
 function vdoUncover() {
   $('#vdoFight').classList.remove('on');
@@ -3736,15 +3738,21 @@ async function runFight() {
     laneCall(i);
     // 1) เปิดการ์ด + ท่าทาง
     const r = rollClash(g, i);
-    Object.assign(ui, { shown: i, detail: i, pending: r });
     const ctr = counterSide(r);
     const plan = vdo.ready ? vdoPlan(g, r, i) : [];
-    ui.fx = { lane: i, cls: actionFx(r), marks: actionMarks(r), impact: r.RED.raw > 0 || r.BLUE.raw > 0, ult: [r.RED.card, r.BLUE.card].some(c => c && c.type === 'ULT'), counter: ctr, chg: changeCallouts(r) };
-    render();
+    const reveal = () => {
+      Object.assign(ui, { shown: i, detail: i, pending: r });
+      ui.fx = { lane: i, cls: actionFx(r), marks: actionMarks(r), impact: r.RED.raw > 0 || r.BLUE.raw > 0, ult: [r.RED.card, r.BLUE.card].some(c => c && c.type === 'ULT'), counter: ctr, chg: changeCallouts(r) };
+      render();
+    };
+    // ตี้ 2026-10-28: มี VDO = ไม่เปิดการ์ดในแผงก่อน VDO เล่น (เห็นก่อน) — เปิดใน VDO (การ์ดเด้งมุมล่าง) · แผงเปิดตามหลังตอนกระดานเก็บลงแล้ว
+    if (plan.length) setTimeout(() => { if (gid === ui.gid && !ui.results[i]) reveal(); }, 700);
+    else reveal();
     // 2) หัก HP / ได้ HP คืน — แผงผลปะทะเฉลยผลทอยหลบและตัวเลขสุดท้าย
     // sides = ฝั่งที่หักรอบนี้ (VDO ตีกันทั้งคู่หักทีละฝั่ง) · final = ครั้งสุดท้ายของช่อง → เปิดผลในแผง
     const showResult = (sides = SIDES, final = true) => {
       applyDamage(g, r, sides);
+      Object.assign(ui, { shown: i, detail: i });
       if (final) {
         ui.results[i] = r;
         ui.pending = null;
@@ -3759,9 +3767,7 @@ async function runFight() {
       if (sides.some(s => r[s].healed > 0)) sfx.play('heal', 400);
     };
     if (plan.length) {
-      // VDO: เสียงฟัน/อัลติ/โล่อยู่ใน VDO แล้ว — เกมเล่นแค่เสียงพลิกการ์ด + ชนะทาง
-      sfx.play('flip');
-      if (ctr) { sfx.play(`ctr${r[ctr].card.type}`, 120); flashStage(ctr); quake(true); }
+      // VDO: เสียงฟัน/อัลติ/โล่อยู่ใน VDO แล้ว · ไม่เล่นเสียงพลิก/แฟลชชนะทางก่อน VDO (บอกใบ้การ์ดก่อนเปิดใน VDO)
       const last = plan.length - 1;
       const steps = plan.map((p, k) => ({
         name: p.name,
@@ -3769,7 +3775,7 @@ async function runFight() {
         hp: p.hit ? () => showResult([p.hit], k === last) : k === last ? () => showResult() : null,
       }));
       if (!(await laneVdo(i, steps, gid, r, ui.mode === 'spec'))) return;
-      if (ui.mode === 'spec') { await sleep(1500); if (gid !== ui.gid) return; } // ตี้ 2026-10-28: ผู้ชม VDO จบแล้วค้าง Idle วนอีก 1.5 วิ ก่อนไปต่อ
+      if (ui.mode === 'spec' && !koNow()) { await sleep(1500); if (gid !== ui.gid) return; } // ตี้ 2026-10-28: ผู้ชม VDO จบแล้วค้าง Idle วนอีก 1.5 วิ ก่อนไปต่อ
     } else {
       clashFx(r);
       await wait(ctr ? 1450 : 900); // ชนะทาง = ค้างให้เห็นป้ายและค่าที่เปลี่ยนนานขึ้น
@@ -3808,13 +3814,14 @@ async function runFight() {
     // HP หมดหลังจบช่องนี้ → รู้ผลทันที (ช่อง 1-2 ไม่ต้องเปิดช่องที่เหลือ)
     if (judge(g, i).winner) { last = i; break; }
   }
-  vdoUncover(); // ผู้ชม: เปิดกระดานหลังเปิดครบทุกช่อง (ระหว่างช่องค้างจอ VDO ไว้)
   const verdict = judge(g, last);
   if (verdict.winner) {
     ui.ko = { lane: last, sides: verdict.ko };
     if (last < SLOT_N - 1) addLog(`K.O.! ${verdict.reason}`, 'sys');
-    await koFx(verdict);
-  } else await wait(600);
+    await koFx(verdict); // ตี้ 2026-10-28: KO ขึ้นทับจอ VDO เลย ไม่ผ่าน Idle / กระดาน
+  }
+  vdoUncover(); // ผู้ชม: เปิดกระดานหลังเปิดครบทุกช่อง (ระหว่างช่องค้างจอ VDO ไว้)
+  if (!verdict.winner) await wait(600);
   if (gid !== ui.gid) return;
   Object.assign(ui, { phase: 'end', busy: false, winner: verdict.winner, winReason: verdict.reason, oppHidden: 0 });
   if (ui.pvp) ui.pvp.endAt = Date.now();
