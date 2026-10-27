@@ -693,6 +693,11 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 .q-card{width:var(--cw,120px);aspect-ratio:820/1302;border-radius:12px;display:grid;place-items:center;background:#0f1729;box-shadow:inset 0 0 0 3px var(--k,var(--gold)),0 0 16px var(--k,var(--gold));color:var(--gold);font-family:var(--font-disp);font-weight:700;font-size:calc(var(--cw,120px) * .5);line-height:1;animation:qPulse 1.6s ease-in-out infinite}
 @keyframes qPulse{0%,100%{text-shadow:0 0 8px rgba(255,200,61,.5)}50%{text-shadow:0 0 22px rgba(255,200,61,1)}}
 
+/* ป้าย ACTION 1/2/3 กลางจอตอนเริ่มเปิดแต่ละช่อง (ตี้ 2026-10-27) — ขึ้นแป๊บเดียวแล้วหาย */
+#laneCall{position:absolute;left:0;right:0;top:420px;z-index:25;text-align:center;pointer-events:none;opacity:0;font-family:var(--font-disp);font-weight:700;font-size:120px;line-height:1;letter-spacing:.08em;color:#fff;-webkit-text-stroke:3px var(--gold);text-shadow:0 0 30px rgba(255,200,61,.85),0 6px 0 rgba(0,0,0,.6)}
+#laneCall.on{animation:laneCall calc(1.4s*var(--spd)) cubic-bezier(.2,.9,.3,1) forwards}
+@keyframes laneCall{0%{opacity:0;transform:scale(2.4)}15%{opacity:1;transform:scale(.95)}22%{transform:scale(1.03)}28%,72%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.1)}}
+
 /* การ์ดบน VDO: เด้งมุมล่างตอนตัวละครทำท่า → ก่อน VDO จบพุ่งเข้าเกจ HP (ดู vcFinale) */
 #vdoCards{position:absolute;inset:0;z-index:20;pointer-events:none}
 .vc-pop{position:absolute;top:690px;width:172px;--cw:172px;opacity:0;transition:transform .5s cubic-bezier(.2,.9,.3,1.25),opacity .3s ease}
@@ -787,6 +792,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
       <div class="gauge blue" id="gaugeBLUE" hidden></div>
       </div>
       <div id="splash" hidden><small>DREAMFIGHT · CARD BATTLE</small><b id="splashText">ROUND 1</b></div>
+      <div id="laneCall" aria-live="polite"></div>
       <div id="ko" hidden aria-live="assertive"></div>
 
       <div class="order red" id="orderRed">
@@ -2795,6 +2801,15 @@ function vcPop(s, c) {
   sfx.play('flip');
 }
 function vcReset() { vc.pops = {}; $('#vdoCards').innerHTML = ''; }
+// ป้าย ACTION 1/2/3 กลางจอตอนเริ่มเปิดช่อง i
+function laneCall(i) {
+  const el = $('#laneCall');
+  el.textContent = `ACTION ${i + 1}`;
+  el.classList.remove('on');
+  void el.offsetWidth;
+  el.classList.add('on');
+  sfx.play('tickHi');
+}
 // การ์ดแตกที่มุมของฝั่ง victim n ใบ
 function vcLose(victim, n, text) {
   const x = victim === 'RED' ? 250 : 1550, step = victim === 'RED' ? 44 : -44;
@@ -3621,6 +3636,7 @@ async function runFight() {
   for (let i = 0; i < SLOT_N; i++) {
     await wait(i ? 300 : 500);
     if (gid !== ui.gid) return;
+    laneCall(i);
     // 1) เปิดการ์ด + ท่าทาง
     const r = rollClash(g, i);
     Object.assign(ui, { shown: i, detail: i, pending: r });
