@@ -759,9 +759,17 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 .order.red{--k:var(--red)} .order.blue{--k:var(--blue)}
 #world.lay-player .order > img,#world.lay-spec .order > img{display:none}
 #world.lay-player:not(.me-blue) .order.blue,#world.lay-player.me-blue .order.red{display:none}
-#world.lay-player .order::before,#world.lay-spec .order::before{content:"ACTION ORDER";position:absolute;left:50%;top:0;transform:translateX(-50%);padding:1px 12px;border-radius:6px;background:var(--k);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:19px;letter-spacing:.06em;white-space:nowrap}
-#world.lay-player .oslot,#world.lay-spec .oslot{border-radius:14px;background:rgba(8,6,10,.5);box-shadow:0 0 0 3px var(--k),0 0 14px color-mix(in srgb,var(--k) 45%,transparent)}
-#world.lay-player .lane-dia,#world.lay-spec .lane-dia{width:40px;height:40px;border-radius:8px;transform:rotate(45deg);background:var(--k);box-shadow:0 0 12px var(--k);display:grid;place-items:center;z-index:2}
+#world.lay-player .order::before,#world.lay-spec .order::before{content:"ACTION ORDER";position:absolute;left:50%;top:-6px;transform:translateX(-50%);padding:4px 18px 5px;--c:9px;clip-path:polygon(var(--c) 0,calc(100% - var(--c)) 0,100% var(--c),100% calc(100% - var(--c)),calc(100% - var(--c)) 100%,var(--c) 100%,0 calc(100% - var(--c)),0 var(--c));background:linear-gradient(var(--k),var(--k)) 0 100%/38% 3px no-repeat,linear-gradient(var(--k),var(--k)) 0 100%/3px 55% no-repeat,#16171b;color:#fff;font-family:var(--font-disp);font-weight:700;font-size:19px;letter-spacing:.06em;white-space:nowrap;z-index:3}
+/* กรอบช่องแบบมุมตัด (ตี้ 2026-10-28 · รูป ACTION ORDER ใหม่): พื้นดำ · เส้นเทาด้านใน · มุมซ้ายบน/ขวาล่างเป็นสีฝั่ง */
+#world.lay-player .oslot,#world.lay-spec .oslot{isolation:isolate}
+#world.lay-player .oslot::before,#world.lay-spec .oslot::before,#world.lay-player .oslot::after,#world.lay-spec .oslot::after{content:"";position:absolute;z-index:-1;--c:16px;clip-path:polygon(var(--c) 0,calc(100% - var(--c)) 0,100% var(--c),100% calc(100% - var(--c)),calc(100% - var(--c)) 100%,var(--c) 100%,0 calc(100% - var(--c)),0 var(--c))}
+#world.lay-player .oslot::before,#world.lay-spec .oslot::before{inset:-5px;background:linear-gradient(135deg,var(--k) 0 7%,#7b818c 7% 93%,var(--k) 93%)}
+#world.lay-player .oslot::after,#world.lay-spec .oslot::after{inset:-2px;--c:15px;background:#16171b;box-shadow:inset 0 0 0 0 transparent}
+#world.lay-player .oslot .slot-empty,#world.lay-spec .oslot .slot-empty{background:transparent;box-shadow:none;border:0;animation:none}
+.slot-empty .se-plus{display:block;font-family:var(--font-disp);font-weight:400;font-size:52px;line-height:.8;color:#8b919c}
+.slot-empty .se-txt{font-size:16px;color:#8b919c}
+.slot-empty.next .se-plus,.slot-empty.next .se-txt{color:#fff}
+#world.lay-player .lane-dia,#world.lay-spec .lane-dia{width:40px;height:40px;border-radius:7px;transform:rotate(45deg);background:var(--k);box-shadow:0 0 0 3px #15161a,0 4px 10px rgba(0,0,0,.6);display:grid;place-items:center;z-index:2}
 #world.lay-player .lane-dia::after,#world.lay-spec .lane-dia::after{content:"1";transform:rotate(-45deg);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:22px}
 #world.lay-player .lane-dia[data-i="1"]::after,#world.lay-spec .lane-dia[data-i="1"]::after{content:"2"}
 #world.lay-player .lane-dia[data-i="2"]::after,#world.lay-spec .lane-dia[data-i="2"]::after{content:"3"}
@@ -831,6 +839,17 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 #world.me-blue #gSet .st-set,#world.lay-spec #gSet .st-set{right:auto;left:0}
 #start .st-set .g-only{display:none}
 .srow .btn{grid-column:1/-1;justify-self:stretch}
+#world.lay-spec .order.red::before{left:0;transform:none} #world.lay-spec .order.blue::before{left:auto;right:0;transform:none}
+/* ปุ่มในแถบควบคุมหน้าผู้เล่น: กรอบมุมตัดแบบช่อง ACTION ORDER (ตี้ 2026-10-28) */
+#world.lay-player #controls .btn{position:relative;isolation:isolate;border:0;border-radius:0;background:none;box-shadow:none;animation:none;--k2:var(--red)}
+#world.lay-player.me-blue #controls .btn{--k2:var(--blue)}
+#world.lay-player #controls .btn::before,#world.lay-player #controls .btn::after{content:"";position:absolute;z-index:-1;--c:13px;clip-path:polygon(var(--c) 0,calc(100% - var(--c)) 0,100% var(--c),100% calc(100% - var(--c)),calc(100% - var(--c)) 100%,var(--c) 100%,0 calc(100% - var(--c)),0 var(--c))}
+#world.lay-player #controls .btn::before{inset:0;background:linear-gradient(135deg,var(--k2) 0 9%,#7b818c 9% 91%,var(--k2) 91%)}
+#world.lay-player #controls .btn::after{inset:3px;--c:12px;background:#16171b}
+#world.lay-player #controls .btn.cta:not(:disabled)::after{background:linear-gradient(180deg,#3a1218,#1c0c10)}
+#world.lay-player.me-blue #controls .btn.cta:not(:disabled)::after{background:linear-gradient(180deg,#10224a,#0a1226)}
+#world.lay-player #controls .btn.cta:not(:disabled){color:#fff;filter:drop-shadow(0 0 12px color-mix(in srgb,var(--k2) 60%,transparent))}
+#world.lay-player #controls .btn:disabled{color:#5d636d;opacity:1}
 /* หน้าผู้เล่น (ตี้ 2026-10-28): แถบควบคุมไม่มีพื้นหลัง · ช่วง PICK UP / ACTION เหลือแค่ปุ่ม ไม่มีคำแนะนำ */
 #world.lay-player #controls{background:none;border-color:transparent}
 #world.lay-player[data-phase="pick"] #controls .hint,#world.lay-player[data-phase="action"] #controls .hint{visibility:hidden}
@@ -4352,14 +4371,16 @@ function capHTML(t, lv) {
 function laneHTML(l, o = {}) {
   return l ? cardHTML(l, o) : '<div class="slot-empty">ว่าง</div>';
 }
+// ช่องว่างแบบรูป ACTION ORDER (ตี้ 2026-10-28) — ผู้เล่นและผู้ชมเห็นเหมือนกัน
+const SLOT_EMPTY = '<div class="slot-empty drop-hint"><span class="se-plus">+</span><span class="se-txt">วางการ์ด</span></div>';
 // ช่องในแผง CARD ORDER ของฝั่ง s
 function slotHTML(s, i) {
   const P = ui.g.p[s];
   if (ui.mode === 'spec') {
     // ผู้ชม (ตี้ 2026-10-27): ผู้เล่นกด FIGHT! แล้ว = ทั้ง 3 ช่องเป็น ? (ไม่บอกว่าช่องไหนว่าง) จนช่องนั้นเปิดปะทะ
     const locked = !!P.lanes || specIn(s, `${ui.g.round}a`) !== undefined;
-    if (ui.phase === 'action') return locked ? Q_CARD : '<div class="slot-empty wait">รอ…</div>';
-    if (!P.lanes) return '';
+    if (ui.phase === 'action') return locked ? Q_CARD : SLOT_EMPTY;
+    if (!P.lanes) return SLOT_EMPTY;
     if (ui.phase === 'fight' && ui.shown < i) return Q_CARD;
     if (ui.phase === 'fight' && ui.shown === i && !ui.results[i]) return flipHTML(P.lanes[i] ? cardHTML(P.lanes[i]) : '<div class="slot-empty">ว่าง</div>');
     return laneHTML(P.lanes[i], { cls: ui.slotArrive ? 'arrive' : '', style: ui.slotArrive ? `--d:${landAt(i)}ms` : '' });
@@ -4375,12 +4396,12 @@ function slotHTML(s, i) {
   }
   if (ui.phase === 'action' && !P.lanes) {
     const l = previewLanes()[i];
-    if (!l) return hasRoom() ? '<div class="slot-empty drop-hint">แตะ / ลาก<br>การ์ดมาวาง</div>' : '<div class="slot-empty">ว่าง</div>';
+    if (!l) return hasRoom() ? SLOT_EMPTY : '<div class="slot-empty">ว่าง</div>';
     const just = ui.justPlaced || [], hit = l.ids.some(id => just.includes(id));
     const landing = hit ? `--d:${Math.round(PLACE_MS * spdK())}ms` : '';
     return laneHTML(l, { act: 'unplace', data: i, style: landing, cls: just.includes(l.ids[0]) ? 'arrive' : hit ? 'lvup' : '' });
   }
-  return P.lanes ? laneHTML(P.lanes[i]) : '';
+  return P.lanes ? laneHTML(P.lanes[i]) : SLOT_EMPTY;
 }
 // ช่องหลังช่องที่ K.O. ไม่ได้เปิดปะทะ
 const unplayed = i => ui.phase === 'end' && !!ui.ko && i > ui.ko.lane;
