@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793208145">
+<meta name="df-build" content="1793208789">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -3237,8 +3237,8 @@ function vfxShieldOff() {
 function vfxFire(s, c) {
   const col = FIRE_COL[c.type], key = `${s}:${col}`;
   const el = vfx.fire[key] || (vfx.fire[key] = vfxEl('vfx-fire', `fire_${col}.mp4`, true));
-  const d = vc.pops[s], [bx, by] = VC_POP[s], run = ++vfx.run[s], born = performance.now(), v = el.firstElementChild;
-  let last = null, vx = 0, vy = 0, on = false;
+  const d = vc.pops[s], [bx, by] = VC_POP[s], run = ++vfx.run[s], v = el.firstElementChild;
+  let on = false;
   const set = want => {
     if (want === on) return;
     on = want;
@@ -3247,29 +3247,23 @@ function vfxFire(s, c) {
     if (!on) setTimeout(() => { if (!el.classList.contains('on')) v.pause(); }, 250);
   };
   el.classList.remove('off');
+  // ตี้ 2026-10-29: ไฟติดเฉพาะตอนพุ่งเข้าเกจ (หลังง้างเสร็จ) · การ์ดชี้หัวตามทางพุ่ง → ทิศไฟ = มุมการ์ด − 90°
   const tick = now => {
     if (run !== vfx.run[s] || !d.isConnected) { set(false); return; }
-    const cs = getComputedStyle(d), m = new DOMMatrixReadOnly(cs.transform === 'none' ? undefined : cs.transform);
-    const x = bx + m.e, y = by + m.f, sc = Math.hypot(m.a, m.b) || 1;
-    if (last) {
-      const dt = Math.max(8, now - last.t);
-      vx = vx * 0.45 + (((x - last.x) / dt) * 1000) * 0.55; vy = vy * 0.45 + (((y - last.y) / dt) * 1000) * 0.55;
-      const sp = Math.hypot(vx, vy);
-      if (now - born < 650 || +cs.opacity < 0.4) set(false); // ช่วงการ์ดเด้งขึ้นไม่ติดไฟ
-      else if (!on && sp > 900) set(true);
-      else if (on && sp < 280) set(false);
-      if (on) {
-        const ang = Math.atan2(vy, vx), ca = Math.abs(Math.cos(ang)), sa = Math.abs(Math.sin(ang));
-        const k = ((ca * 232 + sa * 146) * sc * 1.58) / 225, ahead = (ca * 73 + sa * 116) * sc + 34 * k; // การ์ด 146×232 · ตี้ 2026-10-29: ไฟใหญ่ขึ้น (เดิม ×1.12)
-        el.style.transform = `translate(${x + Math.cos(ang) * ahead - 390}px,${y + Math.sin(ang) * ahead - 128}px) rotate(${(ang * 180) / Math.PI}deg) scale(${k})`;
-      }
+    const cs = getComputedStyle(d), el0 = now - (d._flyT0 || 0);
+    const flying = d.classList.contains('fly') && d._flyT0 && el0 > d._flyMs * 0.22 && el0 < d._flyMs * 0.97 && +cs.opacity > 0.4;
+    set(!!flying);
+    if (flying) {
+      const m = new DOMMatrixReadOnly(cs.transform === 'none' ? undefined : cs.transform);
+      const x = bx + m.e, y = by + m.f, sc = Math.hypot(m.a, m.b) || 1, ang = Math.atan2(m.b, m.a) - Math.PI / 2;
+      const k = (232 * sc * 1.58) / 225, ahead = 116 * sc + 40 * k; // การ์ด 146×232 อยู่ในแกนไฟ หัวการ์ดอยู่หลังหัวไฟเล็กน้อย
+      el.style.transform = `translate(${x + Math.cos(ang) * ahead - 390}px,${y + Math.sin(ang) * ahead - 128}px) rotate(${(ang * 180) / Math.PI}deg) scale(${k})`;
     }
-    last = { x, y, t: now };
     requestAnimationFrame(tick);
   };
   requestAnimationFrame(tick);
 }
-// การ์ดพุ่งเข้าเกจแบบพริ้ว (ตี้ 2026-10-28: เดิมพุ่งตรงแข็ง ๆ): ง้างถอยนิดหนึ่ง → เร่งไปตามเส้นโค้ง เอนการ์ดตามทาง ส่ายเบา ๆ แล้วหดเข้าเกจ
+// การ์ดพุ่งเข้าเกจแบบพริ้ว (ตี้ 2026-10-28: เดิมพุ่งตรงแข็ง ๆ): ง้างถอยนิดหนึ่ง → เร่งไปตามเส้นโค้ง แล้วหดเข้าเกจ · rot1 ไม่ใช้แล้ว (การ์ดหันตามทางพุ่ง)
 function vcFlyTo(d, s, [x1, y1], sc, rot1, ms) {
   const [x0, y0] = VC_POP[s], cs = getComputedStyle(d), m = new DOMMatrixReadOnly(cs.transform === 'none' ? undefined : cs.transform);
   const sx = x0 + m.e, sy = y0 + m.f, s0 = Math.hypot(m.a, m.b) || 1, r0 = (Math.atan2(m.b, m.a) * 180) / Math.PI;
@@ -3278,16 +3272,27 @@ function vcFlyTo(d, s, [x1, y1], sc, rot1, ms) {
   if (ny > 0) { nx = -nx; ny = -ny; } // โค้งขึ้นด้านบน
   const cx = sx + dx / 2 + nx * len * 0.2, cy = sy + dy / 2 + ny * len * 0.2;
   const tf = (x, y, r, k) => `translate(${x - x0}px,${y - y0}px) rotate(${r}deg) scale(${k})`;
-  const kf = [{ offset: 0, transform: tf(sx, sy, r0, s0) }, { offset: 0.16, transform: tf(sx - ux * 24, sy - uy * 24, r0 - rot1 * 0.15, s0 * 1.05) }];
+  // ตี้ 2026-10-29: การ์ดชี้หัว (ด้านบน) ไปตามทางพุ่งเหมือนลูกศร = มุมเส้นโค้ง + 90° · ง้าง = ถอยนิดหนึ่งพร้อมหมุนเล็ง
+  const tanAt = p => (Math.atan2(2 * (1 - p) * (cy - sy) + 2 * p * (y1 - cy), 2 * (1 - p) * (cx - sx) + 2 * p * (x1 - cx)) * 180) / Math.PI + 90;
+  let a0 = tanAt(0);
+  while (a0 - r0 > 180) a0 -= 360;
+  while (a0 - r0 < -180) a0 += 360;
+  const kf = [{ offset: 0, transform: tf(sx, sy, r0, s0) }];
+  for (let i = 1; i <= 4; i++) { const k = i / 4, e = 1 - Math.pow(1 - k, 3); kf.push({ offset: 0.2 * k, transform: tf(sx - ux * 24 * e, sy - uy * 24 * e, r0 + (a0 - r0) * e, s0 * (1 + 0.05 * e)) }); }
+  let last = a0, endRot = a0;
   for (let i = 1, N = 16; i <= N; i++) {
     const u = i / N, p = Math.pow(u, 1.7), q = 1 - p;
     const x = q * q * sx + 2 * q * p * cx + p * p * x1, y = q * q * sy + 2 * q * p * cy + p * p * y1;
-    const r = r0 * (1 - p) + rot1 * p + Math.sin(u * Math.PI * 2) * 6 * (1 - u);
-    kf.push({ offset: 0.16 + 0.84 * u, transform: tf(x, y, r, s0 + (sc - s0) * Math.pow(u, 1.25)) });
+    let r = tanAt(p);
+    while (r - last > 180) r -= 360;
+    while (r - last < -180) r += 360;
+    last = endRot = r;
+    kf.push({ offset: 0.2 + 0.8 * u, transform: tf(x, y, r, s0 * 1.05 + (sc - s0 * 1.05) * Math.pow(u, 1.25)) });
   }
+  d._flyT0 = performance.now(); d._flyMs = ms;
   d.style.transition = 'opacity .12s ease';
   d.getAnimations().forEach(a => a.cancel());
-  d.style.transform = tf(x1, y1, rot1, sc);
+  d.style.transform = tf(x1, y1, endRot, sc);
   d.animate(kf, { duration: ms, easing: 'linear' });
 }
 // โล่บนเกจ HP ฝั่ง s · sh = ชิลด์ตอนนี้ · show = อยู่ในเกม (ไม่ใช่ intro)
