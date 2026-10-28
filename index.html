@@ -831,12 +831,13 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 #gSet{position:absolute;right:16px;bottom:14px;z-index:30;display:none}
 #world.is-game #gSet{display:block}
 #world.me-blue #gSet{right:auto;left:16px}
-#world.lay-spec #gSet{right:auto;left:680px;bottom:12px}
+#world.lay-spec #gSet{right:auto;left:50%;bottom:12px;transform:translateX(-50%)} /* ผู้ชม: ⚙ กลางล่าง */
 #world.vdo-fight #gSet{opacity:0;pointer-events:none}
 #gSet .st-gear{width:62px;height:62px;border-radius:16px}
 #gSet .st-gear svg{width:30px;height:30px}
 #gSet .st-set{text-transform:none;bottom:calc(100% + 14px)}
-#world.me-blue #gSet .st-set,#world.lay-spec #gSet .st-set{right:auto;left:0}
+#world.me-blue #gSet .st-set{right:auto;left:0}
+#world.lay-spec #gSet .st-set{right:auto;left:50%;transform:translateX(-50%)}
 #start .st-set .g-only{display:none}
 .srow .btn{grid-column:1/-1;justify-self:stretch}
 #world.lay-spec .order.red::before{left:0;transform:none} #world.lay-spec .order.blue::before{left:auto;right:0;transform:none}
