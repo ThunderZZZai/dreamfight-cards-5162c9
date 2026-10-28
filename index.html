@@ -803,6 +803,10 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 .vc-empty b{font-family:var(--font-disp);font-weight:700;font-size:26px;color:rgba(255,255,255,.9);text-shadow:0 2px 8px rgba(0,0,0,.8)}
 .vc-pop.empty .vc-who{background:rgba(5,7,11,.8);border:2px solid var(--k)}
 /* ปะทะกลางจอ (ตี้ 2026-10-28): การ์ดชนกันกลางล่าง (y 850) · ข้อความผลปะทะเหนือการ์ด · โล่บาเรีย */
+.vc-verdict{position:absolute;top:618px;z-index:6;transform:translateX(-50%);white-space:nowrap;padding:4px 24px;border-radius:999px;font-family:var(--font-disp);font-weight:700;font-size:40px;line-height:1.2;pointer-events:none;animation:vcVerdict 1.6s cubic-bezier(.2,.9,.3,1.2) forwards}
+.vc-verdict.win{background:linear-gradient(180deg,#ffe58a,#ffc83d 55%,#e09a12);color:#1a1204;box-shadow:0 0 0 2px #fff4c2 inset,0 0 26px rgba(255,200,61,.9)}
+.vc-verdict.lose{background:rgba(16,18,26,.88);color:#aeb7c6;border:2px solid #5d6573;font-size:34px}
+@keyframes vcVerdict{0%{opacity:0;transform:translateX(-50%) scale(2)}14%{opacity:1;transform:translateX(-50%) scale(.94)}22%{transform:translateX(-50%) scale(1)}86%{opacity:1;transform:translateX(-50%) scale(1)}100%{opacity:0;transform:translateX(-50%) scale(1.04)}}
 .vc-call{position:absolute;left:960px;top:470px;z-index:6;text-align:center;pointer-events:none;--k:var(--gold);transform:translateX(-50%);animation:vcCall 1.6s cubic-bezier(.2,.9,.3,1.2) forwards}
 .vc-call b{display:block;white-space:nowrap;font-family:var(--font-disp);font-weight:700;font-size:92px;line-height:1.05;letter-spacing:.03em;color:#fff;-webkit-text-stroke:3px var(--k);text-shadow:0 0 30px var(--k),0 6px 0 rgba(0,0,0,.6)}
 .vc-call small{display:inline-block;margin-top:10px;padding:4px 20px;border-radius:999px;background:rgba(5,7,11,.82);border:2px solid var(--k);font-family:var(--font-disp);font-weight:700;font-size:28px;color:#fff;white-space:nowrap}
@@ -2942,9 +2946,11 @@ function vcMove(s, [x, y], { rot = 0, sc = 1, ms = 300, ease = 'cubic-bezier(.5,
   d.style.transform = `translate(${x - x0}px,${y - y0}px) rotate(${rot}deg) scale(${sc})`;
   vc.at[s] = [x, y];
 }
-// ข้อความผลปะทะกลางจอ: main ตัวใหญ่ · sub ป้ายรอง · ctr = ฝั่งที่ชนะทาง
+// ป้ายผลปะทะ (ตี้ 2026-10-28: เอา CLASH/MISS/BLOCK ฯลฯ ออกหมด เหลือแค่ "ชนะทาง / แพ้ทาง" เหนือการ์ดแต่ละฝั่ง)
+// ctr = ฝั่งที่ชนะทาง · ไม่มีใครชนะทาง (ชนิดเดียวกัน / Attack เจอ Ultimate / อีกฝั่งว่าง) = ไม่ขึ้นป้าย · main/sub/cls ไม่ใช้แล้ว
 function vcCall(main, sub, cls, ctr) {
-  vcAdd(`vc-call ${cls}`, `<b>${main}</b>${sub ? `<small>${sub}</small>` : ''}${ctr ? `<i>${ctr} ชนะทาง</i>` : ''}`);
+  if (!ctr) return;
+  for (const s of SIDES) vcAdd(`vc-verdict ${s === ctr ? 'win' : 'lose'}`, s === ctr ? 'ชนะทาง' : 'แพ้ทาง', `left:${VC_MID[s][0]}px`);
 }
 // ปะทะกลางจอ (ตี้ 2026-10-28) ก่อนพุ่งเข้าเกจ — อ่านผลจาก r (rollClash) อย่างเดียว ไม่แตะตัวสุ่ม
 // โจมตีเจอหลบพ้น = การ์ดตีพุ่งใส่ การ์ด Dodge กระโดดหลบ "MISS!" · โจมตีเจอโล่ = ชนการ์ดโล่ บาเรียขึ้น "BLOCK!/ลดดาเมจ!"
