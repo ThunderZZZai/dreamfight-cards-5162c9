@@ -816,6 +816,10 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 #vdoLayer::after{display:none}
 #strip,#main,.hand-head,.order,.gauge{text-shadow:0 1px 3px rgba(0,0,0,.85),0 0 10px rgba(0,0,0,.5)}
 /* แถบ OBSERVE (ตี้: บังจอ) → ป้ายเล็กมุมขวาบนใต้ HUD · จบเกมกลับเป็นแถบเต็มเพราะมีปุ่มดูอีกเกม */
+/* หน้าผู้เล่น (ตี้ 2026-10-28): แถบควบคุมไม่มีพื้นหลัง · ช่วง PICK UP / ACTION เหลือแค่ปุ่ม ไม่มีคำแนะนำ */
+#world.lay-player #controls{background:none;border-color:transparent}
+#world.lay-player[data-phase="pick"] #controls .hint,#world.lay-player[data-phase="action"] #controls .hint{visibility:hidden}
+#world.lay-player #controls .hint{text-shadow:0 2px 6px rgba(0,0,0,.9),0 0 2px rgba(0,0,0,.9)}
 #world.lay-spec #controls.spec-mini{left:auto;right:16px;top:138px;width:auto;max-width:620px;height:36px;display:flex;gap:10px;padding:0 4px 0 12px;border-radius:999px;background:rgba(5,7,11,.42);border-color:rgba(255,255,255,.1)}
 #world.lay-spec #controls.spec-mini .hint{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#d6dde8}
 #world.lay-spec #controls.spec-mini .spec-badge{font-size:11px;padding:0 8px;margin-right:6px}
