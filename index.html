@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793208922">
+<meta name="df-build" content="1793209429">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -977,11 +977,11 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 .vfx{position:absolute;left:0;top:0;mix-blend-mode:screen;pointer-events:none}
 .vfx video,.vfx img{display:block;width:100%;height:100%}
 .vfx.off{visibility:hidden}
-/* โล่รอบการ์ด Defence ตอนปะทะ: คลิป 1280×720 ย่อ 146/158 ให้การ์ดในคลิปทับการ์ดบน VDO · RED กลับด้าน · เฟดขอบนอก */
-.vfx-shield{z-index:21;width:1183px;height:665px;transform-origin:798px 324px}
+/* โล่รอบการ์ด Defence ตอนปะทะ: คลิปครอปช่วง x 480–1248 y 80–720 ของต้นฉบับ 1280×720 (ตี้ 2026-10-29 บีบให้ลื่น) ย่อ 146/158 ให้การ์ดในคลิปทับการ์ดบน VDO · RED กลับด้าน · เฟดขอบนอก */
+.vfx-shield{z-index:21;width:710px;height:591px;transform-origin:355px 250px}
 .vfx-shield.soft{-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
-  -webkit-mask-image:radial-gradient(ellipse 212px 231px at 798px 320px,#000 0 50%,rgba(0,0,0,.85) 70%,rgba(0,0,0,.35) 90%,transparent 100%),radial-gradient(circle 120px at 591px 320px,#000 0 50%,transparent 100%);
-  mask-image:radial-gradient(ellipse 212px 231px at 798px 320px,#000 0 50%,rgba(0,0,0,.85) 70%,rgba(0,0,0,.35) 90%,transparent 100%),radial-gradient(circle 120px at 591px 320px,#000 0 50%,transparent 100%)}
+  -webkit-mask-image:radial-gradient(ellipse 212px 231px at 355px 246px,#000 0 50%,rgba(0,0,0,.85) 70%,rgba(0,0,0,.35) 90%,transparent 100%),radial-gradient(circle 120px at 148px 246px,#000 0 50%,transparent 100%);
+  mask-image:radial-gradient(ellipse 212px 231px at 355px 246px,#000 0 50%,rgba(0,0,0,.85) 70%,rgba(0,0,0,.35) 90%,transparent 100%),radial-gradient(circle 120px at 148px 246px,#000 0 50%,transparent 100%)}
 /* ไฟตอนการ์ดพุ่ง: อยู่ใต้การ์ด (การ์ด z 20) หัวไฟอยู่ที่ (390,128) ของคลิป */
 .vfx-fire{z-index:19;width:400px;height:256px;transform-origin:390px 128px;opacity:0;transition:opacity .12s ease}
 .vfx-fire.on{opacity:1}
@@ -3197,7 +3197,7 @@ function vfxStop() {
 function vfxShield(defer, kind) {
   const el = vfx.clip[kind] || (vfx.clip[kind] = vfxEl('vfx-shield off', kind === 'break' ? 'card_break.mp4' : 'card_block.mp4'));
   const [x, y] = VC_MID[defer], d = vc.pops[defer], [bx, by] = VC_POP[defer], mx = defer === 'RED' ? -1 : 1, run = ++vfx.shRun;
-  el.style.left = `${x - 798}px`; el.style.top = `${y - 324}px`;
+  el.style.left = `${x - 355}px`; el.style.top = `${y - 250}px`; // จุดกลางการ์ดในคลิปที่ครอป
   el.classList.add('soft');
   const follow = () => {
     if (run !== vfx.shRun || el.classList.contains('off') || !d || !d.isConnected) return;
@@ -3237,32 +3237,18 @@ function vfxShieldOff() {
 function vfxFire(s, c) {
   const col = FIRE_COL[c.type], key = `${s}:${col}`;
   const el = vfx.fire[key] || (vfx.fire[key] = vfxEl('vfx-fire', `fire_${col}.mp4`, true));
-  const d = vc.pops[s], [bx, by] = VC_POP[s], run = ++vfx.run[s], v = el.firstElementChild;
-  let on = false;
+  const v = el.firstElementChild;
+  ++vfx.run[s];
+  el.classList.remove('off', 'on');
   // ตี้ 2026-10-29: ไฟต้องไหวตลอด — เล่นวนค้างไว้ตั้งแต่การ์ดเด้ง (ไม่กระโดดเฟรมตอนติด ซึ่งช่วงพุ่งสั้นจนภาพค้าง) · เร่ง 1.6 เท่าให้เปลวไหวชัด
-  const set = want => {
-    if (want === on) return;
-    on = want;
-    el.classList.toggle('on', on);
-  };
-  el.classList.remove('off');
   v.playbackRate = 1.6;
   if (v.paused) v.play().catch(() => {});
-  // ตี้ 2026-10-29: ไฟติดเฉพาะตอนพุ่งเข้าเกจ (หลังง้างเสร็จ) · การ์ดชี้หัวตามทางพุ่ง → ทิศไฟ = มุมการ์ด − 90°
-  const tick = now => {
-    if (run !== vfx.run[s] || !d.isConnected) { set(false); return; }
-    const cs = getComputedStyle(d), el0 = now - (d._flyT0 || 0);
-    const flying = d.classList.contains('fly') && d._flyT0 && el0 > d._flyMs * 0.22 && el0 < d._flyMs * 0.97 && +cs.opacity > 0.4;
-    set(!!flying);
-    if (flying) {
-      const m = new DOMMatrixReadOnly(cs.transform === 'none' ? undefined : cs.transform);
-      const x = bx + m.e, y = by + m.f, sc = Math.hypot(m.a, m.b) || 1, ang = Math.atan2(m.b, m.a) - Math.PI / 2;
-      const k = (232 * sc * 1.58) / 225, ahead = 116 * sc + 40 * k; // การ์ด 146×232 อยู่ในแกนไฟ หัวการ์ดอยู่หลังหัวไฟเล็กน้อย
-      el.style.transform = `translate(${x + Math.cos(ang) * ahead - 390}px,${y + Math.sin(ang) * ahead - 128}px) rotate(${(ang * 180) / Math.PI}deg) scale(${k})`;
-    }
-    requestAnimationFrame(tick);
-  };
-  requestAnimationFrame(tick);
+  vc.pops[s]._fire = el; // vcFlyTo ขยับไฟพร้อมการ์ดในแอนิเมชันชุดเดียวกัน
+}
+// ไฟของการ์ดที่ (x,y) มุมการ์ด r (องศา · หัวการ์ดชี้ไปทางที่พุ่ง) สเกล k → transform ของไฟ (หัวไฟอยู่ที่ 390,128 ของคลิป)
+function fireTf(x, y, r, k) {
+  const a = ((r - 90) * Math.PI) / 180, f = (232 * k * 1.58) / 225, ahead = 116 * k + 40 * f; // การ์ด 146×232 อยู่ในแกนไฟ หัวการ์ดอยู่หลังหัวไฟเล็กน้อย
+  return `translate(${x + Math.cos(a) * ahead - 390}px,${y + Math.sin(a) * ahead - 128}px) rotate(${r - 90}deg) scale(${f})`;
 }
 // การ์ดพุ่งเข้าเกจแบบพริ้ว (ตี้ 2026-10-28: เดิมพุ่งตรงแข็ง ๆ): ง้างถอยนิดหนึ่ง → เร่งไปตามเส้นโค้ง แล้วหดเข้าเกจ · rot1 ไม่ใช้แล้ว (การ์ดหันตามทางพุ่ง)
 function vcFlyTo(d, s, [x1, y1], sc, rot1, ms) {
@@ -3278,23 +3264,29 @@ function vcFlyTo(d, s, [x1, y1], sc, rot1, ms) {
   let a0 = tanAt(0);
   while (a0 - r0 > 180) a0 -= 360;
   while (a0 - r0 < -180) a0 += 360;
-  const kf = [{ offset: 0, transform: tf(sx, sy, r0, s0) }];
-  for (let i = 1; i <= 4; i++) { const k = i / 4, e = 1 - Math.pow(1 - k, 3); kf.push({ offset: 0.2 * k, transform: tf(sx - ux * 24 * e, sy - uy * 24 * e, r0 + (a0 - r0) * e, s0 * (1 + 0.05 * e)) }); }
-  let last = a0, endRot = a0;
+  // จุดบนทาง [offset, x, y, มุม, สเกล] · การ์ดกับไฟใช้ชุดเดียวกัน (ตี้ 2026-10-29: เดิมไฟขยับทีละเฟรมด้วยโค้ด ตามการ์ดไม่ทันตอนเครื่องหนัก)
+  const pts = [[0, sx, sy, r0, s0]];
+  for (let i = 1; i <= 4; i++) { const k = i / 4, e = 1 - Math.pow(1 - k, 3); pts.push([0.2 * k, sx - ux * 24 * e, sy - uy * 24 * e, r0 + (a0 - r0) * e, s0 * (1 + 0.05 * e)]); }
+  let last = a0;
   for (let i = 1, N = 16; i <= N; i++) {
     const u = i / N, p = Math.pow(u, 1.7), q = 1 - p;
-    const x = q * q * sx + 2 * q * p * cx + p * p * x1, y = q * q * sy + 2 * q * p * cy + p * p * y1;
     let r = tanAt(p);
     while (r - last > 180) r -= 360;
     while (r - last < -180) r += 360;
-    last = endRot = r;
-    kf.push({ offset: 0.2 + 0.8 * u, transform: tf(x, y, r, s0 * 1.05 + (sc - s0 * 1.05) * Math.pow(u, 1.25)) });
+    last = r;
+    pts.push([0.2 + 0.8 * u, q * q * sx + 2 * q * p * cx + p * p * x1, q * q * sy + 2 * q * p * cy + p * p * y1, r, s0 * 1.05 + (sc - s0 * 1.05) * Math.pow(u, 1.25)]);
   }
-  d._flyT0 = performance.now(); d._flyMs = ms;
   d.style.transition = 'opacity .12s ease';
   d.getAnimations().forEach(a => a.cancel());
-  d.style.transform = tf(x1, y1, endRot, sc);
-  d.animate(kf, { duration: ms, easing: 'linear' });
+  d.style.transform = tf(x1, y1, last, sc);
+  d.animate(pts.map(([offset, x, y, r, k]) => ({ offset, transform: tf(x, y, r, k) })), { duration: ms, easing: 'linear' });
+  // ไฟ: ติดหลังง้างเสร็จ (20%) ดับก่อนถึงเกจนิดเดียว · เริ่มเวลาเดียวกับการ์ด
+  const fire = d._fire;
+  if (fire && fire.isConnected) {
+    fire.getAnimations().forEach(a => a.cancel());
+    const op = o => (o < 0.2 ? 0 : o < 0.24 ? (o - 0.2) / 0.04 : o < 0.93 ? 1 : Math.max(0, 1 - (o - 0.93) / 0.07));
+    fire.animate(pts.map(([offset, x, y, r, k]) => ({ offset, transform: fireTf(x, y, r, k), opacity: op(offset) })), { duration: ms, easing: 'linear' });
+  }
 }
 // โล่บนเกจ HP ฝั่ง s · sh = ชิลด์ตอนนี้ · show = อยู่ในเกม (ไม่ใช่ intro)
 const COAT_L = sh => 258 + (530 * sh) / SHIELD_MAX + (sh > 0 ? 6 : -40); // ปลายนอกเกจที่ x 1612 = ระยะ 258 จากขอบขวาผืน
