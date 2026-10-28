@@ -777,9 +777,10 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 
 /* การ์ดบน VDO: เด้งมุมล่างตอนตัวละครทำท่า → ก่อน VDO จบพุ่งเข้าเกจ HP (ดู vcFinale) */
 #vdoCards{position:absolute;inset:0;z-index:20;pointer-events:none}
-.vc-pop{position:absolute;top:690px;width:172px;--cw:172px;opacity:0;transition:transform .5s cubic-bezier(.2,.9,.3,1.25),opacity .3s ease}
+/* ตี้ 2026-10-28: การ์ดเด้งเล็กลง 15% (172 → 146) ขอบล่างเท่าเดิม */
+.vc-pop{position:absolute;top:731px;width:146px;--cw:146px;opacity:0;transition:transform .5s cubic-bezier(.2,.9,.3,1.25),opacity .3s ease}
 .vc-pop.red{left:60px;--k:var(--red);transform:translate(-200px,60px) rotate(-12deg)}
-.vc-pop.blue{left:1688px;--k:var(--blue);transform:translate(200px,60px) rotate(12deg)}
+.vc-pop.blue{left:1714px;--k:var(--blue);transform:translate(200px,60px) rotate(12deg)}
 .vc-pop.on{opacity:1;transform:none}
 .vc-pop .card{box-shadow:0 0 0 3px var(--k),0 0 30px var(--k),0 16px 40px rgba(0,0,0,.7);border-radius:14px}
 .vc-pop.on .card{animation:vcGlow 1s ease-out}
@@ -788,6 +789,19 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 .vc-pop.fly{z-index:3;transition:transform .38s cubic-bezier(.55,0,.9,.55),opacity .1s ease .33s}
 .vc-pop.fly .vc-who{display:none}
 .vc-pop.gone{opacity:0}
+/* ช่องว่าง (ฝั่งนั้นไม่ได้ลงการ์ด) = กรอบการ์ดใส ๆ + "ว่างเปล่า" */
+.vc-empty{display:grid;place-items:center;width:100%;aspect-ratio:820/1302;border-radius:14px;border:3px dashed rgba(255,255,255,.6);background:rgba(255,255,255,.07);box-shadow:0 0 0 2px var(--k) inset,0 0 24px rgba(0,0,0,.35);backdrop-filter:blur(3px)}
+.vc-empty b{font-family:var(--font-disp);font-weight:700;font-size:26px;color:rgba(255,255,255,.9);text-shadow:0 2px 8px rgba(0,0,0,.8)}
+.vc-pop.empty .vc-who{background:rgba(5,7,11,.8);border:2px solid var(--k)}
+/* ปะทะกลางจอ (ตี้ 2026-10-28): การ์ดชนกันกลางล่าง (y 850) · ข้อความผลปะทะเหนือการ์ด · โล่บาเรีย */
+.vc-call{position:absolute;left:960px;top:470px;z-index:6;text-align:center;pointer-events:none;--k:var(--gold);transform:translateX(-50%);animation:vcCall 1.6s cubic-bezier(.2,.9,.3,1.2) forwards}
+.vc-call b{display:block;white-space:nowrap;font-family:var(--font-disp);font-weight:700;font-size:92px;line-height:1.05;letter-spacing:.03em;color:#fff;-webkit-text-stroke:3px var(--k);text-shadow:0 0 30px var(--k),0 6px 0 rgba(0,0,0,.6)}
+.vc-call small{display:inline-block;margin-top:10px;padding:4px 20px;border-radius:999px;background:rgba(5,7,11,.82);border:2px solid var(--k);font-family:var(--font-disp);font-weight:700;font-size:28px;color:#fff;white-space:nowrap}
+.vc-call i{display:block;width:max-content;margin:8px auto 0;padding:2px 16px;border-radius:999px;background:var(--gold);color:#1a1204;font-style:normal;font-family:var(--font-disp);font-weight:700;font-size:24px}
+.vc-call.miss{--k:#c9d2de} .vc-call.hit{--k:#ff5a3c} .vc-call.block{--k:#6fb4ff} .vc-call.calm{--k:#9aa6b8} .vc-call.red{--k:var(--red)} .vc-call.blue{--k:var(--blue)}
+@keyframes vcCall{0%{opacity:0;transform:translateX(-50%) scale(2.2)}14%{opacity:1;transform:translateX(-50%) scale(.94)}22%{transform:translateX(-50%) scale(1)}86%{opacity:1;transform:translateX(-50%) scale(1)}100%{opacity:0;transform:translateX(-50%) scale(1.04)}}
+.vc-barrier{position:absolute;top:695px;width:78px;height:310px;z-index:5;pointer-events:none;border-radius:50%;border:6px solid #e3f2ff;background:radial-gradient(ellipse at center,rgba(150,205,255,.55),rgba(110,180,255,.15) 60%,rgba(110,180,255,0) 75%);box-shadow:0 0 34px #6fb4ff,inset 0 0 26px #6fb4ff;transform:translateX(-50%);animation:vcBarrier 1.1s ease-out forwards}
+@keyframes vcBarrier{0%{opacity:0;transform:translateX(-50%) scaleY(.2)}22%{opacity:1;transform:translateX(-50%) scaleY(1.08)}34%{transform:translateX(-50%) scaleY(1)}75%{opacity:1}100%{opacity:0;transform:translateX(-50%) scaleY(1)}}
 .vc-pop.drawn .card{box-shadow:0 0 0 4px #3cdc82,0 0 36px #3cdc82,0 16px 40px rgba(0,0,0,.7)}
 .vc-fx{position:absolute;z-index:4;transform:translateX(-50%)}
 .vc-fx .bu{position:absolute;left:50%;top:-195px;width:390px;height:390px;margin-left:-195px;border-radius:50%;animation:vcBurst .55s ease-out forwards}
@@ -2839,7 +2853,9 @@ function popAt(clip, side) {
   return own ? (m[2] === 'ult' ? 3 : 3.5) : 6;           // VDO ฝั่งตี (ไฟล์เดียว: อีกฝ่ายโผล่ตอนโดน)
 }
 const VC_FLY = 380, VC_GAP = 950, VC_STEAL = 1650, VC_DRAW = 650, VC_LOSE = 750, VC_HUD = 450, VC_PAD = 600;
-const VC_POP = { RED: [146, 826], BLUE: [1774, 826] }; // จุดกึ่งกลางการ์ดมุมล่าง (.vc-pop)
+const VC_POP = { RED: [133, 847], BLUE: [1787, 847] }; // จุดกึ่งกลางการ์ดมุมล่าง (.vc-pop 146px)
+// ปะทะกลางจอ (ตี้ 2026-10-28): การ์ดพุ่งมาชนกันกลางจอก่อน แล้วค่อยพุ่งเข้าเกจ · MID = จุดพัก · HIT = จุดชน (ขอบการ์ดแตะกัน)
+const VC_CLASH = 1600, VC_MID = { RED: [858, 850], BLUE: [1062, 850] }, VC_HIT = { RED: [888, 850], BLUE: [1032, 850] };
 const VC_BAR = { RED: [579, 104], BLUE: [1343, 104] }; // จุดกึ่งกลางแถบ HP
 const VC_FX_HTML = `<span class="bu"></span><span class="ri"></span>${'<span class="sd"></span>'.repeat(10)}<span class="ri b"></span><span class="ch"></span>`
   + '<svg class="ck" viewBox="0 0 180 40" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M90 20 L72 8 L58 14 L40 4M90 20 L104 6 L122 12 L140 2M90 20 L80 34 L64 30M90 20 L110 32 L128 28 L150 38M72 8 L66 0"/></svg>';
@@ -2864,7 +2880,7 @@ function vcActs(g, r) {
   return acts.sort((x, y) => x.rank - y.rank);
 }
 const vcMs = a => (a.fx === 'draw' ? VC_DRAW : a.fx === 'steal' ? VC_STEAL : VC_GAP) + (a.brk || a.brkMiss ? VC_LOSE : 0) + (a.cost ? VC_LOSE : 0);
-const vc = { pops: {} };
+const vc = { pops: {}, at: {} };
 function vcAdd(cls, html, style) {
   const d = document.createElement('div');
   d.className = cls;
@@ -2874,14 +2890,17 @@ function vcAdd(cls, html, style) {
   return d;
 }
 function vcPop(s, c) {
-  if (vc.pops[s] || !c) return;
-  const d = vcAdd(`vc-pop ${s.toLowerCase()}`, `${cardHTML({ type: c.type, lv: c.lv })}<b class="vc-who">${s} · ${INFO[c.type].name} Lv${c.lv}</b>`);
+  if (vc.pops[s]) return;
+  // ตี้ 2026-10-28: ฝั่งที่ไม่ได้ลงการ์ด = กรอบใส "ว่างเปล่า"
+  const d = c ? vcAdd(`vc-pop ${s.toLowerCase()}`, `${cardHTML({ type: c.type, lv: c.lv })}<b class="vc-who">${s} · ${INFO[c.type].name} Lv${c.lv}</b>`)
+    : vcAdd(`vc-pop empty ${s.toLowerCase()}`, `<div class="vc-empty"><b>ว่างเปล่า</b></div><b class="vc-who">${s} · ว่างเปล่า</b>`);
   vc.pops[s] = d;
+  vc.at[s] = VC_POP[s];
   void d.offsetWidth;
   d.classList.add('on');
   sfx.play('flip');
 }
-function vcReset() { vc.pops = {}; $('#vdoCards').innerHTML = ''; }
+function vcReset() { vc.pops = {}; vc.at = {}; $('#vdoCards').innerHTML = ''; }
 // ป้าย ACTION 1/2/3 กลางจอตอนเริ่มเปิดช่อง i
 function laneCall(i) {
   const el = $('#laneCall');
@@ -2898,9 +2917,112 @@ function vcLose(victim, n, text) {
   vcAdd('vc-tag lose', text, `left:${x + 60}px;top:660px`);
   sfx.play('discard');
 }
+// เลื่อนการ์ดเด้งของฝั่ง s ไปจุด [x, y] บนจอ (transform เทียบมุมเดิม)
+function vcMove(s, [x, y], { rot = 0, sc = 1, ms = 300, ease = 'cubic-bezier(.5,0,.75,0)' } = {}) {
+  const d = vc.pops[s];
+  if (!d) return;
+  const [x0, y0] = VC_POP[s];
+  d.style.transition = `transform ${ms}ms ${ease},opacity .3s ease`;
+  d.style.transform = `translate(${x - x0}px,${y - y0}px) rotate(${rot}deg) scale(${sc})`;
+  vc.at[s] = [x, y];
+}
+// ข้อความผลปะทะกลางจอ: main ตัวใหญ่ · sub ป้ายรอง · ctr = ฝั่งที่ชนะทาง
+function vcCall(main, sub, cls, ctr) {
+  vcAdd(`vc-call ${cls}`, `<b>${main}</b>${sub ? `<small>${sub}</small>` : ''}${ctr ? `<i>${ctr} ชนะทาง</i>` : ''}`);
+}
+// ปะทะกลางจอ (ตี้ 2026-10-28) ก่อนพุ่งเข้าเกจ — อ่านผลจาก r (rollClash) อย่างเดียว ไม่แตะตัวสุ่ม
+// โจมตีเจอหลบพ้น = การ์ดตีพุ่งใส่ การ์ด Dodge กระโดดหลบ "MISS!" · โจมตีเจอโล่ = ชนการ์ดโล่ บาเรียขึ้น "BLOCK!/ลดดาเมจ!"
+// ตีกันทั้งคู่ = ชนกันกลางจอ "CLASH!" · อีกฝั่งว่าง = พุ่งมากลางจอตัวเดียว · ไม่มีใครตี = มาพบกันเฉย ๆ
+async function vcClash(r, stop) {
+  const has = SIDES.filter(s => r[s].card);
+  for (const s of SIDES) vcPop(s, r[s].card);
+  if (!has.length) return;
+  const t0 = Date.now(), T = s => r[s].card.type, hitter = s => !!HIT_VDO[T(s)], ctr = counterSide(r);
+  const fx = (cls, [x, y]) => vcAdd(`vc-fx ${cls}`, VC_FX_HTML, `left:${x}px;top:${y}px`);
+  const fill = async () => { await sleep(Math.max(0, VC_CLASH - (Date.now() - t0))); };
+  if (has.length === 1) {
+    const s = has[0], t = T(s);
+    vcMove(s, [960, 850], { ms: 380, ease: 'cubic-bezier(.2,.8,.3,1)' });
+    sfx.play('flip');
+    await sleep(380);
+    if (stop()) return;
+    vcCall(t === 'DEF' ? 'ตั้งโล่!' : t === 'DODGE' ? 'ไม่มีให้หลบ' : 'โจมตีเต็มแรง!', `${FOE[s]} ช่องว่าง`, s.toLowerCase());
+    if (hitter(s)) { fx('hit', [960, 850]); quake(true); sfx.play(`ctr${t}`); } else sfx.play(t === 'DEF' ? 'ctrDEF' : 'dodge');
+    return fill();
+  }
+  const dodger = SIDES.find(s => T(s) === 'DODGE' && hitter(FOE[s])), defer = SIDES.find(s => T(s) === 'DEF' && hitter(FOE[s]));
+  if (dodger) {
+    const atk = FOE[dodger], [mx, my] = VC_MID[dodger], away = dodger === 'RED' ? -1 : 1;
+    vcMove(dodger, VC_MID[dodger], { ms: 300, ease: 'cubic-bezier(.2,.8,.3,1)' });
+    await sleep(260);
+    vcMove(atk, [mx - away * 30, my], { ms: 300, rot: away * -8 });
+    sfx.play('flip');
+    if (r[dodger].evaded) {
+      setTimeout(() => vcMove(dodger, [mx + away * 70, my - 190], { rot: away * 22, ms: 240, ease: 'cubic-bezier(.2,.8,.3,1)' }), 110);
+      await sleep(300);
+      if (stop()) return;
+      fx('miss', [mx, my]);
+      vcCall('MISS!', `${dodger} หลบพ้น`, 'miss', ctr);
+      sfx.play('miss');
+      await sleep(420);
+      vcMove(dodger, VC_MID[dodger], { ms: 320, ease: 'cubic-bezier(.2,.8,.3,1.3)' });
+      vcMove(atk, VC_MID[atk], { ms: 320, ease: 'cubic-bezier(.2,.8,.3,1.3)' });
+    } else {
+      await sleep(300);
+      if (stop()) return;
+      fx('hit', [mx, my]); quake(true); flashStage(atk);
+      vcCall('หลบไม่พ้น!', `${atk} โจมตีเข้า`, 'hit', ctr);
+      sfx.play(`ctr${T(atk)}`);
+      vcMove(dodger, [mx + away * 60, my + 20], { rot: away * 14, ms: 260, ease: 'cubic-bezier(.2,.8,.3,1)' });
+      await sleep(420);
+      vcMove(atk, VC_MID[atk], { ms: 320, ease: 'cubic-bezier(.2,.8,.3,1.3)' });
+      vcMove(dodger, VC_MID[dodger], { ms: 320, ease: 'cubic-bezier(.2,.8,.3,1.3)' });
+    }
+    return fill();
+  }
+  if (defer) {
+    const atk = FOE[defer], o = r[defer], away = defer === 'RED' ? -1 : 1;
+    vcMove(defer, VC_MID[defer], { ms: 300, ease: 'cubic-bezier(.2,.8,.3,1)' });
+    await sleep(240);
+    vcMove(atk, VC_HIT[atk], { ms: 300 });
+    sfx.play('flip');
+    await sleep(300);
+    if (stop()) return;
+    vcAdd('vc-barrier', '', `left:${VC_MID[defer][0] - away * 96}px`);
+    fx(o.hpLoss > 0 ? 'hit' : 'block', [960, 850]);
+    quake(o.hpLoss > 0);
+    const main = o.hpLoss > 0 ? (ctr === atk ? 'ทะลวงโล่!' : 'ลดดาเมจ!') : 'BLOCK!';
+    vcCall(main, o.hpLoss > 0 ? `โล่รับ ${o.absorbed} · ทะลุ ${o.hpLoss}` : `โล่รับไว้หมด${o.absorbed ? ` ${o.absorbed}` : ''}`, o.hpLoss > 0 ? 'hit' : 'block', ctr);
+    sfx.play(o.hpLoss > 0 ? `ctr${T(atk)}` : 'defend');
+    vcMove(atk, [VC_MID[atk][0] - away * 40, 850], { rot: away * 10, ms: 260, ease: 'cubic-bezier(.2,.8,.3,1)' });
+    await sleep(380);
+    vcMove(atk, VC_MID[atk], { ms: 320, ease: 'cubic-bezier(.2,.8,.3,1.3)' });
+    return fill();
+  }
+  if (SIDES.every(hitter)) {
+    for (const s of SIDES) vcMove(s, VC_HIT[s], { ms: 340 });
+    sfx.play('flip');
+    await sleep(340);
+    if (stop()) return;
+    fx('hit', [960, 850]); quake(true); flashStage(ctr || 'RED');
+    vcCall('CLASH!', ctr ? '' : 'ปะทะกันเต็มแรง', 'clash', ctr);
+    sfx.play(T('RED') === 'ULT' || T('BLUE') === 'ULT' ? 'ctrULT' : 'ctrATK');
+    for (const s of SIDES) vcMove(s, [VC_MID[s][0] + (s === 'RED' ? -36 : 36), 850], { rot: s === 'RED' ? -9 : 9, ms: 260, ease: 'cubic-bezier(.2,.8,.3,1)' });
+    await sleep(380);
+    for (const s of SIDES) vcMove(s, VC_MID[s], { ms: 320, ease: 'cubic-bezier(.2,.8,.3,1.3)' });
+    return fill();
+  }
+  // ไม่มีใครตี (Defence/Dodge เจอกัน)
+  for (const s of SIDES) vcMove(s, VC_MID[s], { ms: 360, ease: 'cubic-bezier(.2,.8,.3,1)' });
+  await sleep(360);
+  if (stop()) return;
+  vcCall('ตั้งรับทั้งคู่', 'ไม่มีใครโจมตี', 'calm', ctr);
+  sfx.play('swap');
+  return fill();
+}
 // พุ่งเข้าเกจตามลำดับ acts · hit(a) = ให้ HP ลดตอนการ์ดชน · stop() = SKIP/ออกจากเกม
 async function vcFinale(g, r, acts, hit, stop) {
-  await sleep(VC_HUD); // รอแถบ HP เลื่อนลงมาก่อน
+  await vcClash(r, stop); // ตี้ 2026-10-28: ชนกันกลางจอก่อน (แถบ HP เลื่อนลงมาระหว่างนี้)
   for (const a of acts) {
     if (stop()) return;
     // ตี้ 2026-10-28: Dodge ขโมยพุ่งไปที่การ์ดอีกฝ่าย (มุมล่างฝั่งตรงข้าม) ไม่ใช่แถบ HP
@@ -2909,11 +3031,13 @@ async function vcFinale(g, r, acts, hit, stop) {
     const d = vc.pops[s];
     if (a.fx === 'draw') {
       d.classList.add('drawn');
-      vcAdd('vc-tag draw', '+1 จั่ว', `left:${s === 'RED' ? x0 + 200 : x0 - 200}px;top:${y0 - 30}px`);
+      const [ax, ay] = vc.at[s] || [x0, y0];
+      vcAdd('vc-tag draw', '+1 จั่ว', `left:${s === 'RED' ? ax - 150 : ax + 150}px;top:${ay - 30}px`);
       sfx.play('draw');
       await sleep(VC_DRAW);
       continue;
     }
+    d.style.transition = '';
     d.classList.add('fly');
     d.style.transform = `translate(${x1 - x0}px,${y1 - y0}px) scale(${a.fx === 'steal' ? .7 : .33}) rotate(${s === 'RED' ? 28 : -28}deg)`;
     sfx.play('flip');
@@ -2973,7 +3097,7 @@ async function laneVdo(i, plan, gid, r, keep = false) {
   if (twoHit) acts.sort((x, y) => clipOf(x.s) - clipOf(y.s));
   if (clips.length) fin[clips.length - 1].push(...acts);
   // การ์ดเด้งใน VDO ไหน: ไฟล์เดียว = ทั้งสองฝั่ง · หลายไฟล์ = ฝั่งเจ้าของไฟล์
-  const popSides = clips.map(n => (r ? (clips.length === 1 ? SIDES : [clipSide(n)]).filter(s => r[s].card) : []));
+  const popSides = clips.map(n => (r ? (clips.length === 1 ? SIDES : [clipSide(n)]) : [])); // ฝั่งที่ไม่ได้ลงการ์ดเด้งเป็นกรอบ "ว่างเปล่า"
   // ตี้ 2026-10-27: เลือดไม่ลดจนกว่าการ์ดจะพุ่งไปชน — SKIP / VDO เล่นไม่ได้ ก็ยังพุ่งก่อนแล้วค่อย hp() (SKIP ข้ามแค่ VDO)
   const ran = new Set();
   const apply = k => { if (!shown.has(k) && plan[k].hp) { shown.add(k); plan[k].hp(); } };
@@ -2986,7 +3110,7 @@ async function laneVdo(i, plan, gid, r, keep = false) {
   };
   ui.vdo = lv;
   const v0 = Date.now();
-  $('#vdoLane').textContent = `ช่อง ${i + 1}`;
+  $('#vdoLane').textContent = `ACTION ${i + 1}`; // ตี้ 2026-10-28: ป้ายข้าง SKIP ใช้คำเดียวกับป้ายกลางจอ
   $('#vdoBar').hidden = false;
   vdoBg.sync(false);
   duckMusic(true);
@@ -3012,7 +3136,7 @@ async function laneVdo(i, plan, gid, r, keep = false) {
         }
         if (fin[k].length) {
           // เริ่มพุ่งก่อน VDO จบพอดีให้ทันทุกใบ — VDO เล่นต่อจนจบ ไม่หยุดรอ
-          const lead = (fin[k].reduce((t, a) => t + vcMs(a), 0) + VC_HUD + VC_PAD) / 1000;
+          const lead = (fin[k].reduce((t, a) => t + vcMs(a), 0) + VC_CLASH + VC_PAD) / 1000;
           const at = Math.max(0, VDO_FILES[clips[k]][1] - lead);
           await until(() => stop() || el.ended || el.currentTime >= at);
           if (gone()) return false;
@@ -3191,7 +3315,7 @@ async function startGame(opt = { mode: 'arcade' }) {
     results: [], shown: -1, detail: null, pending: null, ko: null, picks: [], place: [], undo: [], pickShown: false, oppHidden: 0 }); // ล้างผลของเกมก่อน
   $('#log').innerHTML = '';
   addLog(pvp
-    ? `เริ่มเกม PVP · ${tagOf(ME)} (คุณ) ปะทะ ${tagOf(OPP)} (${esc(ui.pvp.oppNick)}) · HP คนละ ${HP_MAX} · มือสูงสุด ${HAND_MAX} ใบ · เฟสละ ${PVP_SEC} วินาที`
+    ? `เริ่มเกม PVP · ${tagOf(ME)} (คุณ) ปะทะ ${tagOf(OPP)} (${esc(ui.pvp.oppNick)}) · HP คนละ ${HP_MAX} · มือสูงสุด ${HAND_MAX} ใบ · ${PVP_TIMER ? `เฟสละ ${PVP_SEC} วินาที` : 'ไม่จับเวลา'}`
     : `เริ่มเกม · ${tagOf('RED')} (คุณ) ปะทะ ${tagOf('BLUE')} (บอท) · HP คนละ ${HP_MAX} · มือสูงสุด ${HAND_MAX} ใบ`, 'sys');
   $('#world').classList.add('intro');
   render();
@@ -3315,7 +3439,7 @@ async function afterPicks(mine, theirs, mineIdx, overFlags, theirIdx = null) {
   g.market = [];
   if (ui.mode === 'pvp' || ui.mode === 'spec') {
     Object.assign(ui, { phase: 'action', busy: false, undo: [] });
-    addLog(`Action Phase · ต่างฝ่ายต่างวางการ์ดคว่ำ · เฟสละ ${PVP_SEC} วินาที`);
+    addLog(`Action Phase · ต่างฝ่ายต่างวางการ์ดคว่ำ${PVP_TIMER ? ` · เฟสละ ${PVP_SEC} วินาที` : ''}`);
     if (ui.mode === 'pvp') pvpPhaseStart('action');
     render();
     return;
@@ -4356,7 +4480,7 @@ function specHandHTML(s) {
       const gone = dyingIds.has(c.id), up = ui.lvups.get(c.id), arr = ui.arrive.get(c.id);
       const land = up != null ? landAt(up) : arr != null ? landAt(arr) : null;
       const cls = gone ? 'leaving' : up != null ? 'lvup' : arr != null ? 'arrive' : '';
-      return `<div class="hc ${cls}${ui.rbFlash.has(c.id) ? ' rbf' : ''}" style="--i:${k};--n:${cards.length}${land != null && !gone ? `;--d:${land}ms` : ''}"><span class="rbw"></span>${cardHTML({ type: c.type, lv: c.lv }, { cid: c.id, fresh: !gone && c.fresh >= g.round, picked: !gone && c.picked === g.round })}${capHTML(c.type, c.lv)}</div>`;
+      return `<div class="hc ${cls}${ui.rbFlash.has(c.id) ? ' rbf' : ''}" style="--i:${k};--n:${cards.length}${land != null && !gone ? `;--d:${land}ms` : ''}"><span class="rbw"></span>${cardHTML({ type: c.type, lv: c.lv }, { cid: c.id })}${capHTML(c.type, c.lv)}</div>`;
     }).join('') : '<p class="hand-empty">มือว่าง</p>'}</div></div>`;
 }
 function renderHand() {
@@ -4437,7 +4561,7 @@ function renderControls() {
       btns = '';
       main = `<button type="button" class="btn primary cta" disabled>${w === 'pick' ? 'PICK UP' : 'FIGHT!'} ✓</button>`;
     }
-    if (!w && ((ui.phase === 'pick' && !ui.pickShown) || (ui.phase === 'action' && !ui.busy))) clock = pvpClockHTML();
+    if (PVP_TIMER && !w && ((ui.phase === 'pick' && !ui.pickShown) || (ui.phase === 'action' && !ui.busy))) clock = pvpClockHTML();
     if (ui.phase === 'end') {
       const ready = ui.pvp.nextReady === `${g.round}n`;
       if (ready) main = '<button type="button" class="btn primary cta" disabled>NEXT ROUND ✓</button>';
@@ -4657,6 +4781,8 @@ document.addEventListener('keydown', e => {
    t0 = เวลาเริ่มแมตช์ (Date.now ของเรา) — ผู้ชมที่เข้ากลางเกมใช้ตั้งนาฬิกาแมตช์ · แสดงผลเท่านั้น
    inp เก็บทั้งแมตช์ (ผู้ชมที่เข้ากลางเกมย้อนคำนวณจากรอบ 1) · ผู้ชม: { watch: mid } อย่างเดียว ไม่ส่งอะไรให้ผู้เล่น */
 const PVP_V = 21; // เปลี่ยนกติกา/เอนจินเมื่อไหร่ต้องเพิ่มเลขนี้ — คนละเวอร์ชันจะไม่ถูกจับคู่ (เล่นคนละกติกา = ผลเพี้ยน) · 4 = Fight Phase เป็น VDO (ยาวขึ้นมาก + presence.vdo) · 5 = Dodge Lv3 มีเพดาน HP 10 + HP สูงสุด 100 → 150 (ตี้ 2026-10-22) · 6 = Lv2 + Lv2 คืนการ์ด Lv1 (validLock รับ id การ์ดคืน) · 7 = เกจ (การวางส่ง gauge ops ไปด้วย · newGame สุ่ม gseed) · 8 = Attack ทอยให้อีกฝ่ายทิ้งการ์ด (rollClash ใช้ตัวสุ่มเพิ่ม) · 9 = Dodge เจอ Ultimate หลบ 100% + Lv2-3 อีกฝ่ายทิ้ง/เสียเกจ · 10 = ชิลด์ (Defence) + Ultimate ใหม่ + เอาเกจชนะทางออก · 11 = Ultimate ดาเมจ 20/40/60 · 12 = Attack เจอ Defence ไม่ทอยทิ้ง (ตัวสุ่มหลักใช้น้อยลง) · 13 = มือว่างเสีย HP เฉพาะค่า Ultimate (Attack / Dodge บังคับทิ้งไม่เสีย HP) · 14 = Defence ชนะทาง Attack ชิลด์เพิ่ม 5/10/15 · 15 = รอบที่ใช้ 3 เกจ สะสมเกจไม่ได้ · 16 = ค่าจากตาราง: ดาเมจเพิ่มชนะทาง Attack/Ultimate 5/10/15 + มือว่าง 15 HP · 17 = Dodge หลบได้เฉพาะ Ultimate · Attack ไม่มีลดหลบ (ตัวสุ่มใช้น้อยลง) + มือว่างกลับเป็น 10 HP · 18 = Attack ดาเมจ 10/25/40 · 19 = Defence ชิลด์ 10/25/40 · 20 = Dodge จั่ว 1 + ขโมยการ์ด 0/1/2 (ตัวสุ่มหลักใช้ตอนขโมย) · เลิกทิ้ง/เสียเกจตอนเจอ Ultimate · 21 = 3 เกจใหม่: จั่วครบมือ + เปลี่ยนฟรี 2 + ผสมการ์ดบนมือ (op ftr / merge)
+// ตี้ 2026-10-28: โชว์แมตช์อาจคุยกันนาน → ไม่จับเวลาเฟส (ไม่มีนาฬิกา ไม่ยืนยันให้อัตโนมัติ ไม่ตัดสิทธิ์เพราะช้า) · หลุดการเชื่อมต่อยังตัดสินตาม PVP_GONE_MS
+const PVP_TIMER = false;
 const PVP_SEC = 60, PVP_CUT = 30, PVP_GONE_MS = 8000, PVP_NEXT_MS = 10000, PVP_WAIT_MS = 90000, VDO_HOLD_MS = 240000;
 // ที่ไหนก็ได้นอก claude.ai (เช่น GitHub Pages): ส่ง presence ผ่าน MQTT broker สาธารณะ 3 เจ้าพร้อมกัน ไม่ต้องล็อกอิน · เจ้าไหนล่มก็ยังคุยกันได้
 // บน claude.ai ต่อข้างนอกไม่ได้ (CSP connect-src 'self' + webrtc block) → ใช้ room ของ claude ได้เฉพาะคนในองค์กรเดียวกัน
@@ -4970,7 +5096,7 @@ function pvpPhaseStart(kind) {
   const P = ui.pvp;
   P.phaseKey = `${ui.g.round}${kind === 'pick' ? 'p' : 'a'}`;
   P.kind = kind;
-  P.deadline = Date.now() + PVP_SEC * 1000;
+  P.deadline = PVP_TIMER ? Date.now() + PVP_SEC * 1000 : Infinity;
   Object.assign(P, { cut: false, submitted: null, applied: null, fought: false, oppLocked: false, waitSince: 0 });
   if (kind === 'pick') P.mark = { hand: ui.g.p[ME].hand.map(c => ({ ...c })), seq: seqGet() };
   pvpTick();
@@ -5071,7 +5197,7 @@ function pvpTick() {
   // ยืนยันแล้วแต่อีกฝ่ายเงียบนานเกิน (เครื่องอีกฝ่ายต้องยืนยันเองเมื่อหมดเวลาอยู่แล้ว) = อีกฝ่ายหลุด
   if (!ui.winner && P.waitSince) {
     if (oppInput(P.waitKey) !== undefined) P.waitSince = 0;
-    else if (now - P.waitSince > PVP_WAIT_MS) { pvpForfeit('slow'); return; }
+    else if (PVP_TIMER && now - P.waitSince > PVP_WAIT_MS) { pvpForfeit('slow'); return; }
   }
   const tm = $('#pvpTimer');
   if (tm) {
@@ -5111,8 +5237,8 @@ function pvpTick() {
   if (theirs !== undefined && !P.cut) {
     P.cut = true;
     if (P.submitted !== P.phaseKey) {
-      P.deadline = Math.min(P.deadline, now + PVP_CUT * 1000);
-      toast(`${OPP} กด ${inPick ? 'PICK UP' : 'FIGHT!'} แล้ว — เวลาของคุณเหลือไม่เกิน ${PVP_CUT} วินาที`);
+      if (PVP_TIMER) P.deadline = Math.min(P.deadline, now + PVP_CUT * 1000);
+      toast(PVP_TIMER ? `${OPP} กด ${inPick ? 'PICK UP' : 'FIGHT!'} แล้ว — เวลาของคุณเหลือไม่เกิน ${PVP_CUT} วินาที` : `${OPP} กด ${inPick ? 'PICK UP' : 'FIGHT!'} แล้ว`);
       const clk = $('#pvpTimer');
       if (clk) { clk.classList.remove('cut'); void clk.offsetWidth; clk.classList.add('cut'); }
       sfx.play('flip');
