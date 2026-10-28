@@ -438,6 +438,51 @@ body:not(.portrait) #rotateHint{display:none}
 .mk-tag{padding:0 10px;border-radius:999px;font-family:var(--font-disp);font-weight:700;font-size:15px;line-height:1.5;color:#fff}
 .mk-tag.red{background:var(--red)} .mk-tag.blue{background:var(--blue)}
 .pvp-watch{display:flex;align-items:center;gap:16px;margin:4px 0 2px;font-size:18px;color:var(--muted)}
+/* ระบบห้อง PVP (ตี้ 2026-10-28 · ร่าง canvas X2iF5zKGwXLoa9nTpTDXUd แถวล่าง): รายการห้อง · สร้างห้อง (ชื่อ+รหัส+ฝั่ง) · ใส่รหัส · ในห้อง READY */
+.btn.gold{background:linear-gradient(180deg,#ffd76a,#e8a91b);color:#1a1204;border:0;box-shadow:0 0 18px rgba(255,200,61,.35)}
+.pvp-rooms{width:1320px;display:flex;flex-direction:column;gap:14px}
+.rooms-bar{display:flex;gap:14px;align-items:center}
+.rooms-bar input{flex:1;height:52px;padding:0 18px;border-radius:12px;border:1px solid var(--line-2);background:rgba(10,13,19,.8);color:var(--ink);font:inherit;font-size:20px}
+.rooms-list{display:flex;flex-direction:column;gap:12px;max-height:470px;overflow-y:auto;padding-right:4px}
+.room-row{display:grid;grid-template-columns:minmax(0,1fr) 320px 220px;align-items:center;gap:20px;padding:16px 22px;border-radius:18px;background:rgba(20,26,36,.85);border:1px solid rgba(255,255,255,.1);text-align:left}
+.room-row.live{border-color:rgba(255,200,61,.4)}
+.room-row .rn{display:flex;align-items:center;gap:10px;font-size:24px;font-weight:700;color:#fff;min-width:0}
+.room-row .rn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.room-row .rm{margin-top:4px;font-size:16px;color:var(--muted)}
+.room-row .seats{display:flex;gap:8px}
+.room-row .st{flex:1;display:flex;flex-direction:column;align-items:center;padding:7px 8px;border-radius:12px;font-size:15px;color:#c9d2de;background:rgba(255,255,255,.04);border:1px dashed rgba(255,255,255,.22);min-width:0}
+.room-row .st b{font-family:var(--font-disp);font-size:16px} .room-row .st span{max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.room-row .st.red.on{border:1px solid var(--red);background:rgba(255,61,69,.14)} .room-row .st.red b{color:#ff8a8f}
+.room-row .st.blue.on{border:1px solid var(--blue);background:rgba(59,130,255,.14)} .room-row .st.blue b{color:#8fb6ff}
+.room-row .btn{width:100%}
+.room-pill{display:inline-flex;align-items:center;gap:6px;padding:2px 12px;border-radius:999px;font-size:14px;font-weight:700}
+.room-pill.wait{background:rgba(60,220,130,.14);color:#7ff0aa;border:1px solid rgba(60,220,130,.45)}
+.room-pill.live{background:rgba(255,200,61,.14);color:#ffd76a;border:1px solid rgba(255,200,61,.5)}
+.rooms-empty{padding:40px;border-radius:18px;border:1px dashed rgba(255,255,255,.2);font-size:20px;color:var(--muted)}
+.room-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+.room-chips span{padding:4px 16px;border-radius:999px;font-size:17px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);color:#c9d2de}
+.room-btns{display:flex;gap:14px;justify-content:center}
+.room-modal{position:fixed;inset:0;z-index:40;display:grid;place-items:center;background:rgba(5,7,11,.7);backdrop-filter:blur(4px)}
+.room-modal[hidden]{display:none}
+.rm-box{width:720px;padding:34px 40px 30px;border-radius:24px;background:#141a24;border:1px solid rgba(255,200,61,.4);box-shadow:0 30px 80px rgba(0,0,0,.6);text-align:left;display:flex;flex-direction:column;gap:8px}
+.rm-box h3{margin:0 0 10px;font-size:36px}
+.rm-box small.eb{font-family:var(--font-disp);font-weight:700;font-size:15px;letter-spacing:.3em;color:var(--gold)}
+.rm-box label{font-size:18px;color:#c9d2de;margin-top:8px}
+.rm-box input[type=text],.rm-box input[type=password]{height:56px;padding:0 18px;border-radius:12px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.06);color:#fff;font:inherit;font-size:22px}
+.rm-box input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,200,61,.22)}
+.rm-box .hint{font-size:15px;color:#8a95a8}
+.rm-box .err{font-size:17px;color:#ff8a8f;min-height:22px}
+.rm-box .lockrow{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.rm-box .lockrow label{margin:0;display:flex;align-items:center;gap:10px;cursor:pointer}
+.rm-box .lockrow input{width:22px;height:22px;accent-color:#ffc83d}
+.rm-sides{display:flex;gap:12px}
+.rm-sides label{flex:1;margin:0;display:flex;justify-content:center;align-items:center;height:60px;border-radius:14px;cursor:pointer;font-family:var(--font-disp);font-weight:700;font-size:22px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.04);color:#c9d2de}
+.rm-sides input{position:absolute;opacity:0;pointer-events:none}
+.rm-sides label:has(input:checked){border:2px solid var(--gold);background:rgba(255,200,61,.12);color:#fff}
+.rm-sides label.red:has(input:checked){border-color:var(--red);background:rgba(255,61,69,.18);color:#ff8a8f}
+.rm-sides label.blue:has(input:checked){border-color:var(--blue);background:rgba(59,130,255,.18);color:#8fb6ff}
+.rm-sides label:has(input:focus-visible){outline:3px solid #fff;outline-offset:2px}
+.rm-acts{display:flex;justify-content:flex-end;gap:12px;margin-top:18px}
 .watchers{margin-left:14px;font-size:17px;color:var(--gold)}
 .seat-vs.count{font-size:120px;line-height:1;color:#fff;text-shadow:0 0 30px var(--gold),0 0 60px rgba(255,200,61,.5);animation:clockBeat .6s ease-out}
 .opp-status{font-size:17px;font-weight:600;color:var(--muted);white-space:nowrap}
@@ -950,19 +995,25 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
       </section>
 
       <section id="pvp" class="start pvp-room" hidden aria-label="ห้อง PVP ออนไลน์">
-        <p class="st-eyebrow">PVP · ONLINE</p>
-        <h2 class="lobby-title">ผู้เล่น VS ผู้เล่น</h2>
+        <p class="st-eyebrow" id="pvpEyebrow">PVP · ONLINE</p>
+        <h2 class="lobby-title" id="pvpTitle">ผู้เล่น VS ผู้เล่น</h2>
         <p class="pvp-status" id="pvpStatus" role="status">กำลังเชื่อมต่อ…</p>
+        <div class="room-chips" id="roomChips" hidden></div>
         <p class="pvp-alt" id="pvpAlt" hidden></p>
         <label class="pvp-nick">ชื่อที่แสดง <input id="pvpNick" maxlength="16" placeholder="ผู้เล่น" autocomplete="off"></label>
-        <div class="pvp-seats">
+        <div class="pvp-rooms" id="pvpRooms" hidden>
+          <div class="rooms-bar"><input id="roomSearch" placeholder="ค้นหาชื่อห้อง" autocomplete="off" aria-label="ค้นหาชื่อห้อง"><button type="button" class="btn gold" data-act="roomNew">＋ สร้างห้อง</button></div>
+          <div class="rooms-list" id="roomsList"></div>
+        </div>
+        <div class="pvp-seats" id="pvpSeats">
           <div class="seat red" id="seatRED"></div>
           <div class="seat-vs">VS</div>
           <div class="seat blue" id="seatBLUE"></div>
         </div>
         <div class="pvp-watch" id="pvpWatch" hidden></div>
-        <p class="pvp-note">กด READY ฝั่งที่ต้องการ แล้วรออีกฝ่ายกดอีกฝั่ง · พร้อมทั้งคู่ = เริ่มเกมทันที · เก็บ/วางการ์ดเฟสละ 60 วินาที · ใครกดยืนยันก่อน เวลาอีกฝ่ายเหลือ 30 วินาที · หมดเวลา = ยืนยันให้อัตโนมัติ</p>
-        <button type="button" class="btn ghost" data-act="toLobby">← กลับ LOBBY</button>
+        <p class="pvp-note" id="pvpNote">กด READY ฝั่งที่ต้องการ แล้วรออีกฝ่ายกดอีกฝั่ง · พร้อมทั้งคู่ = เริ่มเกมทันที · ไม่จับเวลา คุยกันได้เต็มที่ · คนที่เข้ามาหลังเริ่มแข่งแล้วเป็นผู้ชม</p>
+        <div class="room-btns" id="roomBtns"></div>
+        <div class="room-modal" id="roomModal" hidden></div>
       </section>
 
       <div id="strip" class="strip" hidden>
@@ -4760,8 +4811,19 @@ document.addEventListener('click', e => {
     case 'vdoRetry': vdo.load(); break;
     case 'watch': specStart(); break;
     case 'start': if (ROOM.label && !ON_CLAUDE) pvpOpen(); else { ui.screen = 'lobby'; render(); } break; // ลิงก์ห้องส่วนตัว → เข้าห้อง PVP เลย
+    case 'roomNew': roomModal('create'); break;
+    case 'roomEdit': roomModal('edit'); break;
+    case 'roomClose': roomClose(); break;
+    case 'roomLeave': if (net.mine.seat) presence({ seat: null, at: null }); location.href = listUrl(); break;
+    case 'roomJoin': case 'roomWatch': {
+      const r = dirRooms().find(x => x.id === t.dataset.i), watch = t.dataset.act === 'roomWatch';
+      if (!r) { toast('ห้องนี้ปิดไปแล้ว'); renderRooms(); break; }
+      if (r.lock && ssGet(`df-key-${r.id}`) !== r.lock) { roomModal('pw', r.id); ui.roomModal.watch = watch; break; }
+      location.href = roomUrl(r.id, watch ? '&watch=1' : '');
+      break;
+    }
     case 'copyRoom': {
-      const url = `${location.origin}${location.pathname}?room=${encodeURIComponent(ROOM.label)}`;
+      const url = `${location.origin}${location.pathname}?room=${encodeURIComponent(ROOM.label)}&go=1`;
       (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject(new Error('no clipboard')))
         .then(() => toast('คัดลอกลิงก์ห้องแล้ว — ส่งให้เพื่อนได้เลย'), () => toast('คัดลอกไม่ได้ — กดค้างที่ลิงก์เพื่อคัดลอกเอง'));
       break;
@@ -4870,11 +4932,20 @@ const ROOM = (() => {
   return { id: /^[a-z0-9_-]{1,24}$/i.test(raw) ? raw.toLowerCase() : 'h' + hashStr(raw).toString(36), label: raw };
 })();
 const PRIVATE_CODE = Math.random().toString(36).slice(2, 8); // รหัสห้องส่วนตัวใหม่ (ปุ่ม "สร้างห้องส่วนตัว")
+// ระบบห้อง (ตี้ 2026-10-28): ไม่มี ?room = หน้ารายการห้อง · ?go = เปิดหน้าห้อง/รายการเลยไม่ต้องกด START · ?watch = เข้าห้องแล้วดูการแข่งทันที
+const QS = (() => { try { return new URLSearchParams(location.search); } catch (e) { return new URLSearchParams(); } })();
+const LIST_MODE = !ROOM.label && !ON_CLAUDE, MOCK = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && QS.has('mockroom');
+const DIR_ID = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? 'dir-dev' : 'dir'; // สารบบห้อง (เครื่อง dev ไม่ปนกับของจริง)
+const roomUrl = (id, extra = '') => `${location.pathname}?room=${encodeURIComponent(id)}&go=1${extra}${MOCK ? '&mockroom' : ''}`;
+const listUrl = () => `${location.pathname}?go=1${MOCK ? '&mockroom' : ''}`;
+const roomLockHash = (id, pw) => sha256Hex(`dfroom|${id}|${pw}`);
+const ssGet = k => { try { return sessionStorage.getItem(k) || ''; } catch (e) { return ''; } };
+const ssSet = (k, v) => { try { if (v) sessionStorage.setItem(k, v); else sessionStorage.removeItem(k); } catch (e) { /* ข้ามได้ */ } };
 const esc = t => String(t).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 const net = { room: null, kind: null, state: 'idle', since: 0, me: null, peers: [], mine: {}, nonce: Math.random().toString(36).slice(2, 10) };
 // ห้องจำลองสำหรับทดสอบบนเครื่อง (localhost?mockroom) — ใช้ BroadcastChannel คุยกันระหว่างแท็บ
-function mockRoom() {
-  const ch = new BroadcastChannel('df-mock-room'), me = 'mock-' + Math.random().toString(36).slice(2, 8);
+function mockRoom(chName = 'df-mock-room') {
+  const ch = new BroadcastChannel(chName), me = 'mock-' + Math.random().toString(36).slice(2, 8);
   let mine = {}, last = [];
   const others = new Map(), hs = new Set();
   const snap = () => Object.freeze([{ peer: me, by: null, isMe: true, sameTab: true, kind: 'viewer', presence: Object.freeze({ ...mine }), updatedAt: Date.now() },
@@ -4909,6 +4980,14 @@ function cleanPresence(p) {
   if (Number.isFinite(p.at)) o.at = p.at;
   if (Number.isInteger(p.vdo) && p.vdo > 0 && p.vdo < 1000) o.vdo = p.vdo;
   if (Number.isFinite(p.t0)) o.t0 = p.t0;
+  if (Number.isFinite(p.j)) o.j = p.j;
+  const hex = v => (typeof v === 'string' && /^[0-9a-f]{64}$/.test(v) ? v : '');
+  if (p.meta && typeof p.meta === 'object' && !Array.isArray(p.meta)) o.meta = Object.freeze({ name: str(p.meta.name, 30) || '', lock: hex(p.meta.lock), u: Number.isFinite(p.meta.u) ? p.meta.u : 0 });
+  const R = p.room;
+  if (R && typeof R === 'object' && !Array.isArray(R) && typeof R.id === 'string' && /^[a-z0-9_-]{1,24}$/.test(R.id)) {
+    const int = (v, lo, hi, d) => (Number.isInteger(v) && v >= lo && v <= hi ? v : d);
+    o.room = Object.freeze({ id: R.id, name: str(R.name, 30) || '', lock: hex(R.lock), red: str(R.red, 16), blue: str(R.blue, 16), host: str(R.host, 16), live: int(R.live, 0, 999, 0), n: int(R.n, 1, 500, 1) });
+  }
   o.inp = {};
   if (p.inp && typeof p.inp === 'object' && !Array.isArray(p.inp)) {
     for (const [k, v] of Object.entries(p.inp).slice(0, 200)) if (/^\d{1,3}[pan]$/.test(k) && v != null && (typeof v === 'object' || v === 1)) o.inp[k] = v;
@@ -4918,11 +4997,11 @@ function cleanPresence(p) {
 // ห้องผ่าน MQTT (หน้าตาเดียวกับ room ของ claude): หัวข้อ <NET_NS>/v<PVP_V>/<ห้อง>/p/<peer> (คนละเวอร์ชัน = คนละห้อง)
 // ข้อความ = { peer, s: ลำดับ, p: presence } · ส่งซ้ำทุก 2.5 วิ (heartbeat จาก Worker — แท็บที่ถูกย่อก็ไม่ช้าลง) · เงียบเกิน 12 วิ = ออกไปแล้ว
 // ออกจากหน้า = { peer, bye: 2 } ลบทันที · หลุดจาก broker เจ้าเดียว (Last Will) = { peer, bye: 1 } แค่ "ใกล้หมดอายุ" — ยังได้ยินผ่านเจ้าอื่นก็อยู่ต่อ
-async function mqttRoom() {
+async function mqttRoom(roomId = ROOM.id) {
   if (!window.mqtt) await loadScript(MQTT_LIB);
   const lib = window.mqtt;
   if (!lib || typeof lib.connect !== 'function') return null;
-  const me = 'q' + Math.random().toString(36).slice(2, 10), base = `${NET_NS}/v${PVP_V}/${ROOM.id}/p/`;
+  const me = 'q' + Math.random().toString(36).slice(2, 10), base = `${NET_NS}/v${PVP_V}/${roomId}/p/`;
   const HEART_MS = 2500, EXPIRE_MS = 12000, WILL_LEFT_MS = 4000, MAX_PEERS = 200, MAX_BYTES = 8192;
   let mine = {}, seq = 0, last = [], up = false, lastSent = 0, queued = false;
   const others = new Map(), tomb = new Map(), hs = new Set(), cs = new Set();
@@ -4999,7 +5078,7 @@ async function netInit() {
   let room = null;
   try { if (window.claude && typeof window.claude.use === 'function') room = await window.claude.use('room'); } catch (e) { room = null; }
   if (room) net.kind = 'claude';
-  if (!room && /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && /[?&]mockroom\b/.test(location.search)) { room = mockRoom(); net.kind = 'mock'; }
+  if (!room && MOCK) { room = mockRoom(LIST_MODE ? 'df-mock-list' : `df-mock-${ROOM.id}`); net.kind = 'mock'; }
   if (!room && !ON_CLAUDE) {
     try { room = await mqttRoom(); net.kind = room ? 'mqtt' : null; } catch (e) { room = null; }
     setTimeout(renderPvp, 10500); // ยังต่อไม่ติดเกิน 10 วิ → เปลี่ยนข้อความเป็น "กำลังลองใหม่"
@@ -5010,6 +5089,7 @@ async function netInit() {
   const onErr = e => { if (dead.includes(e && e.code)) { net.state = 'off'; renderPvp(); } };
   room.onConnection(c => {
     if (net.state !== 'off') net.state = c ? 'on' : 'connecting';
+    if (c && !net.onAt) { net.onAt = Date.now(); setTimeout(() => { pvpOnPeers(); renderPvp(); }, 2600); } // รอเห็นชื่อ/รหัสห้อง
     if (!c) net.downAt = net.downAt || Date.now();
     else {
       // หลุดนานเกิน 12 วิ (เช่นปิดจอมือถือ) ขณะรอในห้อง: คนอื่นเห็นเราหายไปแล้ว → ปล่อยที่นั่ง ไม่เอาเวลา READY เก่ากลับมาแย่งที่
@@ -5027,12 +5107,165 @@ async function netInit() {
     if (me) net.me = me.peer;
     pvpOnPeers();
   }, onErr);
-  presence({ v: PVP_V, nick: loadNick() || null, nonce: net.nonce, seat: null, at: null, mid: null, over: null, inp: {} });
+  presence({ v: PVP_V, nick: loadNick() || null, nonce: net.nonce, seat: null, at: null, mid: null, over: null, inp: {}, j: Date.now() });
+  // เพิ่งสร้างห้องนี้: ประกาศชื่อ/รหัสห้อง + เข้านั่งฝั่งที่เลือกเมื่อเชื่อมต่อแล้ว
+  const born = ssGet(`df-new-${ROOM.id}`);
+  if (born && !LIST_MODE) {
+    ssSet(`df-new-${ROOM.id}`, '');
+    try {
+      const b = JSON.parse(born);
+      presence({ meta: { name: String(b.name || '').slice(0, 30), lock: b.lock || '', u: Date.now() } });
+      ssSet(`df-key-${ROOM.id}`, b.lock || '');
+      net.autoSeat = b.side;
+    } catch (e) { /* ข้ามได้ */ }
+  }
+  dirInit();
+}
+/* ───────── สารบบห้อง (ตี้ 2026-10-28) ─────────
+   ห้องทุกห้องประกาศตัวเองในห้อง MQTT รวม DIR_ID: presence.room = { id, name, lock (แฮชรหัส), red, blue, host, live (รอบที่แข่ง), n }
+   ทุกคนในห้องประกาศ (คนสร้างออกไปห้องก็ยังอยู่) · ห้องที่ไม่มีใครอยู่หายเองใน ~12 วิ · หน้ารายการห้องฟังอย่างเดียว
+   รหัสห้องตรวจที่เครื่อง (แฮช SHA-256) — กันคนทั่วไปกดเข้า ไม่ใช่ระบบความปลอดภัยจริงจัง (ไม่มีเซิร์ฟเวอร์ของเราเอง) */
+const dirNet = { room: null, peers: [], state: 'idle', last: '' };
+async function dirInit() {
+  if (dirNet.state !== 'idle' || ON_CLAUDE) return;
+  dirNet.state = 'connecting';
+  let r = null;
+  try { r = MOCK ? mockRoom('df-mock-dir') : await mqttRoom(DIR_ID); } catch (e) { r = null; }
+  if (!r) { dirNet.state = 'off'; renderPvp(); return; }
+  dirNet.room = r;
+  dirNet.state = 'on';
+  r.onPeers(ch => { dirNet.peers = ch.peers; if (LIST_MODE) renderPvp(); });
+  r.presence({ v: PVP_V });
+  if (!LIST_MODE) setInterval(dirAnnounce, 3000);
+}
+// ชื่อ/รหัสห้องล่าสุด (u มากสุด) จากทุกคนในห้อง · เจ้าของห้อง = คนที่อยู่นานที่สุด (j น้อยสุด)
+function roomMeta() {
+  let best = null;
+  for (const p of net.peers) { const m = p.presence && p.presence.meta; if (m && (!best || m.u > best.u)) best = m; }
+  return best;
+}
+const roomHost = () => net.peers.filter(p => p.presence && Number.isFinite(p.presence.j)).sort((a, b) => a.presence.j - b.presence.j || (a.peer < b.peer ? -1 : 1))[0] || null;
+const roomName = () => (roomMeta() && roomMeta().name) || (ROOM.id === 'lobby' ? 'ห้องรวม' : ROOM.label);
+const roomLock = () => (roomMeta() && roomMeta().lock) || '';
+const roomAuthed = () => !roomLock() || ssGet(`df-key-${ROOM.id}`) === roomLock();
+const roomReady = () => net.state === 'on' && (!!roomMeta() || (net.onAt && Date.now() - net.onAt > 2500)); // รอเห็นชื่อ/รหัสห้องก่อน กันกด READY ห้องที่ล็อก
+function dirAnnounce() {
+  if (!dirNet.room || LIST_MODE || ON_CLAUDE) return;
+  let room = null;
+  if (net.state === 'on' && roomReady() && roomAuthed()) {
+    const h = seatHolders(), hp = roomHost();
+    const live = h.RED && h.BLUE && h.RED.presence.mid && h.RED.presence.mid === h.BLUE.presence.mid ? (ui.screen === 'game' && ui.g ? ui.g.round : 1) : 0;
+    room = { id: ROOM.id, name: roomName(), lock: roomLock(), red: h.RED ? nickOf(h.RED) : null, blue: h.BLUE ? nickOf(h.BLUE) : null, host: hp ? nickOf(hp) : null, live, n: Math.max(1, net.peers.length) };
+  }
+  const key = JSON.stringify(room);
+  if (key === dirNet.last) return;
+  dirNet.last = key;
+  dirNet.room.presence({ room }).catch(() => {});
+}
+// รวมประกาศจากทุกคนเป็นรายการห้อง (ห้องเดียวกันหลายคนประกาศ: เอาอันที่ live สูงสุด แล้วอันล่าสุด)
+function dirRooms() {
+  const by = new Map();
+  for (const p of dirNet.peers) {
+    const r = p.presence && p.presence.v === PVP_V && p.presence.room;
+    if (!r) continue;
+    const o = by.get(r.id);
+    if (!o || r.live > o.r.live || (r.live === o.r.live && p.updatedAt > o.at)) by.set(r.id, { r, at: p.updatedAt });
+  }
+  return [...by.values()].map(o => o.r).sort((a, b) => (a.live ? 1 : 0) - (b.live ? 1 : 0) || a.name.localeCompare(b.name, 'th'));
+}
+function renderRooms() {
+  const list = $('#roomsList');
+  if (!list) return;
+  const q = ($('#roomSearch').value || '').trim().toLowerCase();
+  const rooms = dirRooms().filter(r => !q || r.name.toLowerCase().includes(q));
+  if (dirNet.state !== 'on') { list.innerHTML = '<p class="rooms-empty">กำลังโหลดรายการห้อง…</p>'; return; }
+  if (!rooms.length) { list.innerHTML = `<p class="rooms-empty">${q ? 'ไม่เจอห้องชื่อนี้' : 'ยังไม่มีห้อง — กด ＋ สร้างห้อง แล้วส่งชื่อห้องให้เพื่อนได้เลย'}</p>`; return; }
+  list.innerHTML = rooms.map(r => {
+    const seat = (s, who) => `<span class="st ${s.toLowerCase()}${who ? ' on' : ''}"><b>${s}</b><span>${who ? esc(who) : 'ว่าง'}</span></span>`;
+    const st = r.live ? `<span class="room-pill live">⚔ กำลังแข่ง รอบ ${r.live}</span>` : '<span class="room-pill wait">● รอผู้เล่น</span>';
+    const btn = r.live ? `<button type="button" class="btn ghost" data-act="roomWatch" data-i="${esc(r.id)}">👁 ดูการแข่ง</button>`
+      : `<button type="button" class="btn primary" data-act="roomJoin" data-i="${esc(r.id)}">เข้าห้อง</button>`;
+    return `<div class="room-row${r.live ? ' live' : ''}"><div><div class="rn"><span>${esc(r.name || r.id)}</span>${r.lock ? '<i aria-label="มีรหัสผ่าน">🔒</i>' : ''}</div>
+      <div class="rm">${r.host ? `เจ้าของห้อง ${esc(r.host)} · ` : ''}${st} · ในห้อง ${r.n} คน</div></div>
+      <div class="seats">${seat('RED', r.red)}${seat('BLUE', r.blue)}</div>${btn}</div>`;
+  }).join('');
+}
+// หน้าต่างสร้างห้อง / แก้ห้อง (เจ้าของห้อง) / ใส่รหัส
+function roomModal(kind, id) {
+  const box = $('#roomModal'), nick = loadNick() || 'ผู้เล่น';
+  ui.roomModal = { kind, id };
+  if (kind === 'pw') {
+    const r = (LIST_MODE ? dirRooms().find(x => x.id === id) : null) || { name: roomName(), host: roomHost() ? nickOf(roomHost()) : '' };
+    box.innerHTML = `<form class="rm-box" id="rmForm" style="width:600px"><div style="font-size:56px;line-height:1">🔒</div><h3>${esc(r.name || id)}</h3>
+      ${r.host ? `<span class="hint">เจ้าของห้อง ${esc(r.host)}</span>` : ''}
+      <label for="rmPw">รหัสผ่านห้อง</label><input type="password" id="rmPw" autocomplete="off" maxlength="30">
+      <div class="err" id="rmErr" role="alert"></div>
+      <div class="rm-acts"><button type="button" class="btn ghost" data-act="${LIST_MODE ? 'roomClose' : 'roomLeave'}">${LIST_MODE ? 'ยกเลิก' : '← กลับหน้ารายการห้อง'}</button><button type="submit" class="btn primary">เข้าห้อง →</button></div></form>`;
+  } else {
+    const edit = kind === 'edit', m = roomMeta();
+    box.innerHTML = `<form class="rm-box" id="rmForm"><small class="eb">${edit ? 'EDIT ROOM' : 'CREATE ROOM'}</small><h3>${edit ? 'แก้ชื่อ/รหัสห้อง' : 'สร้างห้อง'}</h3>
+      <label for="rmName">ชื่อห้อง</label><input type="text" id="rmName" maxlength="30" autocomplete="off" value="${esc(edit ? roomName() : `ห้องของ ${nick}`)}">
+      <span class="hint">ไม่เกิน 30 ตัวอักษร</span>
+      <div class="lockrow"><span style="font-size:18px;color:#c9d2de">รหัสผ่าน</span><label><input type="checkbox" id="rmLock"${edit && m && m.lock ? ' checked' : ''}> ล็อกห้อง</label></div>
+      <input type="password" id="rmPw" maxlength="30" autocomplete="new-password" placeholder="${edit && m && m.lock ? 'เว้นว่าง = ใช้รหัสเดิม' : 'ตั้งรหัสผ่าน'}">
+      <span class="hint">คนที่จะเข้าห้องต้องใส่รหัสนี้ · ไม่ติ๊กล็อกห้อง = ใครก็เข้าได้</span>
+      ${edit ? '' : `<label>ฝั่งของคุณ</label><div class="rm-sides"><label class="red"><input type="radio" name="rmSide" value="RED" checked>RED</label><label class="blue"><input type="radio" name="rmSide" value="BLUE">BLUE</label><label><input type="radio" name="rmSide" value="any">สุ่ม</label></div>`}
+      <div class="err" id="rmErr" role="alert"></div>
+      <div class="rm-acts"><button type="button" class="btn ghost" data-act="roomClose">ยกเลิก</button><button type="submit" class="btn gold">${edit ? 'บันทึก' : 'สร้างห้อง แล้วเข้าห้อง →'}</button></div></form>`;
+  }
+  box.hidden = false;
+  $('#rmForm').addEventListener('submit', e => { e.preventDefault(); roomSubmit(); });
+  const first = $('#rmForm input[type=text], #rmForm input[type=password]');
+  if (first) first.focus();
+}
+function roomClose() { $('#roomModal').hidden = true; ui.roomModal = null; if (!LIST_MODE && !roomAuthed()) roomGate(); }
+async function roomSubmit() {
+  const M = ui.roomModal, err = $('#rmErr');
+  if (!M) return;
+  if (M.kind === 'pw') {
+    const want = LIST_MODE ? (dirRooms().find(x => x.id === M.id) || {}).lock : roomLock();
+    const got = await roomLockHash(M.id, $('#rmPw').value);
+    if (!want || got !== want) { err.textContent = 'รหัสไม่ถูกต้อง ลองใหม่อีกครั้ง'; sfx.play('miss'); $('#rmPw').select(); return; }
+    ssSet(`df-key-${M.id}`, got);
+    sfx.play('pick');
+    if (LIST_MODE) { location.href = roomUrl(M.id, M.watch ? '&watch=1' : ''); return; }
+    roomClose();
+    presence({ meta: roomMeta() });
+    renderPvp();
+    return;
+  }
+  const name = $('#rmName').value.trim().slice(0, 30), lockOn = $('#rmLock').checked, pw = $('#rmPw').value;
+  if (!name) { err.textContent = 'ใส่ชื่อห้องก่อน'; return; }
+  if (M.kind === 'edit') {
+    const lock = !lockOn ? '' : pw ? await roomLockHash(ROOM.id, pw) : roomLock();
+    if (lockOn && !lock) { err.textContent = 'ตั้งรหัสผ่านก่อน (หรือเอาติ๊กล็อกห้องออก)'; return; }
+    ssSet(`df-key-${ROOM.id}`, lock);
+    presence({ meta: { name, lock, u: Date.now() } });
+    roomClose();
+    toast('บันทึกห้องแล้ว');
+    renderPvp();
+    return;
+  }
+  if (lockOn && !pw) { err.textContent = 'ตั้งรหัสผ่านก่อน (หรือเอาติ๊กล็อกห้องออก)'; return; }
+  const taken = new Set(dirRooms().map(r => r.id));
+  let id = '';
+  do id = 'r' + Math.random().toString(36).slice(2, 8); while (taken.has(id));
+  const lock = lockOn ? await roomLockHash(id, pw) : '';
+  const side = (document.querySelector('input[name=rmSide]:checked') || {}).value || 'RED';
+  ssSet(`df-new-${id}`, JSON.stringify({ name, lock, side }));
+  location.href = roomUrl(id);
+}
+// ห้องที่ล็อกและเรายังไม่ได้ใส่รหัส → หน้าต่างใส่รหัสค้างไว้ (ปิดไม่ได้นอกจากกลับหน้ารายการ)
+function roomGate() {
+  if (LIST_MODE || ON_CLAUDE || ui.screen !== 'pvp' || roomAuthed() || ui.roomModal) return;
+  roomModal('pw', ROOM.id);
 }
 function pvpOpen() {
   ui.screen = 'pvp';
   render();
-  netInit();
+  if (LIST_MODE) { dirInit(); renderPvp(); } else netInit();
+  const sr = $('#roomSearch');
+  if (sr && !sr.dataset.bound) { sr.dataset.bound = '1'; sr.addEventListener('input', renderRooms); }
   const nick = $('#pvpNick');
   if (nick && !nick.dataset.bound) {
     nick.dataset.bound = '1';
@@ -5057,6 +5290,7 @@ function seatHolders() {
 }
 function pvpSeat(side) {
   if (net.state !== 'on' || !SIDES.includes(side) || ui.pvpStarting) return;
+  if (!ON_CLAUDE && (!roomReady() || !roomAuthed())) { roomGate(); return; }
   const h = seatHolders();
   if (net.mine.seat === side) { presence({ seat: null, at: null }); sfx.play('pick'); renderPvp(); return; }
   if (h[side] && h[side].peer !== net.me) { toast(`ฝั่ง ${side} มีคนแล้ว`); return; }
@@ -5067,16 +5301,41 @@ function pvpSeat(side) {
 function renderPvp() {
   const st = $('#pvpStatus');
   if (!st || ui.screen !== 'pvp') return;
+  // หน้ารายการห้อง (ไม่มี ?room)
+  for (const id of ['#pvpRooms']) $(id).hidden = !LIST_MODE;
+  for (const id of ['#pvpSeats', '#pvpNote']) $(id).hidden = LIST_MODE;
+  if (LIST_MODE) {
+    $('#pvpEyebrow').textContent = 'PVP · ONLINE';
+    $('#pvpTitle').textContent = 'เลือกห้อง หรือสร้างห้องใหม่';
+    $('#roomChips').hidden = true;
+    $('#pvpAlt').hidden = true;
+    $('#pvpWatch').hidden = true;
+    const nr = dirRooms().length, np = dirNet.peers.length;
+    st.className = `pvp-status ${dirNet.state}`;
+    st.textContent = dirNet.state === 'on' ? `ออนไลน์ ${np} คน · ${nr} ห้อง` : dirNet.state === 'off' ? 'เชื่อมต่อห้องออนไลน์ไม่ได้ — เช็กอินเทอร์เน็ตแล้วเปิดหน้านี้ใหม่' : 'กำลังเชื่อมต่อ…';
+    $('#roomBtns').innerHTML = '<button type="button" class="btn ghost" data-act="toLobby">← กลับ LOBBY</button>';
+    renderRooms();
+    return;
+  }
+  if (!ON_CLAUDE) {
+    const m = roomMeta(), hp = roomHost(), isHost = hp && hp.peer === net.me;
+    $('#pvpEyebrow').textContent = 'PVP · ROOM';
+    $('#pvpTitle').textContent = `${roomName()}${roomLock() ? ' 🔒' : ''}`;
+    $('#roomChips').hidden = net.state !== 'on';
+    $('#roomChips').innerHTML = `${hp ? `<span>👑 เจ้าของห้อง ${isHost ? 'คุณ' : esc(nickOf(hp))}</span>` : ''}<span>ในห้อง ${net.peers.length} คน</span><span>ไม่จับเวลา</span>`;
+    $('#roomBtns').innerHTML = `${isHost && m ? '<button type="button" class="btn ghost" data-act="roomEdit">⚙ แก้ชื่อ/รหัสห้อง</button>' : ''}<button type="button" class="btn ghost" data-act="copyRoom">🔗 คัดลอกลิงก์ห้อง</button><button type="button" class="btn ghost" data-act="roomLeave">← ออกจากห้อง</button>`;
+    roomGate();
+  } else $('#roomBtns').innerHTML = '<button type="button" class="btn ghost" data-act="toLobby">← กลับ LOBBY</button>';
   const n = net.peers.length;
   st.className = `pvp-status ${net.state}`;
   const pub = `<a href="${PUBLIC_URL}" target="_blank" rel="noopener">${PUBLIC_URL.replace(/^https:\/\//, '').replace(/\/$/, '')} ↗</a>`;
-  if (net.state === 'on') st.textContent = `ออนไลน์ · ${ROOM.label ? `ในห้อง "${ROOM.label}" ` : 'ในห้องนี้'}ตอนนี้ ${n} คน${ui.pvpStarting ? ` · เริ่มเกมใน ${ui.pvpStarting.left}…` : ''}`;
+  if (net.state === 'on') st.textContent = !ON_CLAUDE && !roomReady() ? 'กำลังโหลดห้อง…' : `ออนไลน์ · ในห้องนี้ตอนนี้ ${n} คน${ui.pvpStarting ? ` · เริ่มเกมใน ${ui.pvpStarting.left}…` : ''}`;
   else if (net.state === 'off') {
     if (ON_CLAUDE) st.innerHTML = `ห้องออนไลน์บน claude.ai ใช้ได้เฉพาะคนที่ล็อกอินและอยู่องค์กรเดียวกับเจ้าของเกม — เล่น PVP กับใครก็ได้ ไม่ต้องล็อกอิน ที่ ${pub}`;
     else st.textContent = 'เชื่อมต่อห้องออนไลน์ไม่ได้ — เช็กอินเทอร์เน็ตแล้วเปิดหน้านี้ใหม่ (โหมด ARCADE ยังเล่นได้ตามปกติ)';
   } else st.textContent = net.kind === 'mqtt' && Date.now() - net.since > 10000 ? 'ยังต่อเซิร์ฟเวอร์ห้องไม่ติด — กำลังลองใหม่ (เช็กอินเทอร์เน็ต)…' : 'กำลังเชื่อมต่อห้องออนไลน์…';
   // มีการแข่งอยู่ในห้องนี้ → ปุ่ม OBSERVE
-  const wt = $('#pvpWatch'), wm = net.state === 'on' && !ui.pvpStarting ? watchable() : null;
+  const wt = $('#pvpWatch'), wm = net.state === 'on' && !ui.pvpStarting && (ON_CLAUDE || roomAuthed()) ? watchable() : null;
   if (wt) {
     wt.hidden = !wm;
     if (wm) {
@@ -5091,8 +5350,7 @@ function renderPvp() {
   if (alt) {
     alt.hidden = net.state === 'off';
     if (ON_CLAUDE) alt.innerHTML = `ชวนเพื่อนที่ไม่มีบัญชี claude: เล่นที่ ${pub} (คนละห้องกับที่นี่)`;
-    else if (ROOM.label) alt.innerHTML = `ห้องส่วนตัว — ส่งลิงก์นี้ให้เพื่อน: <b>${esc(location.origin + location.pathname)}?room=${esc(ROOM.label)}</b> <button type="button" class="btn ghost small" data-act="copyRoom">คัดลอกลิงก์</button> · <a href="${location.pathname}">กลับห้องรวม</a>`;
-    else alt.innerHTML = `${full ? 'ห้องรวมมีคนแข่งอยู่ — ' : 'อยากเล่นกับเพื่อนโดยไม่มีคนอื่นมาแทรก? '}<a href="${location.pathname}?room=${PRIVATE_CODE}">สร้างห้องส่วนตัว</a> แล้วส่งลิงก์ให้เพื่อน`;
+    else alt.hidden = true; // ระบบห้อง: ลิงก์/ปุ่มอยู่ที่แถบปุ่มล่าง
   }
   const h = seatHolders();
   for (const s of SIDES) {
@@ -5100,7 +5358,7 @@ function renderPvp() {
     el.classList.toggle('mine', !!mine);
     const who = !p ? '<div class="seat-who empty">ว่าง · รอผู้เล่น</div>'
       : `<div class="seat-who">${mine ? 'คุณ' : esc(nickOf(p))}${busy ? ' · กำลังแข่ง' : ' · พร้อมแล้ว ✓'}</div>`;
-    const btn = net.state !== 'on' ? `<button type="button" class="btn" disabled>${s} READY</button>`
+    const btn = net.state !== 'on' || (!ON_CLAUDE && (!roomReady() || !roomAuthed())) ? `<button type="button" class="btn" disabled>${s} READY</button>`
       : mine ? `<button type="button" class="btn ghost" data-act="seat" data-i="${s}"${ui.pvpStarting ? ' disabled' : ''}>ยกเลิก</button>`
       : p ? '<button type="button" class="btn" disabled>มีคนแล้ว</button>'
       : `<button type="button" class="btn team-${s.toLowerCase()}" data-act="seat" data-i="${s}"${net.mine.seat ? ' disabled' : ''}>${s} READY</button>`;
@@ -5109,6 +5367,18 @@ function renderPvp() {
 }
 // ทุกครั้งที่คนในห้องเปลี่ยน: แก้ที่นั่งชน · เริ่มเกมเมื่อพร้อมทั้งคู่ · ในเกม เช็กอีกฝ่ายยังอยู่ไหม
 function pvpOnPeers() {
+  if (!ON_CLAUDE && !LIST_MODE && net.state === 'on') {
+    const m = roomMeta(), mine = net.mine.meta;
+    // ช่วยถือชื่อ/รหัสห้องไว้ (เจ้าของออกไป ห้องก็ยังอยู่) — เฉพาะคนที่เข้าห้องถูกต้อง
+    if (m && roomAuthed() && (!mine || mine.u < m.u)) presence({ meta: { name: m.name, lock: m.lock, u: m.u } });
+    if (net.autoSeat && roomReady() && ui.screen === 'pvp') {
+      const want = net.autoSeat === 'any' ? SIDES[Math.random() < 0.5 ? 0 : 1] : net.autoSeat, h = seatHolders();
+      net.autoSeat = null;
+      if (!net.mine.seat) pvpSeat(h[want] ? FOE[want] : want);
+    }
+    if (QS.has('watch') && !net.watchTried && ui.screen === 'pvp' && roomAuthed() && watchable() && !vdoNeed()) { net.watchTried = true; specStart(); }
+    dirAnnounce();
+  }
   if (ui.screen === 'pvp') {
     const h = seatHolders();
     if (net.mine.seat && h[net.mine.seat] && h[net.mine.seat].peer !== net.me) {
@@ -5762,5 +6032,6 @@ fitStage();
 const stateHash = () => { const g = ui.g; return g ? JSON.stringify({ r: g.round, hp: SIDES.map(s => g.p[s].hp), sh: SIDES.map(s => g.p[s].shield), ga: SIDES.map(s => `${g.p[s].gauge}/${g.p[s].gStack}/${g.p[s].gDmg}`), h: SIDES.map(s => g.p[s].hand.map(c => `${c.id}${c.type[0]}${c.lv}`).join(',')), d: g.deck.length, m: g.market.map(c => c.type[0]).join('') }) : null; };
 window.__dreamfight = { bgm, vdo, vdoBg, vdoClips, vdoPlan, stateHash, ui: () => ui, simulate, stackLanes, pickOne, swapHand, botAction, newGame, doLock, clash, effText, gain, forceDiscard, judge, sfx, calcSideHTML, discardText, drawCount, fitStage };
 render();
+if (accessOk && QS.has('go') && !ON_CLAUDE) pvpOpen(); // ระบบห้อง: ลิงก์ห้อง/ออกจากห้อง เปิดหน้า PVP เลยไม่ต้องกด START
 })();
 </script>
