@@ -2670,7 +2670,7 @@ const bgm = (() => {
    ปุ่ม VDO มุมซ้ายล่างปิดได้ — ปิด = เปิดปะทะด้วยแอนิเมชันการ์ดแบบเดิม */
 const VDO_DIR = 'assets/vdo/', VDO_CACHE = 'df-vdo-1';
 // ชื่อ: [ไบต์, วินาที] — สร้างด้วย python3 vdo-src/build_vdo.py --js
-const VDO_FILES = {"atk1-blue":[2784391,14.38],"atk1-red":[2274480,12.31],"atk2-blue":[3841758,17.39],"atk2-red":[3624140,15.81],"atk3-blue":[4266115,17.68],"atk3-red":[4204064,18.18],"def-atk1-blue":[2642941,14.06],"def-atk1-red":[3288671,14.06],"def-atk2-blue":[3234334,16.9],"def-atk2-red":[3439380,16.9],"def-atk3-blue":[4312138,20.14],"def-atk3-red":[3663390,16.55],"def-ult1-blue":[5126350,19.05],"def-ult1-red":[4979010,19.05],"def-ult2-blue":[4131356,19.84],"def-ult2-red":[4479200,19.84],"def-ult3-blue":[4293736,18.05],"def-ult3-red":[4831034,18.05],"dod-atk1-blue":[2479584,13.46],"dod-atk1-red":[3285123,17.09],"dod-atk2-blue":[2595384,14.34],"dod-atk2-red":[2333567,14.34],"dod-atk3-blue":[3388210,16.55],"dod-atk3-red":[3360603,18.0],"dod-ult1-blue":[3842048,18.0],"dod-ult1-red":[3598827,18.0],"dod-ult2-blue":[3727149,18.0],"dod-ult2-red":[3581419,18.0],"dod-ult3-blue":[5184227,19.52],"dod-ult3-red":[4242115,19.52],"idle-blue":[1553975,15.02],"idle-red":[1582345,15.02],"taunt-blue":[2994883,18.08],"taunt-red":[2334424,18.08],"ult1-blue":[2908848,15.47],"ult1-red":[4085286,17.68],"ult2-blue":[3808362,17.39],"ult2-red":[3820167,17.51],"ult3-blue":[3859138,18.18],"ult3-red":[4740295,21.46]};
+const VDO_FILES = {"atk1-blue":[2784391,14.38],"atk1-red":[2274480,12.31],"atk2-blue":[3841758,17.39],"atk2-red":[3624140,15.81],"atk3-blue":[4266115,17.68],"atk3-red":[4204064,18.18],"def-atk1-blue":[2642941,14.06],"def-atk1-red":[3288671,14.06],"def-atk2-blue":[3234334,16.9],"def-atk2-red":[3439380,16.9],"def-atk3-blue":[4312138,20.14],"def-atk3-red":[3663390,16.55],"def-ult1-blue":[5126350,19.05],"def-ult1-red":[4979010,19.05],"def-ult2-blue":[4131356,19.84],"def-ult2-red":[4479200,19.84],"def-ult3-blue":[4293736,18.05],"def-ult3-red":[4831034,18.05],"dod-atk1-blue":[2479584,13.46],"dod-atk1-red":[3285123,17.09],"dod-atk2-blue":[2595384,14.34],"dod-atk2-red":[2333567,14.34],"dod-atk3-blue":[3388210,16.55],"dod-atk3-red":[3360603,18.0],"dod-ult1-blue":[3842048,18.0],"dod-ult1-red":[3598827,18.0],"dod-ult2-blue":[3727149,18.0],"dod-ult2-red":[3581419,18.0],"dod-ult3-blue":[5184227,19.52],"dod-ult3-red":[4242115,19.52],"idle-blue":[1553975,15.02],"idle-red":[1582345,15.02],"taunt-blue":[2994883,18.08],"taunt-red":[2334424,18.08],"ult1-blue":[2908848,15.47],"ult1-red":[4085286,17.68],"ult2-blue":[3808362,17.39],"ult2-red":[3820167,17.51],"ult3-blue":[3859138,18.18],"ult3-red":[4740295,21.46],"winner-blue":[3161117,22.08],"winner-red":[2860585,22.04]};
 const VDO_REVEAL_MS = 0;    // เปิด VDO แล้วโชว์การ์ดสองฝั่งก่อนเก็บ UI ลง (ตี้ 2026-10-27: 0 = เข้า VDO เลย การ์ดไปเด้งบน VDO แทน)
 const VDO_HP_LEAD = 3;      // แถบ HP กลับลงมาโชว์ผลก่อน VDO จบกี่วินาที
 const VDO_DUCK = 0.15;      // ระหว่าง VDO เพลงประกอบเบาลงเหลือเท่านี้ (เสียงใน VDO นำ)
@@ -2852,14 +2852,21 @@ function popAt(clip, side) {
   if (m[1]) return own ? (m[1] === 'def' ? 5.5 : 5) : 3; // VDO ฝั่งรับ: ฝั่งตีโผล่ก่อน · ฝั่งรับตอนยกโล่/หลบ
   return own ? (m[2] === 'ult' ? 3 : 3.5) : 6;           // VDO ฝั่งตี (ไฟล์เดียว: อีกฝ่ายโผล่ตอนโดน)
 }
-const VC_FLY = 380, VC_GAP = 950, VC_STEAL = 1650, VC_DRAW = 650, VC_LOSE = 750, VC_HUD = 450, VC_PAD = 600;
+const VC_FLY = 380, VC_FIZZ = 550, VC_GAP = 950, VC_STEAL = 1650, VC_DRAW = 650, VC_LOSE = 750, VC_HUD = 450, VC_PAD = 600;
 const VC_POP = { RED: [133, 847], BLUE: [1787, 847] }; // จุดกึ่งกลางการ์ดมุมล่าง (.vc-pop 146px)
 // ปะทะกลางจอ (ตี้ 2026-10-28): การ์ดพุ่งมาชนกันกลางจอก่อน แล้วค่อยพุ่งเข้าเกจ · MID = จุดพัก · HIT = จุดชน (ขอบการ์ดแตะกัน)
 const VC_CLASH = 1600, VC_MID = { RED: [858, 850], BLUE: [1062, 850] }, VC_HIT = { RED: [888, 850], BLUE: [1032, 850] };
 const VC_BAR = { RED: [579, 104], BLUE: [1343, 104] }; // จุดกึ่งกลางแถบ HP
 const VC_FX_HTML = `<span class="bu"></span><span class="ri"></span>${'<span class="sd"></span>'.repeat(10)}<span class="ri b"></span><span class="ch"></span>`
   + '<svg class="ck" viewBox="0 0 180 40" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M90 20 L72 8 L58 14 L40 4M90 20 L104 6 L122 12 L140 2M90 20 L80 34 L64 30M90 20 L110 32 L128 28 L150 38M72 8 L66 0"/></svg>';
+// ผลต่อ HP ของฝั่ง s ในช่องนี้ ก่อน applyDamage จะรัน (คิดแบบเดียวกัน: ได้ชิลด์ช่องนี้ก่อน แล้วดาเมจหักชิลด์ก่อน HP)
+function vcHp(g, r, s) {
+  const P = g.p[s], o = r[s], taken = o.taken || 0;
+  const shield = o.shieldGain ? Math.min(SHIELD_MAX, P.shield + o.shieldGain) : P.shield, absorbed = Math.min(shield, taken);
+  return { absorbed, hpLoss: taken - absorbed };
+}
 // สิ่งที่การ์ดแต่ละใบทำตอนพุ่งเข้าเกจ — เรียง Defence ก่อน → การ์ดตี → Dodge
+// ตี้ 2026-10-28: การ์ดตีพุ่งเข้าเลือดก็ต่อเมื่อทำให้ HP ลด — หลบพ้น / โล่กันหมด = สลายตรงกลางจอ (noHp)
 function vcActs(g, r) {
   const acts = [];
   for (const s of SIDES) {
@@ -2869,7 +2876,7 @@ function vcActs(g, r) {
     if (c.type === 'DEF') Object.assign(a, { fx: 'shield', to: s, rank: 0 });
     else if (c.type === 'DODGE') Object.assign(a, st.steal ? { fx: 'steal', to: f, n: st.steal, rank: 2 } : { fx: 'draw', to: s, rank: 2 });
     else {
-      Object.assign(a, { fx: 'hit', to: f, rank: 1 });
+      Object.assign(a, { fx: 'hit', to: f, rank: 1, noHp: vcHp(g, r, f).hpLoss <= 0 });
       const brk = (st.brk || 0) + (isCounter(c, r[f].card) ? st.brkVs || 0 : 0) + (r[s].atkBrk ? r[s].atkBrk.hit : 0);
       if (brk) a.brk = Math.min(brk, g.p[f].hand.length); else if (r[s].atkBrk) a.brkMiss = true;
       const cost = costOf(c, r[f].card);
@@ -2879,7 +2886,7 @@ function vcActs(g, r) {
   }
   return acts.sort((x, y) => x.rank - y.rank);
 }
-const vcMs = a => (a.fx === 'draw' ? VC_DRAW : a.fx === 'steal' ? VC_STEAL : VC_GAP) + (a.brk || a.brkMiss ? VC_LOSE : 0) + (a.cost ? VC_LOSE : 0);
+const vcMs = a => (a.fx === 'draw' ? VC_DRAW : a.fx === 'steal' ? VC_STEAL : a.noHp ? VC_FIZZ : VC_GAP) + (a.brk || a.brkMiss ? VC_LOSE : 0) + (a.cost ? VC_LOSE : 0);
 const vc = { pops: {}, at: {} };
 function vcAdd(cls, html, style) {
   const d = document.createElement('div');
@@ -2981,7 +2988,7 @@ async function vcClash(r, stop) {
     return fill();
   }
   if (defer) {
-    const atk = FOE[defer], o = r[defer], away = defer === 'RED' ? -1 : 1;
+    const atk = FOE[defer], o = vcHp(ui.g, r, defer), away = defer === 'RED' ? -1 : 1;
     vcMove(defer, VC_MID[defer], { ms: 300, ease: 'cubic-bezier(.2,.8,.3,1)' });
     await sleep(240);
     vcMove(atk, VC_HIT[atk], { ms: 300 });
@@ -3035,6 +3042,29 @@ async function vcFinale(g, r, acts, hit, stop) {
       vcAdd('vc-tag draw', '+1 จั่ว', `left:${s === 'RED' ? ax - 150 : ax + 150}px;top:${ay - 30}px`);
       sfx.play('draw');
       await sleep(VC_DRAW);
+      continue;
+    }
+    if (a.noHp) {
+      // ไม่ส่งผลต่อ HP (หลบพ้น / โล่กันหมด) → ไม่พุ่งเข้าเลือด สลายหายตรงที่อยู่
+      d.style.transition = 'transform .5s ease-in,opacity .5s ease-in';
+      d.style.transform += ' scale(.55)';
+      d.style.opacity = '0';
+      hit(a);
+      let rest = VC_FIZZ;
+      if (a.brk || a.brkMiss) {
+        await sleep(420);
+        if (stop()) return;
+        if (a.brk) vcLose(to, a.brk, `เสียการ์ด ${a.brk} ใบ · Attack ทอยติด`);
+        else vcAdd('vc-tag miss', 'ทอยทิ้งไม่ติด', `left:${to === 'RED' ? 310 : 1610}px;top:660px`);
+        rest += VC_LOSE - 420;
+      }
+      if (a.cost) {
+        await sleep(420);
+        if (stop()) return;
+        vcLose(s, a.cost, `Ultimate ทิ้งการ์ดตัวเอง ${a.cost} ใบ`);
+        rest += VC_LOSE - 420;
+      }
+      await sleep(Math.max(0, rest));
       continue;
     }
     d.style.transition = '';
@@ -3177,6 +3207,30 @@ async function laneVdo(i, plan, gid, r, keep = false) {
     clock.vdoMs += Date.now() - v0;
     duckMusic(false);
   }
+}
+// ท่าชนะ (ตี้ 2026-10-28 · Drive "07. Winner"): หลัง K.O. เล่น VDO ของฝั่งที่ชนะเต็มจอ แล้วค่อยเข้าหน้าผล · SKIP ข้ามได้
+async function winVdo(side, gid) {
+  const name = `winner-${side.toLowerCase()}`, W = $('#world'), el = $('#vdoFight'), lv = { skip: false, failed: false, clips: [name] }, v0 = Date.now();
+  if (!vdo.url(name)) return;
+  ui.vdo = lv;
+  vcReset();
+  vdoBg.sync(false);
+  duckMusic(true);
+  W.classList.remove('vdo-hp');
+  W.classList.add('vdo-fight', 'vdo-full');
+  $('#vdoLane').textContent = `${side} WIN`;
+  $('#vdoBar').hidden = false;
+  el.src = vdo.url(name);
+  el.volume = 1;
+  el.muted = !sfx.on;
+  el.classList.add('on');
+  el.play().catch(() => { el.muted = true; el.play().catch(() => { lv.failed = true; }); });
+  await until(() => lv.skip || lv.failed || el.ended || gid !== ui.gid);
+  el.pause();
+  $('#vdoBar').hidden = true;
+  ui.vdo = null;
+  clock.vdoMs += Date.now() - v0;
+  duckMusic(false);
 }
 // มีฝั่งที่ HP หมดแล้ว (จบช่องนี้ = K.O.)
 const koNow = () => !!ui.g && SIDES.some(s => ui.g.p[s].hp <= 0);
@@ -3950,6 +4004,7 @@ async function runFight() {
     ui.ko = { lane: last, sides: verdict.ko };
     if (last < SLOT_N - 1) addLog(`K.O.! ${verdict.reason}`, 'sys');
     await koFx(verdict); // ตี้ 2026-10-28: KO ขึ้นทับจอ VDO เลย ไม่ผ่าน Idle / กระดาน
+    if (verdict.winner !== 'DRAW' && vdo.ready) await winVdo(verdict.winner, gid);
   }
   vdoUncover(); // ผู้ชม: เปิดกระดานหลังเปิดครบทุกช่อง (ระหว่างช่องค้างจอ VDO ไว้)
   if (!verdict.winner) await wait(600);
