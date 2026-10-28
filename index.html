@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793208789">
+<meta name="df-build" content="1793208922">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -3239,14 +3239,15 @@ function vfxFire(s, c) {
   const el = vfx.fire[key] || (vfx.fire[key] = vfxEl('vfx-fire', `fire_${col}.mp4`, true));
   const d = vc.pops[s], [bx, by] = VC_POP[s], run = ++vfx.run[s], v = el.firstElementChild;
   let on = false;
+  // ตี้ 2026-10-29: ไฟต้องไหวตลอด — เล่นวนค้างไว้ตั้งแต่การ์ดเด้ง (ไม่กระโดดเฟรมตอนติด ซึ่งช่วงพุ่งสั้นจนภาพค้าง) · เร่ง 1.6 เท่าให้เปลวไหวชัด
   const set = want => {
     if (want === on) return;
     on = want;
-    if (on) { try { v.currentTime = Math.random() * 3; } catch (e) {} v.play().catch(() => {}); }
     el.classList.toggle('on', on);
-    if (!on) setTimeout(() => { if (!el.classList.contains('on')) v.pause(); }, 250);
   };
   el.classList.remove('off');
+  v.playbackRate = 1.6;
+  if (v.paused) v.play().catch(() => {});
   // ตี้ 2026-10-29: ไฟติดเฉพาะตอนพุ่งเข้าเกจ (หลังง้างเสร็จ) · การ์ดชี้หัวตามทางพุ่ง → ทิศไฟ = มุมการ์ด − 90°
   const tick = now => {
     if (run !== vfx.run[s] || !d.isConnected) { set(false); return; }
