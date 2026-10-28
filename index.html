@@ -431,7 +431,8 @@ body:not(.portrait) #rotateHint{display:none}
 .sw::after{content:"";position:absolute;left:4px;top:4px;width:28px;height:28px;border-radius:50%;background:#c9d2de;transition:left .2s,background .2s}
 .sw:checked{background:var(--gold)} .sw:checked::after{left:31px;background:#1a1204}
 .sw:focus-visible{outline:2px solid #fff;outline-offset:4px}
-#start .st-cards{position:absolute;right:69px;bottom:81px;gap:18px;margin:0;padding:21px 24px 18px;border-radius:24px;background:rgba(8,10,16,.45);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(6px)}
+#start .st-cards{display:none} /* ตี้ 2026-10-28: เอาการ์ด 4 ชนิดออกจากหน้าแรก */
+#start .st-cards-old{position:absolute;right:69px;bottom:81px;gap:18px;margin:0;padding:21px 24px 18px;border-radius:24px;background:rgba(8,10,16,.45);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(6px)}
 #start .st-card{width:126px;gap:6px}
 #start .st-card .card{--cw:114px}
 #start .st-card .c-lv{display:none}
