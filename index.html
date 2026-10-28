@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793209429">
+<meta name="df-build" content="1793210474">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -988,21 +988,25 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 .vfx-fire video{filter:brightness(1.45) saturate(1.4)} /* ตี้ 2026-10-29: ไฟเห็นชัดขึ้น */
 /* เอฟเฟกต์ชน (ตี้ 2026-10-29 · แบบ A แฉกแสง จาก artifact EDbToKabfQnDyKFM1cEKMb): ชนการ์ด 640×640 · ชนเกจ 700×300 (จุดชน 350,130) · อยู่เหนือการ์ด */
 .vfx-hit{z-index:22}
-/* โล่บนเกจ HP: ผืน 1110×240 = จอ x 760–1870 y 14–254 (BLUE) · RED กลับด้าน · คลุมแค่หลอดเลือด เฟดขอบ · ยาวตามโล่/50 จากปลายด้านนอก
+/* โล่บนเกจ HP: ผืน 1110×240 = จอ x 760–1870 y 14–254 (BLUE) · RED กลับด้าน · คลุมหลอดเลือดเลยขอบออกมานิดหน่อย (ตี้ 2026-10-29) เฟดขอบ · ยาวตามโล่/50 จากปลายด้านนอก
    ตามแถบ HP ขึ้นลงเหมือน #hud ทุกจังหวะ */
 .vfx-coat{z-index:4;top:14px;width:1110px;height:240px;--hy:0px;--mx:1;transform:translateY(var(--hy)) scaleX(var(--mx));
   transition:transform calc(.75s*var(--spd)) cubic-bezier(.2,.9,.25,1.12),opacity calc(.45s*var(--spd)) ease,--L .5s cubic-bezier(.2,.8,.2,1);
-  --tube:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='1110' height='240'><defs><linearGradient id='g' gradientUnits='userSpaceOnUse' x1='306' y1='0' x2='860' y2='0'><stop offset='0' stop-color='white' stop-opacity='0'/><stop offset='.07' stop-color='white'/><stop offset='.93' stop-color='white'/><stop offset='1' stop-color='white' stop-opacity='0'/></linearGradient><filter id='f' x='-10%' y='-100%' width='120%' height='300%'><feGaussianBlur stdDeviation='3'/></filter></defs><polygon points='328,80 854,80 839,101 312,101' fill='url(%23g)' filter='url(%23f)'/></svg>");
+  --tube:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='1110' height='240'><defs><linearGradient id='g' gradientUnits='userSpaceOnUse' x1='296' y1='0' x2='870' y2='0'><stop offset='0' stop-color='white' stop-opacity='0'/><stop offset='.07' stop-color='white'/><stop offset='.93' stop-color='white'/><stop offset='1' stop-color='white' stop-opacity='0'/></linearGradient><filter id='f' x='-10%' y='-100%' width='120%' height='300%'><feGaussianBlur stdDeviation='4'/></filter></defs><polygon points='324,73 864,73 846,108 302,108' fill='url(%23g)' filter='url(%23f)'/></svg>");
   --amt:linear-gradient(to left,#000 0,#000 var(--L),transparent calc(var(--L) + 30px));
   -webkit-mask-image:var(--amt),var(--tube);mask-image:var(--amt),var(--tube);-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-composite:source-in;mask-composite:intersect}
 .vfx-coat.blue{left:760px} .vfx-coat.red{left:53px;--mx:-1}
-.vfx-coat video,.vfx-coat img{filter:saturate(3) brightness(1.5)}
+.vfx-coat video,.vfx-coat img{filter:saturate(2.6) brightness(2.3) contrast(1.15)} /* ตี้ 2026-10-29: โล่บนเกจเห็นชัดขึ้น (เดิม saturate 3 · brightness 1.5) */
+/* แถบสีฟ้าอ่อนรองใต้ลายหกเหลี่ยม = บอกความยาวโล่ให้เห็นชัด (ตัดด้วยมาสก์เดียวกับลาย) */
+.vfx-coat.still::before{content:"";position:absolute;left:296px;top:72px;width:580px;height:38px;z-index:1;mix-blend-mode:screen;background:linear-gradient(180deg,rgba(170,225,255,.25),rgba(120,200,255,.62) 45%,rgba(200,240,255,.7) 55%,rgba(170,225,255,.25));filter:blur(1.5px)}
+/* ลายหกเหลี่ยมชั้นที่ 2 เลื่อนครึ่งช่อง ให้ลายในหลอดแน่นขึ้น */
+.vfx-coat.still::after{content:"";position:absolute;inset:0;z-index:1;mix-blend-mode:screen;background:url(assets/shield/bar_coat.webp) -150px 10px/1110px 240px no-repeat;filter:saturate(2.6) brightness(2) contrast(1.15);opacity:.85}
 .vfx-coat.part{--amt:linear-gradient(to left,transparent 0,transparent calc(var(--A) - 16px),#000 var(--A),#000 var(--L),transparent calc(var(--L) + 30px));transition:transform calc(.75s*var(--spd)) cubic-bezier(.2,.9,.25,1.12),opacity calc(.45s*var(--spd)) ease}
 .vfx-coat.loose{--amt:linear-gradient(to left,#000 0,#000 var(--L),transparent calc(var(--L) + 150px));-webkit-mask-image:var(--amt);mask-image:var(--amt);transition:transform calc(.75s*var(--spd)) cubic-bezier(.2,.9,.25,1.12),opacity calc(.45s*var(--spd)) ease}
 .vfx-coat.loose.tube{-webkit-mask-image:var(--amt),var(--tube);mask-image:var(--amt),var(--tube)}
 .vfx-coat.cut{transition:transform calc(.75s*var(--spd)) cubic-bezier(.2,.9,.25,1.12),opacity calc(.45s*var(--spd)) ease}
 .vfx-coat.hit img{animation:coatHit .5s ease}
-@keyframes coatHit{25%{filter:saturate(3) brightness(3.4)}}
+@keyframes coatHit{25%{filter:saturate(2.6) brightness(4) contrast(1.15)}}
 #world:not(.is-game) .vfx-coat,#world.vdo-full:not(.vdo-hp) .vfx-coat{--hy:-240px;opacity:0}
 /* หลอดชิลด์ขาวเดิมเลิกใช้ — แทนด้วยโล่บนเกจ (ตัวเลขชิลด์ยังอยู่) */
 .shbar{visibility:hidden}
@@ -3293,7 +3297,7 @@ const COAT_L = sh => 258 + (530 * sh) / SHIELD_MAX + (sh > 0 ? 6 : -40); // ป�
 function coatShow(s, sh, show) {
   if (!vfx.coat[s]) {
     const lc = s.toLowerCase();
-    vfx.coat[s] = { still: vfxEl(`vfx-coat cut ${lc}`, 'bar_coat.webp'), form: vfxEl(`vfx-coat part off ${lc}`, 'bar_form.mp4'), brk: vfxEl(`vfx-coat loose tube off ${lc}`, 'bar_break.mp4'), sh: 0, tok: 0 };
+    vfx.coat[s] = { still: vfxEl(`vfx-coat still cut ${lc}`, 'bar_coat.webp'), form: vfxEl(`vfx-coat part off ${lc}`, 'bar_form.mp4'), brk: vfxEl(`vfx-coat loose tube off ${lc}`, 'bar_break.mp4'), sh: 0, tok: 0 };
     vfx.coat[s].still.style.setProperty('--L', `${COAT_L(0)}px`);
   }
   const c = vfx.coat[s], prev = c.sh, setL = (el, v) => el.style.setProperty('--L', `${v}px`);
@@ -3330,7 +3334,8 @@ const fxImg = (name, h, extra = '') => `<span class="fxw" style="--h:${h}px;--im
 // ป้าย ACTION 1/2/3 กลางจอตอนเริ่มเปิดช่อง i
 function laneCall(i) {
   const el = $('#laneCall');
-  el.innerHTML = `<span class="fxrow" aria-label="ACTION ${i + 1}">${fxImg('action', 124)}${fxImg(`d${i + 1}`, 128, ';--fd:.08s;margin-left:-16px')}</span>`;
+  // ตี้ 2026-10-29: คำ ACTION + เลข ใหญ่ขึ้น 20% (124/128 → 149/154)
+  el.innerHTML = `<span class="fxrow" aria-label="ACTION ${i + 1}">${fxImg('action', 149)}${fxImg(`d${i + 1}`, 154, ';--fd:.08s;margin-left:-19px')}</span>`;
   el.classList.remove('on');
   void el.offsetWidth;
   el.classList.add('on');
@@ -4756,7 +4761,7 @@ function renderMain() {
   else if (ui.phase === 'action' && ui.mode === 'spec') {
     html = `<div class="msg"><b>Action Phase</b><span>ผู้เล่นกำลังวางการ์ดลงแผง ACTION ORDER — แผงของทั้งสองฝ่ายเปิดให้ผู้ชมเห็นเมื่อกด FIGHT! ครบทั้งคู่</span><span>${specStatus()}</span></div>`;
   } else if (ui.phase === 'action') {
-    html = `<div class="msg"><b>Action Phase</b><span>แตะการ์ดเพื่อวางลงช่องว่างถัดไป หรือลากไปวางช่องที่ต้องการบนแผง ACTION ORDER · ลากทับชนิดเดียวกันในแผง = เลเวลอัป (Lv2 + Lv2 = Lv3 + ได้ Lv1 คืนขึ้นมือ) · ลากทับต่างชนิด = สลับ (มือ ↔ แผง และในแผง) · ลากการ์ดบนมือทับกัน = สลับตำแหน่ง</span><span class="t-${OPP.toLowerCase()}">${ui.mode !== 'pvp' || g.p[OPP].lanes ? `${OPP} คว่ำการ์ดลงแผงแล้ว — จะรู้ว่ามีอะไรตอนเปิดปะทะ` : `รอ ${OPP} วางการ์ด…`}</span></div>`;
+    html = ''; // ตี้ 2026-10-29: ฝั่งผู้เล่นเอาป้าย ACTION PHASE + คำอธิบายกลางจอออก
   } else if (ui.phase === 'fight' && vdo.ready) html = ''; // ตี้ 2026-10-27: เปิดปะทะดูที่ VDO อย่างเดียว ไม่ขึ้นแผงผลปะทะ
   else if (ui.phase === 'end' && ui.mode === 'spec' && vdo.ready) html = ''; // ตี้ 2026-10-27: ผู้ชมไม่ต้องเห็นแผงสรุปผลปะทะตอนจบรอบ — ดู VDO อย่างเดียว
   else html = clashHTML();
