@@ -735,9 +735,14 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 #world.vdo-fight .gauge{opacity:0}
 .gfr{position:relative;flex:none;width:35px;height:243px}
 .gfr > img{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-.gcell{position:absolute;left:8px;width:20px;height:66px;background:rgba(8,10,16,.78);clip-path:polygon(0 0,100% 22%,100% 100%,0 78%)}
-.gauge.blue .gcell{left:7px;clip-path:polygon(0 22%,100% 0,100% 78%,0 100%)}
-.gcell.k0{top:165px} .gcell.k1{top:87px} .gcell.k2{top:12px}
+/* ตี้ 2026-10-28: ช่องเกจเต็มหน้าต่างของกรอบจริง ปลายบน/ล่างแหลมตามกรอบ — วัดจากภาพ gauge-frame.webp (140×956 → 35×243):
+   หน้าต่าง x 33–106 · y 32–320 / 327–622 / 629–922 · ขอบเฉียง 17% ของความสูงช่อง (BLUE ปลายแหลมขวาบน/ซ้ายล่าง · RED กลับด้าน) */
+.gcell,.gg{position:absolute;left:8.5px;width:18.3px;background:rgba(8,10,16,.78);clip-path:polygon(0 0,100% 17%,100% 100%,0 83%)}
+.gauge.blue .gcell,.gauge.blue .gg{left:8.2px;clip-path:polygon(100% 0,0 17%,0 100%,100% 83%)}
+.gcell.k0,.gg.k0{top:159.9px;height:74.6px} .gcell.k1,.gg.k1{top:83.1px;height:75px} .gcell.k2,.gg.k2{top:8.1px;height:73.3px}
+/* เรืองรุ้งตามขั้น: เงาเรืองเฉพาะช่องที่เติมแล้ว (สำเนาช่องอยู่ใต้กรอบ ให้แสงฟุ้งออกนอกกรอบ) · เต็ม 3 = กรอบทั้งอันเรืองด้วย */
+.gglow{position:absolute;inset:0;pointer-events:none;animation:gFrGlow 2s linear infinite}
+.gg{background:#fff}
 .gcell.on.k0{background:linear-gradient(0deg,#ff3b3b,#ff9a3b 55%,#ffe14d)}
 .gcell.on.k1{background:linear-gradient(0deg,#ffe14d,#4dff88 50%,#4dd8ff)}
 .gcell.on.k2{background:linear-gradient(0deg,#4dd8ff,#4d7dff 50%,#a35cff)}
@@ -745,7 +750,8 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 .gcell.spent{animation:gCellOut calc(.6s*var(--spd)) ease-out}
 @keyframes gCellIn{0%{filter:brightness(3.2)}100%{filter:none}}
 @keyframes gCellOut{0%{background:#fff}100%{background:rgba(8,10,16,.78)}}
-.gauge.has .gfr > img{animation:gFrGlow 2s linear infinite} /* เรืองที่กรอบเงินอย่างเดียว — สีของแต่ละขั้นต้องคงที่ */
+.gfr > img{z-index:1} .gcell{z-index:2}
+.gauge.full .gfr > img{animation:gFrGlow 2s linear infinite} /* เต็ม 3 ขั้น = กรอบเงินเรืองทั้งอัน — สีของแต่ละขั้นต้องคงที่ */
 @keyframes gFrGlow{from{filter:drop-shadow(0 0 4px #ff4d6d) drop-shadow(0 0 9px #ffe14d) drop-shadow(0 0 14px #4dc3ff) hue-rotate(0deg)}to{filter:drop-shadow(0 0 4px #ff4d6d) drop-shadow(0 0 9px #ffe14d) drop-shadow(0 0 14px #4dc3ff) hue-rotate(360deg)}}
 .ginfo{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding-bottom:30px}
 .gauge.blue .ginfo{align-items:flex-end}
@@ -4151,10 +4157,10 @@ function renderGauge(s) {
   const usable = s === ME && gaugeUsable();
   const unl = unlimitedNow(g, s) && ui.phase === 'action' && (s === ME || ui.mode === 'spec' || !!P.lanes);
   const nogain = unlimitedNow(g, s) && ui.phase !== 'action' && !!P.lanes; // ระหว่างสู้รอบที่ใช้ 3 เกจ: สะสมไม่ได้
-  el.className = `gauge ${s.toLowerCase()}${usable ? ' usable' : ''}${unl ? ' unl' : ''}${n ? ' has' : ''}`;
+  el.className = `gauge ${s.toLowerCase()}${usable ? ' usable' : ''}${unl ? ' unl' : ''}${n ? ' has' : ''}${n >= GAUGE_MAX ? ' full' : ''}`;
   $('#world').classList.toggle(`unl-${s.toLowerCase()}`, unlimitedNow(g, s) && ui.phase === 'action'); // พลังเต็ม: การ์ดบนมือ + ช่องวางเรืองรุ้ง
   // เกจพร (ตี้ 2026-10-27): กรอบเงิน 3 ช่อง เติมสีรุ้งทีละขั้นจากล่างขึ้นบน (RED ใช้กรอบกลับด้าน)
-  const orbs = `<span class="gfr" role="img" aria-label="เกจ ${s} ${n}/${GAUGE_MAX}"><img src="assets/gauge-frame${s === 'RED' ? '-l' : ''}.webp" alt="" draggable="false">${[0, 1, 2].map(k => `<i class="gcell k${k}${k < n ? ' on' : ''}${k < n && k >= prev ? ' new' : ''}${k >= n && k < prev ? ' spent' : ''}"></i>`).join('')}</span>`;
+  const orbs = `<span class="gfr" role="img" aria-label="เกจ ${s} ${n}/${GAUGE_MAX}"><span class="gglow">${[0, 1, 2].filter(k => k < n).map(k => `<i class="gg k${k}"></i>`).join('')}</span><img src="assets/gauge-frame${s === 'RED' ? '-l' : ''}.webp" alt="" draggable="false">${[0, 1, 2].map(k => `<i class="gcell k${k}${k < n ? ' on' : ''}${k < n && k >= prev ? ' new' : ''}${k >= n && k < prev ? ' spent' : ''}"></i>`).join('')}</span>`;
   const label = `<span class="glabel">เกจ ${n}/${GAUGE_MAX}</span>`;
   const meta = `<span class="gmeta"><span title="การ์ดตั้งรับที่วาง รวมเลเวลครบ ${GAUGE_STACK} = 1 เกจ">${icon('DEF')}${P.gStack}/${GAUGE_STACK}</span><span title="ดาเมจจากการ์ดจู่โจม ครบ ${GAUGE_DMG} = 1 เกจ">${icon('ATK')}${P.gDmg}/${GAUGE_DMG}</span></span>`;
   el.firstElementChild.innerHTML = usable
