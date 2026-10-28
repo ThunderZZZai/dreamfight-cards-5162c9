@@ -1,6 +1,25 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
+<meta name="df-build" content="1793206739">
+<script>
+/* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
+   เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
+(() => {
+  const mine = document.querySelector('meta[name="df-build"]').content;
+  if (mine === 'dev' || !window.fetch) return;
+  const u = new URL(location.href);
+  if (u.searchParams.has('v')) { u.searchParams.delete('v'); try { history.replaceState(history.state, '', u.pathname + u.search + u.hash); } catch (e) {} }
+  fetch(`${location.pathname}?cb=${Date.now()}`, { cache: 'no-store' }).then(r => (r.ok ? r.text() : '')).then(t => {
+    const m = t.match(/name="df-build" content="([^"]+)"/);
+    if (!m || m[1] === mine || m[1] === 'dev' || sessionStorage.getItem('df-build-jump') === m[1]) return;
+    sessionStorage.setItem('df-build-jump', m[1]); // กันวนโหลดซ้ำถ้าตัวใหม่ยังไม่มาถึงจริง
+    const w = new URL(location.href); // อ่าน URL ตอนนี้ (สคริปต์เกมอาจลบ ?go/?watch ไปแล้ว)
+    w.searchParams.set('v', m[1]);
+    location.replace(w.pathname + w.search + w.hash);
+  }).catch(() => {});
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=Chakra+Petch:ital,wght@0,500;0,600;0,700;1,700&display=swap">
