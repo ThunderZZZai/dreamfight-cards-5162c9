@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793210592">
+<meta name="df-build" content="1793211599">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -922,6 +922,18 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 .gcell.on.k0{background:linear-gradient(0deg,#ff3b3b,#ff9a3b 55%,#ffe14d)}
 .gcell.on.k1{background:linear-gradient(0deg,#ffe14d,#4dff88 50%,#4dd8ff)}
 .gcell.on.k2{background:linear-gradient(0deg,#4dd8ff,#4d7dff 50%,#a35cff)}
+/* ตี้ 2026-10-29: แต่ละขั้นที่เติมแล้วมีแสงรุ้งไหลขึ้น (โทนสีของขั้นเดิม + สีขั้นถัดไปเล็กน้อย) + แสงขาววิ่งผ่านเป็นระยะ · สามขั้นเหลื่อมจังหวะกัน */
+.gcell.on{background-size:100% 144px;background-repeat:repeat-y;animation:gFlow 2.6s linear infinite} /* ลายยาว 144px วนต่อกันพอดี */
+.gcell.on.k0{background-image:linear-gradient(0deg,#ff3b3b,#ff9a3b,#ffe14d,#ff6ad5,#ff3b3b)}
+.gcell.on.k1{background-image:linear-gradient(0deg,#ffe14d,#4dff88,#4dd8ff,#b8ff4d,#ffe14d)}
+.gcell.on.k2{background-image:linear-gradient(0deg,#4dd8ff,#4d7dff,#a35cff,#ff6ad5,#4dd8ff)}
+.gcell.on.k1{animation-delay:-.85s} .gcell.on.k2{animation-delay:-1.7s}
+.gcell.on::after{content:"";position:absolute;left:0;right:0;height:45%;bottom:-45%;background:linear-gradient(0deg,transparent,rgba(255,255,255,.85) 50%,transparent);mix-blend-mode:screen;animation:gShine 2.4s ease-in-out infinite}
+.gcell.on.k1::after{animation-delay:.25s} .gcell.on.k2::after{animation-delay:.5s}
+.gcell.on.new{animation:gCellIn calc(.7s*var(--spd)) ease-out,gFlow 2.6s linear infinite}
+@keyframes gFlow{from{background-position:0 0}to{background-position:0 -144px}}
+@keyframes gShine{0%{bottom:-45%;opacity:0}15%{opacity:1}55%{bottom:100%;opacity:1}56%,100%{bottom:100%;opacity:0}}
+@media (prefers-reduced-motion:reduce){.gcell.on,.gcell.on::after{animation:none}}
 .gcell.new{animation:gCellIn calc(.7s*var(--spd)) ease-out}
 .gcell.spent{animation:gCellOut calc(.6s*var(--spd)) ease-out}
 @keyframes gCellIn{0%{filter:brightness(3.2)}100%{filter:none}}
