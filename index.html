@@ -816,6 +816,21 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 #vdoLayer::after{display:none}
 #strip,#main,.hand-head,.order,.gauge{text-shadow:0 1px 3px rgba(0,0,0,.85),0 0 10px rgba(0,0,0,.5)}
 /* แถบ OBSERVE (ตี้: บังจอ) → ป้ายเล็กมุมขวาบนใต้ HUD · จบเกมกลับเป็นแถบเต็มเพราะมีปุ่มดูอีกเกม */
+/* ในเกม (ตี้ 2026-10-28): เอาปุ่มมุมจอ (เสียง/เพลง/VDO/เร่งความเร็ว/ออก · บันทึก/กติกา/คู่มือ) ออก → รวมเป็น ⚙ ปุ่มเดียว · ซ่อนป้ายกองกลางเหลือ (ยังเป็นจุดเริ่มการ์ดบินได้) · ผู้เล่นซ่อนหัวมือ */
+#world.is-game .tools{display:none}
+#world.is-game #deckInfo{visibility:hidden}
+#world.lay-player #hand .hand-head{display:none}
+#gSet{position:absolute;right:16px;bottom:14px;z-index:30;display:none}
+#world.is-game #gSet{display:block}
+#world.me-blue #gSet{right:auto;left:16px}
+#world.lay-spec #gSet{right:auto;left:680px;bottom:12px}
+#world.vdo-fight #gSet{opacity:0;pointer-events:none}
+#gSet .st-gear{width:62px;height:62px;border-radius:16px}
+#gSet .st-gear svg{width:30px;height:30px}
+#gSet .st-set{text-transform:none;bottom:calc(100% + 14px)}
+#world.me-blue #gSet .st-set,#world.lay-spec #gSet .st-set{right:auto;left:0}
+#start .st-set .g-only{display:none}
+.srow .btn{grid-column:1/-1;justify-self:stretch}
 /* หน้าผู้เล่น (ตี้ 2026-10-28): แถบควบคุมไม่มีพื้นหลัง · ช่วง PICK UP / ACTION เหลือแค่ปุ่ม ไม่มีคำแนะนำ */
 #world.lay-player #controls{background:none;border-color:transparent}
 #world.lay-player[data-phase="pick"] #controls .hint,#world.lay-player[data-phase="action"] #controls .hint{visibility:hidden}
@@ -1057,6 +1072,8 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
             <label class="srow"><span>เสียงเพลง</span><input type="range" id="volMusic" min="0" max="100" step="5"><output for="volMusic"></output></label>
             <label class="srow"><span>เสียงเอฟเฟกต์</span><input type="range" id="volSfx" min="0" max="100" step="5"><output for="volSfx"></output></label>
             <label class="srow"><span>VDO ฉากต่อสู้</span><small>ปิด = โหลดเร็ว ไม่มีวิดีโอ</small><input type="checkbox" class="sw" id="vdoSw" role="switch"></label>
+            <label class="srow g-only"><span>เร่งความเร็ว</span><small>แอนิเมชันการ์ดเร็วขึ้น</small><input type="checkbox" class="sw" id="fastSw" role="switch"></label>
+            <div class="srow g-only"><button type="button" class="btn ghost" data-act="quit">ออกจากเกม</button></div>
           </div>
         </div>
         <div class="st-cards" id="stCards"></div>
@@ -1112,6 +1129,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
         <label class="pill" for="fast"><input type="checkbox" id="fast"> เร่งความเร็ว</label>
         <button type="button" class="pill" id="quit" data-act="quit" hidden>ออกจากเกม</button>
       </div>
+      <div id="gSet"><button type="button" class="st-gear" id="gGear" aria-label="ตั้งค่า (เสียง · เพลง · VDO · ความเร็ว · ออกจากเกม)" aria-expanded="false" aria-controls="stSet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/></svg></button></div>
       <button type="button" class="fs-btn" id="fsBtn" data-act="fullscreen" aria-label="เต็มจอ" title="เต็มจอ"></button>
       <div id="toast" class="toast" role="status" hidden></div>
       <div class="tools right">
@@ -3399,13 +3417,14 @@ function vdoUncover() {
 }
 // หน้าเริ่มแบบ B: VDO พื้นหลัง (วนเล่นเฉพาะตอนอยู่หน้าแรกและเปิด VDO) · ซ่อนปุ่มมุมจอ · แผง ⚙ ตามค่าปัจจุบัน
 const START_BG = 'assets/vdo/taunt-blue.mp4'; // ตี้จะหา VDO หน้าแรกมาให้ — ได้ไฟล์แล้วเปลี่ยนตรงนี้
+let lastScreen = null;
 function renderStartScreen() {
   const on = ui.screen === 'start', bg = $('#stBg'), want = on && vdo.on;
   $('#world').classList.toggle('on-start', on);
   bg.hidden = !want;
   if (want) { if (!bg.getAttribute('src')) bg.src = START_BG; if (bg.paused) bg.play().catch(() => { /* เล่นไม่ได้ = พื้นหลังนิ่ง */ }); }
   else if (!bg.paused) bg.pause();
-  if (!on) stSet(false);
+  if (ui.screen !== lastScreen) { lastScreen = ui.screen; stSet(false); }
   renderSet();
 }
 function setRange(el, v) { el.value = Math.round(v * 100); el.style.setProperty('--p', `${el.value}%`); el.nextElementSibling.textContent = `${el.value}%`; }
@@ -3413,8 +3432,17 @@ function renderSet() {
   setRange($('#volMusic'), sfx.on && bgm.on ? sfx.musicVol : 0);
   setRange($('#volSfx'), sfx.on ? sfx.vol : 0);
   $('#vdoSw').checked = vdo.on;
+  $('#fastSw').checked = ui.fast;
 }
-function stSet(open) { $('#stSet').hidden = !open; $('#stGear').setAttribute('aria-expanded', String(open)); }
+// แผงตั้งค่าใช้ร่วมกันระหว่างหน้าแรก (#stGear) กับในเกม (#gGear) — ย้ายแผงไปอยู่ข้างปุ่มที่กด
+let setGear = null;
+function stSet(open, gear) {
+  const p = $('#stSet');
+  if (open && gear) { setGear = gear; gear.parentElement.appendChild(p); }
+  p.hidden = !open;
+  for (const g of ['#stGear', '#gGear']) $(g).setAttribute('aria-expanded', String(open && setGear === $(g)));
+  if (open) renderSet();
+}
 // เลื่อนระดับเสียง — ปุ่ม "เสียง" ปิดอยู่ = เปิดให้ (อีกช่องที่เคยเห็นเป็น 0 ก็ยังเป็น 0) · เพลง 0 = ปิดเพลง
 function setVol(kind, v) {
   sfx.unlock();
@@ -6149,10 +6177,11 @@ $('#fast').addEventListener('change', e => {
 const ROLE_SHORT = { ATK: 'ตีตรง ๆ · ปราบ Dodge', ULT: 'แรงสุด · ปราบ Defence', DEF: 'กันดาเมจ · ปราบ Attack', DODGE: 'ลุ้นหลบ · ปราบ Ultimate' };
 $('#stCards').innerHTML = TYPES.map(t => `<div class="st-card k-${t}">${cardHTML({ type: t, lv: 1 })}<b>${INFO[t].name}</b><span>${ROLE_SHORT[t]}</span></div>`).join('');
 // ⚙ ตั้งค่าหน้าแรก
-$('#stGear').addEventListener('click', () => stSet($('#stSet').hidden));
-$('#stSetX').addEventListener('click', () => { stSet(false); $('#stGear').focus(); });
-document.addEventListener('pointerdown', e => { if (!$('#stSet').hidden && !e.target.closest('#stSet, #stGear')) stSet(false); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#stSet').hidden) { stSet(false); $('#stGear').focus(); } });
+for (const id of ['#stGear', '#gGear']) $(id).addEventListener('click', e => { const g = e.currentTarget; stSet($('#stSet').hidden || setGear !== g, g); });
+$('#stSetX').addEventListener('click', () => { stSet(false); if (setGear) setGear.focus(); });
+document.addEventListener('pointerdown', e => { if (!$('#stSet').hidden && !e.target.closest('#stSet, #stGear, #gGear')) stSet(false); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#stSet').hidden) { stSet(false); if (setGear) setGear.focus(); } });
+$('#fastSw').addEventListener('change', e => { $('#fast').checked = e.target.checked; $('#fast').dispatchEvent(new Event('change')); });
 $('#volMusic').addEventListener('input', e => setVol('music', e.target.value / 100));
 $('#volSfx').addEventListener('input', e => setVol('sfx', e.target.value / 100));
 $('#volSfx').addEventListener('change', () => sfx.play('pick')); // ปล่อยนิ้ว = ลองฟังระดับเสียง
