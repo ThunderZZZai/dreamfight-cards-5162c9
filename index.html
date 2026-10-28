@@ -825,11 +825,12 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 #strip,#main,.hand-head,.order,.gauge{text-shadow:0 1px 3px rgba(0,0,0,.85),0 0 10px rgba(0,0,0,.5)}
 /* แถบ OBSERVE (ตี้: บังจอ) → ป้ายเล็กมุมขวาบนใต้ HUD · จบเกมกลับเป็นแถบเต็มเพราะมีปุ่มดูอีกเกม */
 /* ในเกม (ตี้ 2026-10-28): เอาปุ่มมุมจอ (เสียง/เพลง/VDO/เร่งความเร็ว/ออก · บันทึก/กติกา/คู่มือ) ออก → รวมเป็น ⚙ ปุ่มเดียว · ซ่อนป้ายกองกลางเหลือ (ยังเป็นจุดเริ่มการ์ดบินได้) · ผู้เล่นซ่อนหัวมือ */
-#world.is-game .tools{display:none}
+.tools{display:none} /* ทุกหน้าใช้ ⚙ แทน (ตี้ 2026-10-28) */
 #world.is-game #deckInfo{visibility:hidden}
 #world.lay-player #hand .hand-head{display:none}
 #gSet{position:absolute;right:16px;bottom:14px;z-index:30;display:none}
-#world.is-game #gSet{display:block}
+#world:not(.on-start) #gSet{display:block}
+#world:not(.is-game) #gSet .g-quit{display:none}
 #world.me-blue #gSet{right:auto;left:16px}
 #world.lay-spec #gSet{right:auto;left:50%;bottom:12px;transform:translateX(-50%)} /* ผู้ชม: ⚙ กลางล่าง */
 #world.vdo-fight #gSet{opacity:0;pointer-events:none}
@@ -1093,7 +1094,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
             <label class="srow"><span>เสียงเอฟเฟกต์</span><input type="range" id="volSfx" min="0" max="100" step="5"><output for="volSfx"></output></label>
             <label class="srow"><span>VDO ฉากต่อสู้</span><small>ปิด = โหลดเร็ว ไม่มีวิดีโอ</small><input type="checkbox" class="sw" id="vdoSw" role="switch"></label>
             <label class="srow g-only"><span>เร่งความเร็ว</span><small>แอนิเมชันการ์ดเร็วขึ้น</small><input type="checkbox" class="sw" id="fastSw" role="switch"></label>
-            <div class="srow g-only"><button type="button" class="btn ghost" data-act="quit">ออกจากเกม</button></div>
+            <div class="srow g-only g-quit"><button type="button" class="btn ghost" data-act="quit">ออกจากเกม</button></div>
           </div>
         </div>
         <div class="st-cards" id="stCards"></div>
