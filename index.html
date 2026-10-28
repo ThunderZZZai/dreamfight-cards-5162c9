@@ -3,7 +3,7 @@
 <title>DreamFight Cards</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=Chakra+Petch:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=Chakra+Petch:ital,wght@0,500;0,600;0,700;1,700&display=swap">
 <style>
 /* จอ 16:9 แบบ DREAMFIGHT OVERLAY — ออกแบบที่ 1920×1080 แล้วย่อ/ขยายทั้งกรอบให้พอดีจอ (สไตล์เดียว โทนมืดแบบถ่ายทอดสด)
    ภาษาอังกฤษทุกคำบนจอเป็นตัวพิมพ์ใหญ่ (text-transform ที่ #stage — ภาษาไทยไม่มีผล)
@@ -54,7 +54,19 @@ body:not(.portrait) #rotateHint{display:none}
 #splash{position:absolute;left:300px;top:330px;width:1320px;height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;pointer-events:none;animation:splashIn calc(1.35s*var(--spd)) cubic-bezier(.2,.9,.25,1) forwards}
 #splash small{font-family:var(--font-disp);font-size:22px;font-weight:600;letter-spacing:.34em;color:var(--muted)}
 #splash b{font-family:var(--font-disp);font-weight:700;font-size:150px;line-height:1;letter-spacing:.04em;color:#fff;text-shadow:-10px 0 34px rgba(255,61,69,.8),10px 0 34px rgba(59,130,255,.8)}
-@keyframes splashIn{0%{opacity:0;transform:scale(1.7)}24%{opacity:1;transform:scale(.96)}34%,80%{opacity:1;transform:none}100%{opacity:0;transform:scale(1.05)}}
+@keyframes splashIn{0%{opacity:0;transform:scale(1.06)}18%{opacity:1;transform:none}80%{opacity:1;transform:none}100%{opacity:0;transform:scale(1.02)}}
+/* ตัวอักษรแบบ B (ตี้ 2026-10-28 · คอนเซปต์ "โลหะเรืองแสง" ใน text-fx/concept-b) — รูปคำ assets/fx/*.webp
+   เอฟเฟกต์แสงน้อยแต่เรียบหรู: ค่อย ๆ ชัดจากเบลอ → แสงกวาดผ่านตัวอักษรครั้งเดียว (mask ด้วยรูปคำ) · เรืองนุ่มสีตามคำ (--g) */
+.fxw{--g:255,170,90;position:relative;display:inline-block;height:var(--h);vertical-align:middle;line-height:0;animation:fxIn calc(.7s*var(--spd)) cubic-bezier(.2,.8,.2,1) backwards;animation-delay:var(--fd,0s)}
+.fxw img{display:block;height:100%;width:auto;filter:drop-shadow(0 0 6px rgba(var(--g),.35))}
+.fx-shine{position:absolute;inset:0;pointer-events:none;-webkit-mask:var(--img) center/100% 100% no-repeat;mask:var(--img) center/100% 100% no-repeat;background:linear-gradient(112deg,transparent 42%,rgba(255,250,235,.9) 50%,transparent 58%) no-repeat;background-size:320% 100%;background-position:115% 0;mix-blend-mode:screen;animation:fxShine calc(.9s*var(--spd)) ease-in-out forwards;animation-delay:calc(var(--fd,0s) + .3s*var(--spd))}
+@keyframes fxIn{0%{opacity:0;transform:scale(1.06);filter:blur(6px) brightness(1.5)}100%{opacity:1;transform:none;filter:none}}
+@keyframes fxShine{0%{background-position:115% 0}100%{background-position:-15% 0}}
+.fxrow{display:flex;align-items:center;justify-content:center;gap:4px}
+#splash b.fxrow{text-shadow:none;line-height:0}
+/* ข้อความที่ต้องเปลี่ยนค่า (ตัวเลข HP · DRAW) ใช้ตัวอักษรเอียงไล่สีโลหะ + เรืองแบบเดียวกัน */
+.fxt{font-family:var(--font-disp);font-style:italic;font-weight:700;letter-spacing:-.01em;color:transparent;-webkit-text-fill-color:transparent;background:linear-gradient(180deg,#fffaf0 0%,#f8e2c4 38%,#e7b98a 58%,#fff3df 74%,#d19358 100%);-webkit-background-clip:text;background-clip:text;text-shadow:none;filter:drop-shadow(0 0 5px rgba(255,150,60,.85)) drop-shadow(0 2px 0 rgba(0,0,0,.55))}
+@media (prefers-reduced-motion:reduce){.fxw,.fx-shine{animation:none}}
 
 /* Overlay ด้านบน: แถบ HP (เอียงตามกรอบ) · ป้ายตัวเลข HP · ชื่อ · จุด ●●● · หกเหลี่ยมรอบ */
 .ov-top{position:absolute;left:0;top:0;width:1920px;height:200px;pointer-events:none;user-select:none}
@@ -160,6 +172,10 @@ body:not(.portrait) #rotateHint{display:none}
 .hp-anchor.red{left:600px} .hp-anchor.blue{left:1320px}
 .hp-float{position:absolute;left:0;top:0;font-family:var(--font-disp);font-weight:700;font-size:50px;line-height:1;white-space:nowrap;pointer-events:none;text-shadow:0 3px 0 rgba(0,0,0,.6),0 0 14px rgba(0,0,0,.85);animation:hpUp calc(1.3s*var(--spd)) ease-out forwards}
 .hp-float.dmg{color:var(--bad)} .hp-float.ok{color:var(--dodge)} .hp-float.guard{color:var(--def)} .hp-float.heal{color:var(--heal)}
+/* แบบ B: ตัวเลข HP เอียงไล่สีโลหะ + เรือง (แดง = เสีย · เขียว = ได้) */
+.hp-float.dmg,.hp-float.heal{font-style:italic;letter-spacing:-.01em;-webkit-text-fill-color:transparent;background:linear-gradient(180deg,#fff 0%,#ffdada 34%,#ff6b6b 60%,#c81e2a 100%);-webkit-background-clip:text;background-clip:text;text-shadow:none;filter:drop-shadow(0 0 1.5px rgba(0,0,0,.95)) drop-shadow(0 0 7px rgba(255,60,60,.9)) drop-shadow(0 2px 0 rgba(0,0,0,.6))}
+.hp-float.heal{background-image:linear-gradient(180deg,#fff 0%,#dcffe9 34%,#5ee08f 60%,#16944a 100%);filter:drop-shadow(0 0 1.5px rgba(0,0,0,.95)) drop-shadow(0 0 7px rgba(60,220,130,.9)) drop-shadow(0 2px 0 rgba(0,0,0,.6))}
+.hp-float.fximg,.meta-float.fximg{line-height:0}
 @keyframes hpUp{0%{transform:translate(-50%,24px) scale(.7);opacity:0}15%{transform:translate(-50%,0);opacity:1}100%{transform:translate(-50%,-64px);opacity:0}}
 
 /* แผง CARD ORDER ซ้าย (RED) · ขวา (BLUE) — ภาพจริงขยาย 2 เท่า ช่องการ์ด 120×190 สัดส่วนเดียวกับภาพการ์ด */
@@ -496,6 +512,7 @@ body:not(.portrait) #rotateHint{display:none}
 .w-red .win-title{color:var(--red);text-shadow:0 0 44px rgba(255,61,69,.6)}
 .w-blue .win-title{color:var(--blue);text-shadow:0 0 44px rgba(59,130,255,.6)}
 .w-draw .win-title{color:var(--gold)}
+.win-title .fxw{--h:150px} .win-title .fxt{font-size:150px;line-height:1.1;padding-right:.1em}
 .win-card p{font-size:24px;color:#d3d9e4}
 .win-stats{display:flex;gap:28px;font-family:var(--font-disp);font-size:26px;font-weight:600;font-variant-numeric:tabular-nums}
 .win-btns{display:flex;gap:14px;align-items:center}
@@ -606,7 +623,8 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 #ko b{font-family:var(--font-disp);font-weight:700;font-size:220px;line-height:1;letter-spacing:.02em;color:#fff;-webkit-text-stroke:5px var(--k);text-shadow:0 0 40px var(--k),0 0 110px var(--k),0 10px 0 rgba(0,0,0,.6);animation:koSlam calc(1.6s*var(--spd)) cubic-bezier(.2,.9,.25,1) forwards}
 #ko.dbl b{font-size:150px}
 #ko small{padding:6px 28px;border-radius:999px;background:rgba(5,7,11,.88);border:2px solid var(--k);box-shadow:0 0 24px var(--k);color:#fff;font-family:var(--font-disp);font-size:30px;font-weight:700;letter-spacing:.04em;animation:koSub calc(1.6s*var(--spd)) ease forwards}
-@keyframes koSlam{0%{opacity:0;transform:scale(3.6) rotate(-10deg)}13%{opacity:1;transform:scale(.88) rotate(-2deg)}21%{transform:scale(1.08) rotate(-4deg)}30%,100%{opacity:1;transform:scale(1) rotate(-3deg)}}
+@keyframes koSlam{0%{opacity:0;transform:scale(1.25)}14%{opacity:1;transform:scale(.98)}24%,100%{opacity:1;transform:none}}
+#ko b.fxb{-webkit-text-stroke:0;text-shadow:none;line-height:0}
 @keyframes koSub{0%,22%{opacity:0;transform:translateY(16px)}36%,100%{opacity:1;transform:none}}
 /* ช่องที่ไม่ได้เปิดเพราะเกมจบก่อน */
 .oslot.unplayed > .card,.oslot.unplayed > .slot-empty{filter:grayscale(.85) brightness(.5)}
@@ -774,9 +792,9 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 @keyframes qPulse{0%,100%{text-shadow:0 0 8px rgba(255,200,61,.5)}50%{text-shadow:0 0 22px rgba(255,200,61,1)}}
 
 /* ป้าย ACTION 1/2/3 กลางจอตอนเริ่มเปิดแต่ละช่อง (ตี้ 2026-10-27) — ขึ้นแป๊บเดียวแล้วหาย */
-#laneCall{position:absolute;left:0;right:0;top:420px;z-index:25;text-align:center;pointer-events:none;opacity:0;font-family:var(--font-disp);font-weight:700;font-size:120px;line-height:1;letter-spacing:.08em;color:#fff;-webkit-text-stroke:3px var(--gold);text-shadow:0 0 30px rgba(255,200,61,.85),0 6px 0 rgba(0,0,0,.6)}
+#laneCall{position:absolute;left:0;right:0;top:400px;z-index:25;text-align:center;pointer-events:none;opacity:0;line-height:0}
 #laneCall.on{animation:laneCall calc(2.2s*var(--spd)) cubic-bezier(.2,.9,.3,1) forwards} /* ตี้ 2026-10-28: ค้างนานขึ้น (เดิม 1.4 วิ) */
-@keyframes laneCall{0%{opacity:0;transform:scale(2.4)}10%{opacity:1;transform:scale(.95)}15%{transform:scale(1.03)}19%,84%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.1)}}
+@keyframes laneCall{0%{opacity:0;transform:scale(1.05)}10%{opacity:1;transform:none}86%{opacity:1;transform:none}100%{opacity:0;transform:scale(1.02)}}
 
 /* เกจพร (ตี้ 2026-10-27 · ม็อกอัป GaugeFx): กรอบเงิน 3 ช่องใต้แผงของเรา (ผู้ชม: มุมล่างทั้งสองฝั่ง) เติมสีรุ้งทีละขั้นล่างขึ้นบน
    มีเกจ = กรอบเรืองรุ้ง · ใช้พร = คลื่นรุ้ง · การ์ดที่ได้/เปลี่ยนจากพร = กรอบรุ้งแว้บ · รอบพลังเต็ม = การ์ดบนมือ + ช่องวางเรืองรุ้ง */
@@ -851,6 +869,9 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 .vc-verdict{position:absolute;top:618px;z-index:6;transform:translateX(-50%);white-space:nowrap;padding:4px 24px;border-radius:999px;font-family:var(--font-disp);font-weight:700;font-size:40px;line-height:1.2;pointer-events:none;animation:vcVerdict 1.6s cubic-bezier(.2,.9,.3,1.2) forwards}
 .vc-verdict.win{background:linear-gradient(180deg,#ffe58a,#ffc83d 55%,#e09a12);color:#1a1204;box-shadow:0 0 0 2px #fff4c2 inset,0 0 26px rgba(255,200,61,.9)}
 .vc-verdict.lose{background:rgba(16,18,26,.88);color:#aeb7c6;border:2px solid #5d6573;font-size:34px}
+.vc-win{position:absolute;left:960px;top:850px;z-index:6;transform:translate(-50%,-50%);line-height:0;pointer-events:none}
+.vc-verdict.fx{padding:0;background:none;border:0;box-shadow:none;top:608px;line-height:0;animation:vcVerdictSoft 1.6s ease forwards}
+@keyframes vcVerdictSoft{0%{opacity:0;transform:translateX(-50%) translateY(10px)}14%{opacity:1;transform:translateX(-50%)}86%{opacity:1;transform:translateX(-50%)}100%{opacity:0;transform:translateX(-50%) translateY(-4px)}}
 @keyframes vcVerdict{0%{opacity:0;transform:translateX(-50%) scale(2)}14%{opacity:1;transform:translateX(-50%) scale(.94)}22%{transform:translateX(-50%) scale(1)}86%{opacity:1;transform:translateX(-50%) scale(1)}100%{opacity:0;transform:translateX(-50%) scale(1.04)}}
 .vc-call{position:absolute;left:960px;top:470px;z-index:6;text-align:center;pointer-events:none;--k:var(--gold);transform:translateX(-50%);animation:vcCall 1.6s cubic-bezier(.2,.9,.3,1.2) forwards}
 .vc-call b{display:block;white-space:nowrap;font-family:var(--font-disp);font-weight:700;font-size:92px;line-height:1.05;letter-spacing:.03em;color:#fff;-webkit-text-stroke:3px var(--k);text-shadow:0 0 30px var(--k),0 6px 0 rgba(0,0,0,.6)}
@@ -941,7 +962,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
       <div class="gauge red" id="gaugeRED" hidden></div>
       <div class="gauge blue" id="gaugeBLUE" hidden></div>
       </div>
-      <div id="splash" hidden><small>DREAMFIGHT · CARD BATTLE</small><b id="splashText">ROUND 1</b></div>
+      <div id="splash" hidden><small>DREAMFIGHT · CARD BATTLE</small><b id="splashText" class="fxrow" aria-label="ROUND 1"><span class="fxw" style="--h:150px;--img:url(assets/fx/round.webp)"><img src="assets/fx/round.webp" alt="" draggable="false"><i class="fx-shine"></i></span><span class="fxw" style="--h:154px;--img:url(assets/fx/d1.webp);--fd:.08s;margin-left:-18px"><img src="assets/fx/d1.webp" alt="" draggable="false"><i class="fx-shine"></i></span></b></div>
       <div id="laneCall" aria-live="polite"></div>
       <div id="ko" hidden aria-live="assertive"></div>
 
@@ -2972,10 +2993,12 @@ function vcPop(s, c) {
   sfx.play('flip');
 }
 function vcReset() { vc.pops = {}; vc.at = {}; $('#vdoCards').innerHTML = ''; }
+// รูปคำแบบ B + แสงกวาด (ดู CSS .fxw) · h = ความสูงเป็นพิกเซลบนเวที · extra = ตัวแปร CSS เพิ่ม เช่น ';--g:80,220,140;--fd:.25s'
+const fxImg = (name, h, extra = '') => `<span class="fxw" style="--h:${h}px;--img:url(assets/fx/${name}.webp)${extra}"><img src="assets/fx/${name}.webp" alt="" draggable="false"><i class="fx-shine"></i></span>`;
 // ป้าย ACTION 1/2/3 กลางจอตอนเริ่มเปิดช่อง i
 function laneCall(i) {
   const el = $('#laneCall');
-  el.textContent = `ACTION ${i + 1}`;
+  el.innerHTML = `<span class="fxrow" aria-label="ACTION ${i + 1}">${fxImg('action', 124)}${fxImg(`d${i + 1}`, 128, ';--fd:.08s;margin-left:-16px')}</span>`;
   el.classList.remove('on');
   void el.offsetWidth;
   el.classList.add('on');
@@ -3001,7 +3024,7 @@ function vcMove(s, [x, y], { rot = 0, sc = 1, ms = 300, ease = 'cubic-bezier(.5,
 // ctr = ฝั่งที่ชนะทาง · ไม่มีใครชนะทาง (ชนิดเดียวกัน / Attack เจอ Ultimate / อีกฝั่งว่าง) = ไม่ขึ้นป้าย · main/sub/cls ไม่ใช้แล้ว
 function vcCall(main, sub, cls, ctr) {
   if (!ctr) return;
-  for (const s of SIDES) vcAdd(`vc-verdict ${s === ctr ? 'win' : 'lose'}`, s === ctr ? 'ชนะทาง' : 'แพ้ทาง', `left:${VC_MID[s][0]}px`);
+  for (const s of SIDES) vcAdd('vc-verdict fx', s === ctr ? fxImg('win-way', 76, ';--g:80,220,140') : fxImg('lose-way', 76, ';--g:190,160,255;--fd:.25s'), `left:${VC_MID[s][0]}px`);
 }
 // ปะทะกลางจอ (ตี้ 2026-10-28) ก่อนพุ่งเข้าเกจ — อ่านผลจาก r (rollClash) อย่างเดียว ไม่แตะตัวสุ่ม
 // โจมตีเจอหลบพ้น = การ์ดตีพุ่งใส่ การ์ด Dodge กระโดดหลบ "MISS!" · โจมตีเจอโล่ = ชนการ์ดโล่ บาเรียขึ้น "BLOCK!/ลดดาเมจ!"
@@ -3286,6 +3309,7 @@ async function winVdo(side, gid) {
   W.classList.add('vdo-fight', 'vdo-full');
   $('#vdoLane').textContent = `${side} WIN`;
   $('#vdoBar').hidden = false;
+  setTimeout(() => { if (ui.vdo === lv) vcAdd('vc-win', fxImg(side === 'RED' ? 'red-win' : 'blue-win', 170, side === 'RED' ? ';--g:255,80,80' : ';--g:90,150,255')); }, 1200); // คำ WIN กลางล่าง (ไม่บังหน้าตัวละคร)
   el.src = vdo.url(name);
   el.volume = 1;
   el.muted = !sfx.on;
@@ -3294,6 +3318,7 @@ async function winVdo(side, gid) {
   await until(() => lv.skip || lv.failed || el.ended || gid !== ui.gid);
   el.pause();
   $('#vdoBar').hidden = true;
+  vcReset();
   ui.vdo = null;
   clock.vdoMs += Date.now() - v0;
   duckMusic(false);
@@ -3780,12 +3805,12 @@ function actionFx(r) {
   return cls;
 }
 // ตัวเลขลอยใต้แถบ HP บน Overlay
-function floatText(s, text, kind, delay = 0) {
+function floatText(s, text, kind, delay = 0, html = '') {
   const anchor = $(s === 'RED' ? '#anchorRed' : '#anchorBlue'), bar = $(s === 'RED' ? '#barRed' : '#barBlue');
   setTimeout(() => {
     const f = document.createElement('span');
     f.className = `hp-float ${kind}`;
-    f.textContent = text;
+    if (html) f.innerHTML = html; else f.textContent = text;
     anchor.appendChild(f);
     if (kind === 'heal') { bar.classList.remove('healed'); void bar.offsetWidth; bar.classList.add('healed'); }
     setTimeout(() => f.remove(), 1500);
@@ -3794,7 +3819,7 @@ function floatText(s, text, kind, delay = 0) {
 function floatHp(s, o) {
   if (o.shieldGain) floatText(s, `ชิลด์ +${o.shieldGain}`, 'shield');
   if (o.hpLoss > 0) floatText(s, `−${o.hpLoss} HP`, 'dmg', o.shieldGain ? 250 : 0);
-  else if (o.evaded) floatText(s, 'หลบ!', 'ok');
+  else if (o.evaded) floatText(s, 'หลบ!', 'ok fximg', 0, fxImg('dodge', 72, ';--g:80,220,140'));
   else if (o.absorbed > 0) floatText(s, 'ชิลด์รับไว้หมด', 'shield', o.shieldGain ? 250 : 0);
   if (o.absorbed > 0 && o.hpLoss > 0) floatText(s, `ชิลด์ −${o.absorbed}`, 'shield', 450);
   if (o.healed > 0) floatText(s, `+${o.healed} HP`, 'heal', ui.fast ? 150 : 400);
@@ -4089,7 +4114,7 @@ async function koFx(v) {
   const el = $('#ko'), dbl = v.ko.length > 1, side = v.winner === 'DRAW' ? 'draw' : v.winner.toLowerCase();
   const who = dbl ? 'HP หมดทั้งคู่' : `HP ของ ${v.ko[0]} หมด`;
   el.className = `${side}${dbl ? ' dbl' : ''}`;
-  el.innerHTML = `<b>${dbl ? 'DOUBLE K.O.' : 'K.O.!'}</b><small>${who}ที่ช่อง ${v.lane + 1}${v.lane < SLOT_N - 1 ? ' · จบเกมทันที' : ''}</small>`;
+  el.innerHTML = `<b class="fxb" aria-label="${dbl ? 'DOUBLE K.O.' : 'K.O.!'}">${fxImg(dbl ? 'double-ko' : 'ko', dbl ? 250 : 230)}</b><small>${who}ที่ช่อง ${v.lane + 1}${v.lane < SLOT_N - 1 ? ' · จบเกมทันที' : ''}</small>`;
   el.hidden = false;
   sfx.play('ko');
   flashStage(side);
@@ -4414,13 +4439,13 @@ function renderGauge(s) {
   ui.gShown[s] = n;
 }
 // ป้ายลอยข้างเกจ (+1 เกจ / ใช้เกจ)
-function gaugeFloat(s, text, delay = 0) {
+function gaugeFloat(s, text, delay = 0, html = '') {
   setTimeout(() => {
     const el = $(`#gauge${s}`);
     if (!el || el.hidden) return;
     const f = document.createElement('span');
-    f.className = 'meta-float up';
-    f.textContent = text;
+    f.className = `meta-float up${html ? ' fximg' : ''}`;
+    if (html) f.innerHTML = html; else f.textContent = text;
     el.appendChild(f);
     setTimeout(() => f.remove(), 1400);
   }, ui.fast ? delay * 0.4 : delay);
@@ -4509,7 +4534,7 @@ function gaugeFx(s, res, delay = 0) {
   render();
   flyGains({ [s]: res });
   gainFx({ [s]: res });
-  gaugeFloat(s, { draw: 'ใช้เกจ: จั่ว 1', tr: 'ใช้เกจ: เปลี่ยนการ์ด', ftr: 'เปลี่ยนการ์ดฟรี', merge: 'ผสมการ์ด', max: 'พลังเต็ม!' }[res.k], delay);
+  gaugeFloat(s, { draw: 'ใช้เกจ: จั่ว 1', tr: 'ใช้เกจ: เปลี่ยนการ์ด', ftr: 'เปลี่ยนการ์ดฟรี', merge: 'ผสมการ์ด', max: 'พลังเต็ม!' }[res.k], delay, res.k === 'max' ? fxImg('full-power', 64) : '');
   sfx.play(res.k === 'max' ? 'levelup3' : res.k === 'draw' ? 'draw' : 'levelup', delay);
 }
 // ใช้พร: คลื่นวงแหวนสีรุ้งพุ่งออกจากกรอบเกจ + แสงรุ้งวาบทั้งจอ (เฉพาะกรอบที่มองเห็นอยู่)
@@ -4708,7 +4733,7 @@ function renderWinner() {
     : `${w === ME ? 'คุณชนะ! ' : w === OPP ? `${ui.mode === 'pvp' ? esc((ui.pvp && ui.pvp.oppNick) || OPP) : `บอท ${OPP}`} ชนะ — ` : ''}${ui.winReason}`;
   el.innerHTML = `<div class="win-card w-${w.toLowerCase()}" role="dialog" aria-modal="true" aria-labelledby="winTitle">
     <div class="win-eyebrow">WINNER PHASE</div>
-    <div class="win-title" id="winTitle">${w === 'DRAW' ? 'DRAW' : `${w} WIN`}</div>
+    <div class="win-title" id="winTitle" aria-label="${w === 'DRAW' ? 'DRAW' : `${w} WIN`}">${w === 'DRAW' ? '<span class="fxt">DRAW</span>' : fxImg(w === 'RED' ? 'red-win' : 'blue-win', 150, w === 'RED' ? ';--g:255,80,80' : ';--g:90,150,255')}</div>
     <p>${line}</p>
     <div class="win-stats"><span class="t-red">RED ${g.p.RED.hp} HP</span><span class="t-blue">BLUE ${g.p.BLUE.hp} HP</span><span>${g.round} รอบ</span></div>
     ${clockSummaryHTML()}
@@ -5345,7 +5370,11 @@ function renderPvp() {
   }
   // นับถอยหลังก่อนเข้าเกม: ตัวเลขใหญ่แทนคำว่า VS
   const vs = $('#pvp .seat-vs'), vsTxt = ui.pvpStarting ? String(ui.pvpStarting.left) : 'VS';
-  if (vs && vs.textContent !== vsTxt) { vs.textContent = vsTxt; vs.classList.remove('count'); if (ui.pvpStarting) { void vs.offsetWidth; vs.classList.add('count'); } }
+  if (vs && vs.dataset.v !== vsTxt) {
+    vs.dataset.v = vsTxt;
+    if (ui.pvpStarting && /^[123]$/.test(vsTxt)) vs.innerHTML = fxImg(`d${vsTxt}`, 130); else vs.textContent = vsTxt; // แบบ B: เลข 3-2-1 เป็นรูป
+    vs.classList.remove('count'); if (ui.pvpStarting) { void vs.offsetWidth; vs.classList.add('count'); }
+  }
   const alt = $('#pvpAlt'), hh = seatHolders(), full = hh.RED && hh.BLUE && !(net.mine.seat && (hh.RED.peer === net.me || hh.BLUE.peer === net.me));
   if (alt) {
     alt.hidden = net.state === 'off';
