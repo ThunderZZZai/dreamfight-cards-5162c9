@@ -950,6 +950,41 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 .vc-empty{display:grid;place-items:center;width:100%;aspect-ratio:820/1302;border-radius:14px;border:3px dashed rgba(255,255,255,.6);background:rgba(255,255,255,.07);box-shadow:0 0 0 2px var(--k) inset,0 0 24px rgba(0,0,0,.35);backdrop-filter:blur(3px)}
 .vc-empty b{font-family:var(--font-disp);font-weight:700;font-size:26px;color:rgba(255,255,255,.9);text-shadow:0 2px 8px rgba(0,0,0,.8)}
 .vc-pop.empty .vc-who{background:rgba(5,7,11,.8);border:2px solid var(--k)}
+/* โล่ + ไฟจากคลิป AE (ตี้ 2026-10-28 · เดโม artifact TmvSzwtJabbT2Tk6oaDX4g)
+   คลิปพื้นดำซ้อนแบบ screen · #vcFx ห้ามมี z-index/transform/opacity ไม่งั้นลูก ๆ ผสมกับ VDO/เกจข้างใต้ไม่ได้ (ขึ้นกล่องดำ) */
+@property --L{syntax:'<length>';inherits:false;initial-value:0px}
+@property --A{syntax:'<length>';inherits:false;initial-value:0px}
+#vcFx{position:absolute;inset:0;pointer-events:none}
+.vfx{position:absolute;left:0;top:0;mix-blend-mode:screen;pointer-events:none}
+.vfx video,.vfx img{display:block;width:100%;height:100%}
+.vfx.off{visibility:hidden}
+/* โล่รอบการ์ด Defence ตอนปะทะ: คลิป 1280×720 ย่อ 146/158 ให้การ์ดในคลิปทับการ์ดบน VDO · RED กลับด้าน · เฟดขอบนอก */
+.vfx-shield{z-index:21;width:1183px;height:665px;transform-origin:798px 324px}
+.vfx-shield.mir{transform:scaleX(-1)}
+.vfx-shield.soft{-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+  -webkit-mask-image:radial-gradient(ellipse 212px 231px at 798px 320px,#000 0 50%,rgba(0,0,0,.85) 70%,rgba(0,0,0,.35) 90%,transparent 100%),radial-gradient(circle 120px at 591px 320px,#000 0 50%,transparent 100%);
+  mask-image:radial-gradient(ellipse 212px 231px at 798px 320px,#000 0 50%,rgba(0,0,0,.85) 70%,rgba(0,0,0,.35) 90%,transparent 100%),radial-gradient(circle 120px at 591px 320px,#000 0 50%,transparent 100%)}
+/* ไฟตอนการ์ดพุ่ง: อยู่ใต้การ์ด (การ์ด z 20) หัวไฟอยู่ที่ (390,128) ของคลิป */
+.vfx-fire{z-index:19;width:400px;height:256px;transform-origin:390px 128px;opacity:0;transition:opacity .12s ease}
+.vfx-fire.on{opacity:1}
+/* โล่บนเกจ HP: ผืน 1110×240 = จอ x 760–1870 y 14–254 (BLUE) · RED กลับด้าน · คลุมแค่หลอดเลือด เฟดขอบ · ยาวตามโล่/50 จากปลายด้านนอก
+   ตามแถบ HP ขึ้นลงเหมือน #hud ทุกจังหวะ */
+.vfx-coat{z-index:4;top:14px;width:1110px;height:240px;--hy:0px;--mx:1;transform:translateY(var(--hy)) scaleX(var(--mx));
+  transition:transform calc(.75s*var(--spd)) cubic-bezier(.2,.9,.25,1.12),opacity calc(.45s*var(--spd)) ease,--L .5s cubic-bezier(.2,.8,.2,1);
+  --tube:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='1110' height='240'><defs><linearGradient id='g' gradientUnits='userSpaceOnUse' x1='306' y1='0' x2='860' y2='0'><stop offset='0' stop-color='white' stop-opacity='0'/><stop offset='.07' stop-color='white'/><stop offset='.93' stop-color='white'/><stop offset='1' stop-color='white' stop-opacity='0'/></linearGradient><filter id='f' x='-10%' y='-100%' width='120%' height='300%'><feGaussianBlur stdDeviation='3'/></filter></defs><polygon points='328,80 854,80 839,101 312,101' fill='url(%23g)' filter='url(%23f)'/></svg>");
+  --amt:linear-gradient(to left,#000 0,#000 var(--L),transparent calc(var(--L) + 30px));
+  -webkit-mask-image:var(--amt),var(--tube);mask-image:var(--amt),var(--tube);-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-composite:source-in;mask-composite:intersect}
+.vfx-coat.blue{left:760px} .vfx-coat.red{left:53px;--mx:-1}
+.vfx-coat video,.vfx-coat img{filter:saturate(3) brightness(1.5)}
+.vfx-coat.part{--amt:linear-gradient(to left,transparent 0,transparent calc(var(--A) - 16px),#000 var(--A),#000 var(--L),transparent calc(var(--L) + 30px));transition:transform calc(.75s*var(--spd)) cubic-bezier(.2,.9,.25,1.12),opacity calc(.45s*var(--spd)) ease}
+.vfx-coat.loose{--amt:linear-gradient(to left,#000 0,#000 var(--L),transparent calc(var(--L) + 150px));-webkit-mask-image:var(--amt);mask-image:var(--amt);transition:transform calc(.75s*var(--spd)) cubic-bezier(.2,.9,.25,1.12),opacity calc(.45s*var(--spd)) ease}
+.vfx-coat.loose.tube{-webkit-mask-image:var(--amt),var(--tube);mask-image:var(--amt),var(--tube)}
+.vfx-coat.cut{transition:transform calc(.75s*var(--spd)) cubic-bezier(.2,.9,.25,1.12),opacity calc(.45s*var(--spd)) ease}
+.vfx-coat.hit img{animation:coatHit .5s ease}
+@keyframes coatHit{25%{filter:saturate(3) brightness(3.4)}}
+#world:not(.is-game) .vfx-coat,#world.vdo-full:not(.vdo-hp) .vfx-coat{--hy:-240px;opacity:0}
+/* หลอดชิลด์ขาวเดิมเลิกใช้ — แทนด้วยโล่บนเกจ (ตัวเลขชิลด์ยังอยู่) */
+.shbar{visibility:hidden}
 /* ปะทะกลางจอ (ตี้ 2026-10-28): การ์ดชนกันกลางล่าง (y 850) · ข้อความผลปะทะเหนือการ์ด · โล่บาเรีย */
 .vc-verdict{position:absolute;top:618px;z-index:6;transform:translateX(-50%);white-space:nowrap;padding:4px 24px;border-radius:999px;font-family:var(--font-disp);font-weight:700;font-size:40px;line-height:1.2;pointer-events:none;animation:vcVerdict 1.6s cubic-bezier(.2,.9,.3,1.2) forwards}
 .vc-verdict.win{background:linear-gradient(180deg,#ffe58a,#ffc83d 55%,#e09a12);color:#1a1204;box-shadow:0 0 0 2px #fff4c2 inset,0 0 26px rgba(255,200,61,.9)}
@@ -1170,6 +1205,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
       </aside>
       <div id="winner" class="win-layer" hidden></div>
       <div class="match-clock" id="matchClock" role="timer" aria-label="เวลาที่ใช้ในแมตช์นี้" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="9.2" r="5.6"/><path d="M6.2 1.6h3.6M8 1.6v2M8 9.2V6.4M12.4 4.2l1.1-1.1"/></svg><b>00:00</b></div>
+      <div id="vcFx" aria-hidden="true"></div>
       <div id="vdoCards" aria-hidden="true"></div>
       <div class="vdo-bar" id="vdoBar" hidden><span class="vdo-lane" id="vdoLane"></span><button type="button" class="vdo-skip" data-act="vdoSkip">SKIP <i>▶▶</i></button></div>
     </div>
@@ -3044,7 +3080,7 @@ function popAt(clip, side) {
   if (m[1]) return own ? (m[1] === 'def' ? 5.5 : 5) : 3; // VDO ฝั่งรับ: ฝั่งตีโผล่ก่อน · ฝั่งรับตอนยกโล่/หลบ
   return own ? (m[2] === 'ult' ? 3 : 3.5) : 6;           // VDO ฝั่งตี (ไฟล์เดียว: อีกฝ่ายโผล่ตอนโดน)
 }
-const VC_FLY = 380, VC_FIZZ = 550, VC_GAP = 950, VC_STEAL = 1650, VC_DRAW = 650, VC_LOSE = 750, VC_HUD = 450, VC_PAD = 600;
+const VC_FLY = 460, VC_FIZZ = 550, VC_GAP = 950, VC_STEAL = 1650, VC_DRAW = 650, VC_LOSE = 750, VC_HUD = 450, VC_PAD = 600;
 const VC_POP = { RED: [133, 847], BLUE: [1787, 847] }; // จุดกึ่งกลางการ์ดมุมล่าง (.vc-pop 146px)
 // ปะทะกลางจอ (ตี้ 2026-10-28): การ์ดพุ่งมาชนกันกลางจอก่อน แล้วค่อยพุ่งเข้าเกจ · MID = จุดพัก · HIT = จุดชน (ขอบการ์ดแตะกัน)
 const VC_CLASH = 1600, VC_MID = { RED: [858, 850], BLUE: [1062, 850] }, VC_HIT = { RED: [888, 850], BLUE: [1032, 850] };
@@ -3097,9 +3133,158 @@ function vcPop(s, c) {
   vc.at[s] = VC_POP[s];
   void d.offsetWidth;
   d.classList.add('on');
+  if (c) vfxFire(s, c);
   sfx.play('flip');
 }
-function vcReset() { vc.pops = {}; vc.at = {}; $('#vdoCards').innerHTML = ''; }
+function vcReset() { vc.pops = {}; vc.at = {}; $('#vdoCards').innerHTML = ''; vfxStop(); }
+/* ───────── โล่ + ไฟจากคลิป AE (ตี้ 2026-10-28 · เดโม artifact TmvSzwtJabbT2Tk6oaDX4g) ─────────
+   · โล่การ์ด: Defence เจอ Attack = กันได้ (card_block) · เจอ Ultimate = โล่แตก (card_break) · การ์ดตีพุ่งตามจังหวะคลิป (ชนที่ 1.4 วิ)
+   · ไฟ: ติดเองเมื่อการ์ดพุ่งเร็ว (พุ่งหากัน / พุ่งเข้าเกจ) สีตามการ์ด · อยู่ใต้การ์ด หัวไฟนำหน้าขอบการ์ดนิดเดียว
+   · โล่บนเกจ HP: ยาวตามชิลด์/50 จากปลายด้านนอก · ได้เพิ่ม = ก่อตัวเฉพาะส่วนที่เพิ่ม · หมด = แตกกระจาย */
+const SHF = 'assets/shield/', FIRE_COL = { ATK: 'red', ULT: 'purple', DEF: 'blue', DODGE: 'green' };
+const vfx = { coat: {}, fire: {}, clip: {}, run: { RED: 0, BLUE: 0 } };
+function vfxEl(cls, src, loop) {
+  const d = document.createElement('div');
+  d.className = `vfx ${cls}`;
+  let m;
+  if (/\.mp4$/.test(src)) {
+    m = document.createElement('video');
+    m.muted = true; m.playsInline = true; m.loop = !!loop; m.preload = 'auto';
+    m.setAttribute('disablepictureinpicture', '');
+  } else { m = new Image(); m.alt = ''; m.draggable = false; }
+  m.src = SHF + src;
+  d.appendChild(m);
+  $('#vcFx').appendChild(d);
+  return d;
+}
+function vfxPlay(el, from = 0) {
+  const v = el.firstElementChild;
+  v.pause();
+  try { v.currentTime = from; } catch (e) {}
+  el.classList.remove('off');
+  v.play().catch(() => {});
+  return v;
+}
+// รอจนคลิปเล่นถึงวินาที t (กันค้าง: เกิน maxMs ไปต่อเลย เช่นวิดีโอโหลดไม่ทัน)
+const vidAt = (v, t, maxMs) => new Promise(res => { const t0 = Date.now(); const k = () => (v.currentTime >= t || v.ended || v.error || Date.now() - t0 > maxMs ? res() : setTimeout(k, 15)); k(); });
+function vfxStop() {
+  vfx.run.RED++; vfx.run.BLUE++;
+  for (const el of document.querySelectorAll('#vcFx .vfx-shield,#vcFx .vfx-fire')) { el.classList.add('off'); el.classList.remove('on'); el.firstElementChild.pause(); }
+}
+// โล่รอบการ์ด Defence ฝั่ง defer · คืนวิดีโอไว้จับจังหวะ
+function vfxShield(defer, kind) {
+  const el = vfx.clip[kind] || (vfx.clip[kind] = vfxEl('vfx-shield off', kind === 'break' ? 'card_break.mp4' : 'card_block.mp4'));
+  const [x, y] = VC_MID[defer];
+  el.style.left = `${x - 798}px`; el.style.top = `${y - 324}px`;
+  el.classList.toggle('mir', defer === 'RED');
+  el.classList.add('soft');
+  el.getAnimations().forEach(a => a.cancel());
+  const v = vfxPlay(el, 0.55); // 0.7 วิโล่เริ่มขึ้น
+  v.onended = () => el.classList.add('off');
+  if (kind === 'break') { const w = () => { if (v.currentTime >= 1.45 || v.ended) el.classList.remove('soft'); else if (!el.classList.contains('off')) requestAnimationFrame(w); }; w(); } // แตกแล้วปล่อยเศษกระเด็นเต็มที่
+  return v;
+}
+// การ์ด Defence ออกจากจุดปะทะ → โล่รอบการ์ดจางหาย
+function vfxShieldOff() {
+  for (const el of Object.values(vfx.clip)) {
+    if (el.classList.contains('off')) continue;
+    el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, fill: 'forwards' }).finished.then(a => { el.classList.add('off'); a.cancel(); });
+  }
+}
+// ไฟตามการ์ดฝั่ง s: อ่านตำแหน่งการ์ดจริงทุกเฟรม (transform ที่กำลังเคลื่อน) · ติดเมื่อพุ่งเร็ว ดับเมื่อช้าลง/การ์ดหาย
+function vfxFire(s, c) {
+  const col = FIRE_COL[c.type], key = `${s}:${col}`;
+  const el = vfx.fire[key] || (vfx.fire[key] = vfxEl('vfx-fire', `fire_${col}.mp4`, true));
+  const d = vc.pops[s], [bx, by] = VC_POP[s], run = ++vfx.run[s], born = performance.now(), v = el.firstElementChild;
+  let last = null, vx = 0, vy = 0, on = false;
+  const set = want => {
+    if (want === on) return;
+    on = want;
+    if (on) { try { v.currentTime = Math.random() * 3; } catch (e) {} v.play().catch(() => {}); }
+    el.classList.toggle('on', on);
+    if (!on) setTimeout(() => { if (!el.classList.contains('on')) v.pause(); }, 250);
+  };
+  el.classList.remove('off');
+  const tick = now => {
+    if (run !== vfx.run[s] || !d.isConnected) { set(false); return; }
+    const cs = getComputedStyle(d), m = new DOMMatrixReadOnly(cs.transform === 'none' ? undefined : cs.transform);
+    const x = bx + m.e, y = by + m.f, sc = Math.hypot(m.a, m.b) || 1;
+    if (last) {
+      const dt = Math.max(8, now - last.t);
+      vx = vx * 0.45 + (((x - last.x) / dt) * 1000) * 0.55; vy = vy * 0.45 + (((y - last.y) / dt) * 1000) * 0.55;
+      const sp = Math.hypot(vx, vy);
+      if (now - born < 650 || +cs.opacity < 0.4) set(false); // ช่วงการ์ดเด้งขึ้นไม่ติดไฟ
+      else if (!on && sp > 900) set(true);
+      else if (on && sp < 280) set(false);
+      if (on) {
+        const ang = Math.atan2(vy, vx), ca = Math.abs(Math.cos(ang)), sa = Math.abs(Math.sin(ang));
+        const k = ((ca * 232 + sa * 146) * sc * 1.12) / 225, ahead = (ca * 73 + sa * 116) * sc + 24 * k; // การ์ด 146×232
+        el.style.transform = `translate(${x + Math.cos(ang) * ahead - 390}px,${y + Math.sin(ang) * ahead - 128}px) rotate(${(ang * 180) / Math.PI}deg) scale(${k})`;
+      }
+    }
+    last = { x, y, t: now };
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+// การ์ดพุ่งเข้าเกจแบบพริ้ว (ตี้ 2026-10-28: เดิมพุ่งตรงแข็ง ๆ): ง้างถอยนิดหนึ่ง → เร่งไปตามเส้นโค้ง เอนการ์ดตามทาง ส่ายเบา ๆ แล้วหดเข้าเกจ
+function vcFlyTo(d, s, [x1, y1], sc, rot1, ms) {
+  const [x0, y0] = VC_POP[s], cs = getComputedStyle(d), m = new DOMMatrixReadOnly(cs.transform === 'none' ? undefined : cs.transform);
+  const sx = x0 + m.e, sy = y0 + m.f, s0 = Math.hypot(m.a, m.b) || 1, r0 = (Math.atan2(m.b, m.a) * 180) / Math.PI;
+  const dx = x1 - sx, dy = y1 - sy, len = Math.hypot(dx, dy) || 1, ux = dx / len, uy = dy / len;
+  let nx = -uy, ny = ux;
+  if (ny > 0) { nx = -nx; ny = -ny; } // โค้งขึ้นด้านบน
+  const cx = sx + dx / 2 + nx * len * 0.2, cy = sy + dy / 2 + ny * len * 0.2;
+  const tf = (x, y, r, k) => `translate(${x - x0}px,${y - y0}px) rotate(${r}deg) scale(${k})`;
+  const kf = [{ offset: 0, transform: tf(sx, sy, r0, s0) }, { offset: 0.16, transform: tf(sx - ux * 24, sy - uy * 24, r0 - rot1 * 0.15, s0 * 1.05) }];
+  for (let i = 1, N = 16; i <= N; i++) {
+    const u = i / N, p = Math.pow(u, 1.7), q = 1 - p;
+    const x = q * q * sx + 2 * q * p * cx + p * p * x1, y = q * q * sy + 2 * q * p * cy + p * p * y1;
+    const r = r0 * (1 - p) + rot1 * p + Math.sin(u * Math.PI * 2) * 6 * (1 - u);
+    kf.push({ offset: 0.16 + 0.84 * u, transform: tf(x, y, r, s0 + (sc - s0) * Math.pow(u, 1.25)) });
+  }
+  d.style.transition = 'opacity .12s ease';
+  d.getAnimations().forEach(a => a.cancel());
+  d.style.transform = tf(x1, y1, rot1, sc);
+  d.animate(kf, { duration: ms, easing: 'linear' });
+}
+// โล่บนเกจ HP ฝั่ง s · sh = ชิลด์ตอนนี้ · show = อยู่ในเกม (ไม่ใช่ intro)
+const COAT_L = sh => 258 + (530 * sh) / SHIELD_MAX + (sh > 0 ? 6 : -40); // ปลายนอกเกจที่ x 1612 = ระยะ 258 จากขอบขวาผืน
+function coatShow(s, sh, show) {
+  if (!vfx.coat[s]) {
+    const lc = s.toLowerCase();
+    vfx.coat[s] = { still: vfxEl(`vfx-coat cut ${lc}`, 'bar_coat.webp'), form: vfxEl(`vfx-coat part off ${lc}`, 'bar_form.mp4'), brk: vfxEl(`vfx-coat loose tube off ${lc}`, 'bar_break.mp4'), sh: 0, tok: 0 };
+    vfx.coat[s].still.style.setProperty('--L', `${COAT_L(0)}px`);
+  }
+  const c = vfx.coat[s], prev = c.sh, setL = (el, v) => el.style.setProperty('--L', `${v}px`);
+  sh = show ? Math.min(sh, SHIELD_MAX) : 0;
+  c.sh = sh;
+  const cut = v => { c.still.classList.add('cut'); setL(c.still, v); void c.still.offsetWidth; };
+  if (prev === sh) return;
+  const tok = ++c.tok;
+  if (!show || ui.intro) { c.form.classList.add('off'); c.brk.classList.add('off'); cut(COAT_L(sh)); return; }
+  if (sh > prev) {
+    c.form.style.setProperty('--A', `${prev > 0 ? COAT_L(prev) : 0}px`);
+    setL(c.form, COAT_L(sh));
+    const v = vfxPlay(c.form);
+    const done = () => { if (tok !== c.tok) return; cut(COAT_L(c.sh)); c.form.classList.add('off'); };
+    v.onended = done; setTimeout(done, 2300);
+  } else if (sh === 0) {
+    c.form.classList.add('off');
+    setL(c.brk, COAT_L(prev));
+    cut(COAT_L(0));
+    c.brk.classList.add('tube');
+    const v = vfxPlay(c.brk);
+    setTimeout(() => c.brk.classList.remove('tube'), 150); // เศษเริ่มแตก ปล่อยออกนอกหลอด
+    const done = () => c.brk.classList.add('off');
+    v.onended = done; setTimeout(done, 1700);
+  } else {
+    c.form.classList.add('off');
+    c.still.classList.remove('cut', 'hit'); void c.still.offsetWidth;
+    c.still.classList.add('hit');
+    setL(c.still, COAT_L(sh));
+  }
+}
 // รูปคำแบบ B + แสงกวาด (ดู CSS .fxw) · h = ความสูงเป็นพิกเซลบนเวที · extra = ตัวแปร CSS เพิ่ม เช่น ';--g:80,220,140;--fd:.25s'
 const fxImg = (name, h, extra = '') => `<span class="fxw" style="--h:${h}px;--img:url(assets/fx/${name}.webp)${extra}"><img src="assets/fx/${name}.webp" alt="" draggable="false"><i class="fx-shine"></i></span>`;
 // ป้าย ACTION 1/2/3 กลางจอตอนเริ่มเปิดช่อง i
@@ -3143,16 +3328,8 @@ async function vcClash(r, stop) {
   const t0 = Date.now(), T = s => r[s].card.type, hitter = s => !!HIT_VDO[T(s)], ctr = counterSide(r);
   const fx = (cls, [x, y]) => vcAdd(`vc-fx ${cls}`, VC_FX_HTML, `left:${x}px;top:${y}px`);
   const fill = async () => { await sleep(Math.max(0, VC_CLASH - (Date.now() - t0))); };
-  if (has.length === 1) {
-    const s = has[0], t = T(s);
-    vcMove(s, [960, 850], { ms: 380, ease: 'cubic-bezier(.2,.8,.3,1)' });
-    sfx.play('flip');
-    await sleep(380);
-    if (stop()) return;
-    vcCall(t === 'DEF' ? 'ตั้งโล่!' : t === 'DODGE' ? 'ไม่มีให้หลบ' : 'โจมตีเต็มแรง!', `${FOE[s]} ช่องว่าง`, s.toLowerCase());
-    if (hitter(s)) { fx('hit', [960, 850]); quake(true); sfx.play(`ctr${t}`); } else sfx.play(t === 'DEF' ? 'ctrDEF' : 'dodge');
-    return fill();
-  }
+  // ตี้ 2026-10-28: อีกฝั่งว่างเปล่า = ไม่ต้องมากลางจอ การ์ดพุ่งจากมุมเข้าเกจเลย (vcFinale)
+  if (has.length === 1) return;
   const dodger = SIDES.find(s => T(s) === 'DODGE' && hitter(FOE[s])), defer = SIDES.find(s => T(s) === 'DEF' && hitter(FOE[s]));
   if (dodger) {
     const atk = FOE[dodger], [mx, my] = VC_MID[dodger], away = dodger === 'RED' ? -1 : 1;
@@ -3184,22 +3361,28 @@ async function vcClash(r, stop) {
     return fill();
   }
   if (defer) {
-    const atk = FOE[defer], o = vcHp(ui.g, r, defer), away = defer === 'RED' ? -1 : 1;
+    // ตี้ 2026-10-28: โล่จากคลิป AE — Attack ชนแล้วโล่กันได้ · Ultimate ชนแล้วโล่แตก ดันทะลุเข้าไป
+    // การ์ดตีพุ่งตามจังหวะคลิป: เริ่มพุ่ง ~1.06 วิ ชน 1.4 วิ · ตำแหน่งแปลงจากการ์ดในคลิป (จุดกลาง x ในคลิป → จอเกม)
+    const atk = FOE[defer], o = vcHp(ui.g, r, defer), away = defer === 'RED' ? -1 : 1, ult = T(atk) === 'ULT';
+    const at = px => [VC_MID[defer][0] - away * (864 - px) * (146 / 158), 850];
+    const v = vfxShield(defer, ult ? 'break' : 'block');
     vcMove(defer, VC_MID[defer], { ms: 300, ease: 'cubic-bezier(.2,.8,.3,1)' });
-    await sleep(240);
-    vcMove(atk, VC_HIT[atk], { ms: 300 });
-    sfx.play('flip');
-    await sleep(300);
+    await vidAt(v, ult ? 1.05 : 1.08, 700);
     if (stop()) return;
-    vcAdd('vc-barrier', '', `left:${VC_MID[defer][0] - away * 96}px`);
-    fx(o.hpLoss > 0 ? 'hit' : 'block', [960, 850]);
-    quake(o.hpLoss > 0);
+    vcMove(atk, at(ult ? 640 : 566), { rot: away * (ult ? 11 : 10), ms: ult ? 370 : 320, ease: 'cubic-bezier(.55,0,1,.45)' });
+    sfx.play('flip');
+    await vidAt(v, 1.4, 520);
+    if (stop()) return;
+    quake(ult || o.hpLoss > 0);
     const main = o.hpLoss > 0 ? (ctr === atk ? 'ทะลวงโล่!' : 'ลดดาเมจ!') : 'BLOCK!';
     vcCall(main, o.hpLoss > 0 ? `โล่รับ ${o.absorbed} · ทะลุ ${o.hpLoss}` : `โล่รับไว้หมด${o.absorbed ? ` ${o.absorbed}` : ''}`, o.hpLoss > 0 ? 'hit' : 'block', ctr);
-    sfx.play(o.hpLoss > 0 ? `ctr${T(atk)}` : 'defend');
-    vcMove(atk, [VC_MID[atk][0] - away * 40, 850], { rot: away * 10, ms: 260, ease: 'cubic-bezier(.2,.8,.3,1)' });
-    await sleep(380);
-    vcMove(atk, VC_MID[atk], { ms: 320, ease: 'cubic-bezier(.2,.8,.3,1.3)' });
+    sfx.play(ult || o.hpLoss > 0 ? `ctr${T(atk)}` : 'defend');
+    if (ult) vcMove(atk, at(750), { rot: away * 13.5, ms: 260, ease: 'cubic-bezier(.2,.8,.3,1)' });
+    else {
+      vcMove(atk, at(541), { rot: away * 7.5, ms: 300, ease: 'cubic-bezier(.2,.8,.3,1)' });
+      await sleep(420);
+      vcMove(atk, VC_MID[atk], { ms: 320, ease: 'cubic-bezier(.2,.8,.3,1.3)' });
+    }
     return fill();
   }
   if (SIDES.every(hitter)) {
@@ -3263,9 +3446,9 @@ async function vcFinale(g, r, acts, hit, stop) {
       await sleep(Math.max(0, rest));
       continue;
     }
-    d.style.transition = '';
+    if (a.fx === 'shield') vfxShieldOff(); // Defence ออกจากจุดปะทะ โล่รอบการ์ดจางไป
     d.classList.add('fly');
-    d.style.transform = `translate(${x1 - x0}px,${y1 - y0}px) scale(${a.fx === 'steal' ? .7 : .33}) rotate(${s === 'RED' ? 28 : -28}deg)`;
+    vcFlyTo(d, s, [x1, y1], a.fx === 'steal' ? .7 : .33, s === 'RED' ? 28 : -28, VC_FLY);
     sfx.play('flip');
     await sleep(VC_FLY);
     if (stop()) return;
@@ -4564,6 +4747,7 @@ function renderShield(s, sh, show) {
   num.innerHTML = `${icon('DEF')}${sh}`;
   if (prev != null && prev !== sh) { bar.classList.remove('flash'); void bar.offsetWidth; bar.classList.add('flash'); }
   ui.shShown[s] = show ? sh : null;
+  coatShow(s, sh, show);
 }
 // เกจใต้แถบ HP (ตี้ 2026-10-22): ลูกสีรุ้ง 3 ลูก + แต้มสะสม (ตั้งรับ x/4 · ดาเมจ x/50) · ของเราในเฟส Action = ปุ่มเปิดเมนูใช้เกจ
 const gaugeUsable = () => { const g = ui.g; return !!g && ui.screen === 'game' && (ui.mode === 'arcade' || ui.mode === 'pvp') && ui.phase === 'action' && !ui.busy && !g.p[ME].lanes && (g.p[ME].gauge > 0 || unlimitedNow(g, ME)) && !pvpWaiting(); };
@@ -6218,7 +6402,7 @@ setInterval(clockTick, 250);
 fitStage();
 // ลายนิ้วมือสถานะเกม (ทดสอบว่า PVP สองเครื่องตรงกัน) — ลำดับการ์ดในมือตามอาร์เรย์ (ส่วนที่กระทบผลสุ่ม)
 const stateHash = () => { const g = ui.g; return g ? JSON.stringify({ r: g.round, hp: SIDES.map(s => g.p[s].hp), sh: SIDES.map(s => g.p[s].shield), ga: SIDES.map(s => `${g.p[s].gauge}/${g.p[s].gStack}/${g.p[s].gDmg}`), h: SIDES.map(s => g.p[s].hand.map(c => `${c.id}${c.type[0]}${c.lv}`).join(',')), d: g.deck.length, m: g.market.map(c => c.type[0]).join('') }) : null; };
-window.__dreamfight = { bgm, vdo, vdoBg, vdoClips, vdoPlan, stateHash, ui: () => ui, simulate, stackLanes, pickOne, swapHand, botAction, newGame, doLock, clash, effText, gain, forceDiscard, judge, sfx, calcSideHTML, discardText, drawCount, fitStage };
+window.__dreamfight = { bgm, vdo, vdoBg, vdoClips, vdoPlan, stateHash, ui: () => ui, simulate, stackLanes, pickOne, swapHand, botAction, newGame, doLock, clash, effText, gain, forceDiscard, judge, sfx, calcSideHTML, discardText, drawCount, fitStage, fx: { vcClash, vcPop, vcReset, vcFlyTo, coatShow, vfxShield } };
 render();
 if (accessOk && QS.has('go') && !ON_CLAUDE) pvpOpen(); // ระบบห้อง: ลิงก์ห้อง/ออกจากห้อง เปิดหน้า PVP เลยไม่ต้องกด START
 })();
