@@ -712,9 +712,10 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 #world.lay-player .match-clock,#world.lay-spec .match-clock{left:14px;top:12px;bottom:auto;opacity:.8;transition:opacity .3s}
 #world.vdo-full .match-clock{opacity:0}
 #world.lay-spec .spec-hand .hand-cards{position:absolute;inset:0;display:block}
-#world.lay-spec .spec-hand .hc{position:absolute;bottom:-30px;width:99px;margin-left:-50px;transform-origin:50% 230%;rotate:calc((var(--i,0) - (var(--n,1) - 1) / 2) * 11deg)}
+/* ตี้ 2026-10-28: การ์ดบนมือฝั่งผู้ชมใหญ่ขึ้น 15% (99 → 114) · มุมพัด 11° → 10° ให้พัดกว้างเท่าเดิมโดยประมาณ */
+#world.lay-spec .spec-hand .hc{position:absolute;bottom:-30px;width:114px;margin-left:-57px;transform-origin:50% 230%;rotate:calc((var(--i,0) - (var(--n,1) - 1) / 2) * 10deg)}
 #world.lay-spec .spec-hand.side-red .hc{left:405px} #world.lay-spec .spec-hand.side-blue .hc{left:257px}
-#world.lay-spec .spec-hand .hc .card{--cw:99px} #world.lay-spec .spec-hand .hc .cap{display:none}
+#world.lay-spec .spec-hand .hc .card{--cw:114px} #world.lay-spec .spec-hand .hc .cap{display:none}
 .q-card{width:var(--cw,120px);aspect-ratio:820/1302;border-radius:12px;display:grid;place-items:center;background:#0f1729;box-shadow:inset 0 0 0 3px var(--k,var(--gold)),0 0 16px var(--k,var(--gold));color:var(--gold);font-family:var(--font-disp);font-weight:700;font-size:calc(var(--cw,120px) * .5);line-height:1;animation:qPulse 1.6s ease-in-out infinite}
 @keyframes qPulse{0%,100%{text-shadow:0 0 8px rgba(255,200,61,.5)}50%{text-shadow:0 0 22px rgba(255,200,61,1)}}
 
