@@ -691,7 +691,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 #world.lay-spec .spec-hands{position:relative;display:block;height:100%}
 #world.lay-spec .spec-hand{position:absolute;bottom:0;width:640px;height:380px;padding:0;background:none}
 #world.lay-spec .spec-hand.side-red{left:20px} #world.lay-spec .spec-hand.side-blue{right:20px}
-#world.lay-spec .spec-hand .hand-head{position:absolute;top:150px;z-index:3;height:auto;padding:2px 14px;border-radius:999px;background:rgba(5,7,11,.72)}
+#world.lay-spec .spec-hand .hand-head{position:absolute;top:70px;z-index:3;height:auto;padding:2px 14px;border-radius:999px;background:rgba(5,7,11,.72)}
 #world.lay-spec .spec-hand.side-red .hand-head{left:330px} #world.lay-spec .spec-hand.side-blue .hand-head{right:308px}
 #world.lay-spec .spec-hand .hand-head > b{font-size:17px;white-space:nowrap}
 #world.lay-spec .spec-hand .hand-head{white-space:nowrap}
@@ -712,10 +712,10 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 #world.lay-player .match-clock,#world.lay-spec .match-clock{left:14px;top:12px;bottom:auto;opacity:.8;transition:opacity .3s}
 #world.vdo-full .match-clock{opacity:0}
 #world.lay-spec .spec-hand .hand-cards{position:absolute;inset:0;display:block}
-/* ตี้ 2026-10-28: การ์ดบนมือฝั่งผู้ชมใหญ่ขึ้น 15% (99 → 114) · มุมพัด 11° → 10° ให้พัดกว้างเท่าเดิมโดยประมาณ */
-#world.lay-spec .spec-hand .hc{position:absolute;bottom:-30px;width:114px;margin-left:-57px;transform-origin:50% 230%;rotate:calc((var(--i,0) - (var(--n,1) - 1) / 2) * 10deg)}
-#world.lay-spec .spec-hand.side-red .hc{left:405px} #world.lay-spec .spec-hand.side-blue .hc{left:257px}
-#world.lay-spec .spec-hand .hc .card{--cw:114px} #world.lay-spec .spec-hand .hc .cap{display:none}
+/* ตี้ 2026-10-28: การ์ดบนมือฝั่งผู้ชมใหญ่ขึ้น 2 รอบ (99 → 114 → 131) · ยกขึ้นให้เห็นทั้งใบแม้มือเต็ม 6 ใบ (bottom −30 → 48) · มุมพัด 9° + ขยับจุดกลางเข้าหาขอบ ไม่ให้ล้นไปทับกองกลาง (x 640–1280) */
+#world.lay-spec .spec-hand .hc{position:absolute;bottom:48px;width:131px;margin-left:-66px;transform-origin:50% 230%;rotate:calc((var(--i,0) - (var(--n,1) - 1) / 2) * 9deg)}
+#world.lay-spec .spec-hand.side-red .hc{left:373px} #world.lay-spec .spec-hand.side-blue .hc{left:267px}
+#world.lay-spec .spec-hand .hc .card{--cw:131px} #world.lay-spec .spec-hand .hc .cap{display:none}
 .q-card{width:var(--cw,120px);aspect-ratio:820/1302;border-radius:12px;display:grid;place-items:center;background:#0f1729;box-shadow:inset 0 0 0 3px var(--k,var(--gold)),0 0 16px var(--k,var(--gold));color:var(--gold);font-family:var(--font-disp);font-weight:700;font-size:calc(var(--cw,120px) * .5);line-height:1;animation:qPulse 1.6s ease-in-out infinite}
 @keyframes qPulse{0%,100%{text-shadow:0 0 8px rgba(255,200,61,.5)}50%{text-shadow:0 0 22px rgba(255,200,61,1)}}
 
