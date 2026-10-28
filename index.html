@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793211599">
+<meta name="df-build" content="1793211726">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -131,6 +131,14 @@ body:not(.portrait) #rotateHint{display:none}
 .dot.g.on.k2{background:radial-gradient(circle at 35% 30%,#fff 0 14%,#7fc0ff 34%,#4d7dff 62%,#a35cff);box-shadow:0 0 9px #8a5cff}
 .dot.g.new{animation:dotIn .7s ease-out}
 .dot.g.on.full{animation:dotRb 2s linear infinite}
+/* ตี้ 2026-10-29: ลูกเกจที่เต็มแล้ว = สีรุ้งหมุนวนในลูก + แสงเรืองเปลี่ยนสีตาม · 3 ลูกเหลื่อมจังหวะกัน (จุดสะท้อนแสงขาวคงที่) */
+@property --dra{syntax:'<angle>';inherits:false;initial-value:0deg}
+.dot.g.on.k0,.dot.g.on.k1,.dot.g.on.k2{background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.95) 0 13%,rgba(255,255,255,0) 32%),conic-gradient(from var(--dra),#ff4d6d,#ffb340,#ffe14d,#4dff88,#4dc3ff,#8a5cff,#ff4d6d);animation:dotSpin 2.2s linear infinite,dotRb 2.2s linear infinite alternate}
+.dot.g.on.k1{animation-delay:-.73s,-.73s} .dot.g.on.k2{animation-delay:-1.46s,-1.46s}
+.dot.g.on.new{animation:dotIn .7s ease-out,dotSpin 2.2s linear infinite,dotRb 2.2s linear infinite alternate}
+.dot.g.on.full{animation-duration:1.2s,1.2s}
+@keyframes dotSpin{to{--dra:360deg}}
+@media (prefers-reduced-motion:reduce){.dot.g.on.k0,.dot.g.on.k1,.dot.g.on.k2{animation:none}}
 @keyframes dotIn{0%{transform:scale(2.2);filter:brightness(2.5)}100%{transform:none;filter:none}}
 @keyframes dotRb{0%{box-shadow:0 0 10px 2px #ff4d6d}20%{box-shadow:0 0 10px 2px #ffb340}40%{box-shadow:0 0 10px 2px #ffe14d}60%{box-shadow:0 0 10px 2px #4dff88}80%{box-shadow:0 0 10px 2px #4dc3ff}100%{box-shadow:0 0 10px 2px #a35cff}}
 /* เกจ (ตี้ 2026-10-22): ลูกกลมสีรุ้งใต้แถบ HP สูงสุด 3 · ของเราในเฟส Action แตะเพื่อใช้ */
