@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793210474">
+<meta name="df-build" content="1793210592">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -1008,6 +1008,12 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 .vfx-coat.hit img{animation:coatHit .5s ease}
 @keyframes coatHit{25%{filter:saturate(2.6) brightness(4) contrast(1.15)}}
 #world:not(.is-game) .vfx-coat,#world.vdo-full:not(.vdo-hp) .vfx-coat{--hy:-240px;opacity:0}
+/* ตี้ 2026-10-29: โล่บนเกจกระพริบเบา ๆ แบบหายใจ ไม่ถี่ (แถบฟ้า + ลายชั้น 2 สลับจังหวะกัน · รอบละ 2.6 วิ) */
+.vfx-coat.still::before{animation:coatBreath 2.6s ease-in-out infinite alternate}
+.vfx-coat.still::after{animation:coatBreath2 2.6s ease-in-out infinite alternate}
+@keyframes coatBreath{from{opacity:.45}to{opacity:1}}
+@keyframes coatBreath2{from{opacity:1}to{opacity:.4}}
+@media (prefers-reduced-motion:reduce){.vfx-coat.still::before,.vfx-coat.still::after{animation:none}}
 /* หลอดชิลด์ขาวเดิมเลิกใช้ — แทนด้วยโล่บนเกจ (ตัวเลขชิลด์ยังอยู่) */
 .shbar{visibility:hidden}
 /* ปะทะกลางจอ (ตี้ 2026-10-28): การ์ดชนกันกลางล่าง (y 850) · ข้อความผลปะทะเหนือการ์ด · โล่บาเรีย */
