@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793206739">
+<meta name="df-build" content="1793208145">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -985,6 +985,9 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 /* ไฟตอนการ์ดพุ่ง: อยู่ใต้การ์ด (การ์ด z 20) หัวไฟอยู่ที่ (390,128) ของคลิป */
 .vfx-fire{z-index:19;width:400px;height:256px;transform-origin:390px 128px;opacity:0;transition:opacity .12s ease}
 .vfx-fire.on{opacity:1}
+.vfx-fire video{filter:brightness(1.45) saturate(1.4)} /* ตี้ 2026-10-29: ไฟเห็นชัดขึ้น */
+/* เอฟเฟกต์ชน (ตี้ 2026-10-29 · แบบ A แฉกแสง จาก artifact EDbToKabfQnDyKFM1cEKMb): ชนการ์ด 640×640 · ชนเกจ 700×300 (จุดชน 350,130) · อยู่เหนือการ์ด */
+.vfx-hit{z-index:22}
 /* โล่บนเกจ HP: ผืน 1110×240 = จอ x 760–1870 y 14–254 (BLUE) · RED กลับด้าน · คลุมแค่หลอดเลือด เฟดขอบ · ยาวตามโล่/50 จากปลายด้านนอก
    ตามแถบ HP ขึ้นลงเหมือน #hud ทุกจังหวะ */
 .vfx-coat{z-index:4;top:14px;width:1110px;height:240px;--hy:0px;--mx:1;transform:translateY(var(--hy)) scaleX(var(--mx));
@@ -3160,7 +3163,7 @@ function vcReset() { vc.pops = {}; vc.at = {}; $('#vdoCards').innerHTML = ''; vf
    · ไฟ: ติดเองเมื่อการ์ดพุ่งเร็ว (พุ่งหากัน / พุ่งเข้าเกจ) สีตามการ์ด · อยู่ใต้การ์ด หัวไฟนำหน้าขอบการ์ดนิดเดียว
    · โล่บนเกจ HP: ยาวตามชิลด์/50 จากปลายด้านนอก · ได้เพิ่ม = ก่อตัวเฉพาะส่วนที่เพิ่ม · หมด = แตกกระจาย */
 const SHF = 'assets/shield/', FIRE_COL = { ATK: 'red', ULT: 'purple', DEF: 'blue', DODGE: 'green' };
-const vfx = { coat: {}, fire: {}, clip: {}, run: { RED: 0, BLUE: 0 }, shRun: 0 };
+const vfx = { coat: {}, fire: {}, clip: {}, hit: {}, run: { RED: 0, BLUE: 0 }, shRun: 0 };
 function vfxEl(cls, src, loop) {
   const d = document.createElement('div');
   d.className = `vfx ${cls}`;
@@ -3210,6 +3213,19 @@ function vfxShield(defer, kind) {
   if (kind === 'break') { const w = () => { if (v.currentTime >= 1.45 || v.ended) el.classList.remove('soft'); else if (!el.classList.contains('off')) requestAnimationFrame(w); }; w(); } // แตกแล้วปล่อยเศษกระเด็นเต็มที่
   return v;
 }
+// เอฟเฟกต์ชน (ตี้ 2026-10-29): kind 'clash' = การ์ดชนกัน · 'hp_red' / 'hp_purple' / 'hp_blue' = ชนเกจ HP · คลิปชนที่ 0.05 วิ เลยเริ่มที่ 0.04
+const IMPACT = { clash: [640, 640, 320, 320], hp: [700, 300, 350, 130] };
+function vfxImpact(kind, x, y, sc = 1) {
+  const pool = (vfx.hit[kind] = vfx.hit[kind] || []);
+  let el = pool.find(e => e.classList.contains('off'));
+  if (!el) { el = vfxEl('vfx-hit off', `../impact/${kind}.mp4`); pool.push(el); }
+  const [w, h, ox, oy] = IMPACT[kind === 'clash' ? 'clash' : 'hp'];
+  Object.assign(el.style, { width: `${w}px`, height: `${h}px`, left: `${x - ox}px`, top: `${y - oy}px`, transformOrigin: `${ox}px ${oy}px`, transform: `scale(${sc})` });
+  const v = vfxPlay(el, 0.04);
+  v.onended = () => el.classList.add('off');
+  setTimeout(() => el.classList.add('off'), 1200);
+}
+const HIT_COL = { ATK: 'hp_red', ULT: 'hp_purple', DEF: 'hp_blue', DODGE: 'hp_blue' };
 // การ์ด Defence ออกจากจุดปะทะ → โล่รอบการ์ดจางหาย
 function vfxShieldOff() {
   for (const el of Object.values(vfx.clip)) {
@@ -3244,7 +3260,7 @@ function vfxFire(s, c) {
       else if (on && sp < 280) set(false);
       if (on) {
         const ang = Math.atan2(vy, vx), ca = Math.abs(Math.cos(ang)), sa = Math.abs(Math.sin(ang));
-        const k = ((ca * 232 + sa * 146) * sc * 1.12) / 225, ahead = (ca * 73 + sa * 116) * sc + 24 * k; // การ์ด 146×232
+        const k = ((ca * 232 + sa * 146) * sc * 1.58) / 225, ahead = (ca * 73 + sa * 116) * sc + 34 * k; // การ์ด 146×232 · ตี้ 2026-10-29: ไฟใหญ่ขึ้น (เดิม ×1.12)
         el.style.transform = `translate(${x + Math.cos(ang) * ahead - 390}px,${y + Math.sin(ang) * ahead - 128}px) rotate(${(ang * 180) / Math.PI}deg) scale(${k})`;
       }
     }
@@ -3376,7 +3392,7 @@ async function vcClash(r, stop) {
     } else {
       await sleep(300);
       if (stop()) return;
-      fx('hit', [mx, my]); quake(true); flashStage(atk);
+      vfxImpact('clash', mx, my); quake(true); flashStage(atk);
       vcCall('หลบไม่พ้น!', `${atk} โจมตีเข้า`, 'hit', ctr);
       sfx.play(`ctr${T(atk)}`);
       vcMove(dodger, [mx + away * 60, my + 20], { rot: away * 14, ms: 260, ease: 'cubic-bezier(.2,.8,.3,1)' });
@@ -3401,6 +3417,7 @@ async function vcClash(r, stop) {
     sfx.play('flip');
     await vidAt(v, 1.4, 650);
     if (stop()) return;
+    vfxImpact('clash', (at(ult ? 640 : 566)[0] + VC_MID[defer][0]) / 2, 850, 0.8); // จุดที่การ์ดตีปะทะโล่
     quake(ult || o.hpLoss > 0);
     const main = o.hpLoss > 0 ? (ctr === atk ? 'ทะลวงโล่!' : 'ลดดาเมจ!') : 'BLOCK!';
     vcCall(main, o.hpLoss > 0 ? `โล่รับ ${o.absorbed} · ทะลุ ${o.hpLoss}` : `โล่รับไว้หมด${o.absorbed ? ` ${o.absorbed}` : ''}`, o.hpLoss > 0 ? 'hit' : 'block', ctr);
@@ -3418,7 +3435,7 @@ async function vcClash(r, stop) {
     sfx.play('flip');
     await sleep(340);
     if (stop()) return;
-    fx('hit', [960, 850]); quake(true); flashStage(ctr || 'RED');
+    vfxImpact('clash', 960, 850); quake(true); flashStage(ctr || 'RED');
     vcCall('CLASH!', ctr ? '' : 'ปะทะกันเต็มแรง', 'clash', ctr);
     sfx.play(T('RED') === 'ULT' || T('BLUE') === 'ULT' ? 'ctrULT' : 'ctrATK');
     for (const s of SIDES) vcMove(s, [VC_MID[s][0] + (s === 'RED' ? -36 : 36), 850], { rot: s === 'RED' ? -9 : 9, ms: 260, ease: 'cubic-bezier(.2,.8,.3,1)' });
@@ -3484,7 +3501,9 @@ async function vcFinale(g, r, acts, hit, stop) {
     hit(a);
     let fx = a.fx;
     if (fx === 'hit') { const o = r[to]; fx = o.evaded ? 'miss' : o.hpLoss > 0 ? 'hit' : o.absorbed > 0 ? 'block' : 'miss'; }
-    vcAdd(`vc-fx ${fx} on-${to.toLowerCase()}`, VC_FX_HTML, `left:${x1}px;top:${y1}px`);
+    // ชนเกจ (ตี้ 2026-10-29): ชนเลือด/โล่/Defence เติมโล่ = คลิป AE สีตามการ์ด · หลบพ้น/ขโมย = เอฟเฟกต์เดิม
+    if (fx === 'hit' || fx === 'block' || fx === 'shield') vfxImpact(fx === 'hit' ? HIT_COL[a.card.type] : 'hp_blue', x1, y1, fx === 'hit' ? 1 : 0.8);
+    else vcAdd(`vc-fx ${fx} on-${to.toLowerCase()}`, VC_FX_HTML, `left:${x1}px;top:${y1}px`);
     if (fx === 'hit' || fx === 'steal') { quake(true); flashStage(s); }
     sfx.play(fx === 'hit' ? `ctr${a.card.type}` : fx === 'block' ? 'defend' : fx === 'shield' ? 'ctrDEF' : fx === 'steal' ? 'ctrDODGE' : 'miss');
     let rest = vcMs(a) - VC_FLY;
@@ -6430,7 +6449,7 @@ setInterval(clockTick, 250);
 fitStage();
 // ลายนิ้วมือสถานะเกม (ทดสอบว่า PVP สองเครื่องตรงกัน) — ลำดับการ์ดในมือตามอาร์เรย์ (ส่วนที่กระทบผลสุ่ม)
 const stateHash = () => { const g = ui.g; return g ? JSON.stringify({ r: g.round, hp: SIDES.map(s => g.p[s].hp), sh: SIDES.map(s => g.p[s].shield), ga: SIDES.map(s => `${g.p[s].gauge}/${g.p[s].gStack}/${g.p[s].gDmg}`), h: SIDES.map(s => g.p[s].hand.map(c => `${c.id}${c.type[0]}${c.lv}`).join(',')), d: g.deck.length, m: g.market.map(c => c.type[0]).join('') }) : null; };
-window.__dreamfight = { bgm, vdo, vdoBg, vdoClips, vdoPlan, stateHash, ui: () => ui, simulate, stackLanes, pickOne, swapHand, botAction, newGame, doLock, clash, effText, gain, forceDiscard, judge, sfx, calcSideHTML, discardText, drawCount, fitStage, fx: { vcClash, vcPop, vcReset, vcFlyTo, coatShow, vfxShield } };
+window.__dreamfight = { bgm, vdo, vdoBg, vdoClips, vdoPlan, stateHash, ui: () => ui, simulate, stackLanes, pickOne, swapHand, botAction, newGame, doLock, clash, effText, gain, forceDiscard, judge, sfx, calcSideHTML, discardText, drawCount, fitStage, fx: { vcClash, vcPop, vcReset, vcFlyTo, coatShow, vfxShield, vfxImpact } };
 render();
 if (accessOk && QS.has('go') && !ON_CLAUDE) pvpOpen(); // ระบบห้อง: ลิงก์ห้อง/ออกจากห้อง เปิดหน้า PVP เลยไม่ต้องกด START
 })();
