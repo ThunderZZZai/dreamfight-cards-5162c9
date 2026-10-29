@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793276880">
+<meta name="df-build" content="1793288924">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -934,6 +934,20 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 #world.lay-spec .gauge.red{left:35px;right:auto;top:811px} #world.lay-spec .gauge.blue{left:auto;right:35px;top:811px}
 #world.vdo-fight .gauge{opacity:0}
 .gfr{position:relative;flex:none;width:35px;height:250px}
+/* ปุ่มใช้เกจตามขั้น (ตี้ 2026-10-29) ข้างบาร์ตรงกลางแต่ละช่อง · RED ปุ่มอยู่ขวาบาร์ · BLUE อยู่ซ้าย */
+.gstepwrap{position:relative;flex:none;display:flex} /* .gfr เป็น span ต้องอยู่ใน flex ถึงจะมีความกว้าง */
+.gsteps{position:absolute;inset:0;pointer-events:none}
+.gstep{position:absolute;left:calc(100% + 8px);width:38px;height:38px;margin-top:-19px;padding:0;border:0;cursor:pointer;pointer-events:auto;font-family:var(--font-disp);font-weight:700;font-size:20px;color:#fff;background:none;isolation:isolate}
+.gauge.blue .gstep{left:auto;right:calc(100% + 8px)}
+.gauge.red .gstepwrap{margin-right:48px} .gauge.blue .gstepwrap{margin-left:48px} /* เว้นที่ให้ปุ่ม ไม่ทับข้อความเกจ */
+.gstep::before,.gstep::after{content:"";position:absolute;z-index:-1;--c:9px;clip-path:polygon(var(--c) 0,calc(100% - var(--c)) 0,100% var(--c),100% calc(100% - var(--c)),calc(100% - var(--c)) 100%,var(--c) 100%,0 calc(100% - var(--c)),0 var(--c))}
+.gstep::before{inset:0;background:linear-gradient(135deg,#ff4d6d,#ffe14d,#4dff88,#4dc3ff,#8a5cff)}
+.gstep::after{inset:2px;--c:8px;background:#16171b}
+.gstep.k0{top:198.5px} .gstep.k1{top:124.5px} .gstep.k2{top:50.6px}
+.gstep:hover:not(:disabled)::after{background:#2a2c34}
+.gstep:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.gstep:disabled{cursor:default;color:#555b66}
+.gstep:disabled::before{background:#3a3e47}
 .gfr > img{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 /* ตี้ 2026-10-28: ช่องเกจเต็มหน้าต่างของกรอบจริง ปลายบน/ล่างแหลมตามกรอบ — กรอบใหม่ (ตี้ส่งรูปใหม่ แทนอันเก่าที่ปลายดูขาด) 140×1001 → 35×250:
    หน้าต่าง x 34–105 · y 60–344 / 352–643 / 649–938 · ขอบเฉียง 14.5% ของความสูงช่อง (BLUE ปลายแหลมขวาบน/ซ้ายล่าง · RED กลับด้าน) */
@@ -3172,7 +3186,8 @@ function vcActs(g, r) {
     if (c.type === 'DEF') Object.assign(a, { fx: 'shield', to: s, rank: 0 });
     else if (c.type === 'DODGE') Object.assign(a, st.steal ? { fx: 'steal', to: f, n: st.steal, rank: 2 } : { fx: 'draw', to: s, rank: 2 });
     else {
-      Object.assign(a, { fx: 'hit', to: f, rank: 1, noHp: vcHp(g, r, f).hpLoss <= 0 });
+      // ตี้ 2026-10-29: การ์ดตีพุ่งชนหลอดเลือดทุกใบ (โล่กันหมด/HP หมดก่อนก็พุ่ง) — มีแค่ Dodge ที่ไม่พุ่งเข้าเลือด
+      Object.assign(a, { fx: 'hit', to: f, rank: 1, noHp: false });
       const brk = (st.brk || 0) + (isCounter(c, r[f].card) ? st.brkVs || 0 : 0) + (r[s].atkBrk ? r[s].atkBrk.hit : 0);
       if (brk) a.brk = Math.min(brk, g.p[f].hand.length); else if (r[s].atkBrk) a.brkMiss = true;
       const cost = costOf(c, r[f].card);
@@ -3561,7 +3576,7 @@ async function vcFinale(g, r, acts, hit, stop) {
         await sleep(420);
         if (stop()) return;
         if (a.brk) vcLose(to, a.brk, `-${a.brk} CARD`);
-        else vcAdd('vc-tag miss', 'MISS', `left:${to === 'RED' ? 310 : 1610}px;top:660px`);
+        else vcAdd('vc-tag miss', 'ทำลายการ์ดไม่สำเร็จ', `left:${s === 'RED' ? 310 : 1610}px;top:660px`); // ตี้ 2026-10-29: ขึ้นฝั่งที่ใช้ Attack
         rest += VC_LOSE - 420;
       }
       if (a.cost) {
@@ -3601,7 +3616,7 @@ async function vcFinale(g, r, acts, hit, stop) {
       await sleep(420);
       if (stop()) return;
       if (a.brk) vcLose(to, a.brk, `-${a.brk} CARD`);
-      else vcAdd('vc-tag miss', 'MISS', `left:${to === 'RED' ? 310 : 1610}px;top:660px`);
+      else vcAdd('vc-tag miss', 'ทำลายการ์ดไม่สำเร็จ', `left:${s === 'RED' ? 310 : 1610}px;top:660px`); // ตี้ 2026-10-29: ขึ้นฝั่งที่ใช้ Attack
       rest -= 420;
     }
     if (a.cost) {
@@ -3936,6 +3951,8 @@ async function beginRound(gid) {
   clock.rounds.push(Date.now());
   // ตี้ 2026-10-29: ป้าย ROUND n (คลิป AE) ทุกต้นรอบ · เกิน 10 รอบไม่มีคลิป ข้ามไป
   const rn = g.round + 1; // doDraw ค่อยเพิ่ม g.round
+  // ตี้ 2026-10-29 (จั่วเบิ้ล 4 ใบ): ระหว่างรอป้าย ROUND ต้องตั้ง busy/phase ก่อน ไม่งั้น nextRound ถูกเรียกซ้ำ (ผู้ชม/PVP วนเช็กทุกจังหวะ) แล้วจั่วสองรอบ
+  Object.assign(ui, { phase: 'draw', busy: true });
   if (rn <= 10) { await titleFx(`round${rn}`); if (gid !== ui.gid) return; }
   Object.assign(ui, { phase: 'draw', busy: true, picks: [], undo: [], pickShown: false, place: [], shown: -1, results: [], detail: null, pending: null, ko: null });
   const res = doDraw(g);
@@ -4907,6 +4924,14 @@ function renderGauge(s) {
   const orbs = `<span class="gfr" role="img" aria-label="เกจ ${s} ${n}/${GAUGE_MAX}"><span class="gglow">${[0, 1, 2].filter(k => k < n).map(k => `<i class="gg k${k}"></i>`).join('')}</span><img src="assets/gauge-frame${s === 'RED' ? '-l' : ''}.webp?v=2" alt="" draggable="false">${[0, 1, 2].map(k => `<i class="gcell k${k}${k < n ? ' on' : ''}${k < n && k >= prev ? ' new' : ''}${k >= n && k < prev ? ' spent' : ''}"></i>`).join('')}</span>`;
   const label = `<span class="glabel">เกจ ${n}/${GAUGE_MAX}</span>`;
   const meta = `<span class="gmeta"><span title="การ์ดตั้งรับที่วาง รวมเลเวลครบ ${GAUGE_STACK} = 1 เกจ">${icon('DEF')}${P.gStack}/${GAUGE_STACK}</span><span title="ดาเมจจากการ์ดจู่โจม ครบ ${GAUGE_DMG} = 1 เกจ">${icon('ATK')}${P.gDmg}/${GAUGE_DMG}</span></span>`;
+  // ตี้ 2026-10-29: กดใช้ตามขั้นได้เลย ปุ่ม 1 · 2 · 3 ข้างบาร์ตรงแต่ละช่อง (1 = จั่ว 1 ใบ · 2 = เปลี่ยนการ์ด · 3 = พลังเต็ม) ไม่ต้องเปิดเมนู
+  const STEP = [['draw', 'จั่ว 1 ใบ'], ['tr', 'เปลี่ยนการ์ด'], ['max', 'พลังเต็ม']];
+  const steps = `<span class="gsteps">${STEP.map(([k, t], i) => `<button type="button" class="gstep k${i}" data-act="gaugeUse" data-k="${k}"${n < GAUGE_COST[k] ? ' disabled' : ''} title="${t} · ${GAUGE_COST[k]} เกจ" aria-label="ใช้ ${GAUGE_COST[k]} เกจ: ${t}">${i + 1}</button>`).join('')}</span>`;
+  if (usable && !unl) {
+    el.firstElementChild.innerHTML = `<span class="gstepwrap">${orbs}${steps}</span><span class="ginfo">${label}${ui.gmenu ? '<span class="guse">กำลังเลือกการ์ดที่จะเปลี่ยน</span>' : meta}</span>`;
+    ui.gShown[s] = n;
+    return;
+  }
   el.firstElementChild.innerHTML = usable
     ? `<button type="button" class="gbtn" data-act="gauge" aria-label="ใช้เกจ (มี ${n})">${orbs}<span class="ginfo">${label}<span class="guse">${ui.gmenu ? 'ปิดเมนูเกจ' : unl ? `พลังเต็ม · แตะ: เปลี่ยนฟรี ${P.freeTr || 0}` : 'แตะเพื่อใช้เกจ'}</span></span></button>`
     : `${orbs}<span class="ginfo">${label}${unl ? '<span class="gunl">วางกี่ใบก็ได้</span>' : nogain ? '<span class="gunl">รอบนี้สะสมเกจไม่ได้</span>' : meta}</span>`;
