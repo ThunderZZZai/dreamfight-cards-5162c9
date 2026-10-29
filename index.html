@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793254414">
+<meta name="df-build" content="1793265513">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -910,6 +910,11 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 @keyframes qPulse{0%,100%{text-shadow:0 0 8px rgba(255,200,61,.5)}50%{text-shadow:0 0 22px rgba(255,200,61,1)}}
 
 /* ป้าย ACTION 1/2/3 กลางจอตอนเริ่มเปิดแต่ละช่อง (ตี้ 2026-10-27) — ขึ้นแป๊บเดียวแล้วหาย */
+/* ป้ายข้อความขยับจาก AE (ตี้ 2026-10-29 · artifact KJuBt694WRt7iVaExgj2Ay · จังหวะแบบ Tekken 8): ROUND n · FIGHT · ACTION n · K.O.
+   คลิปพื้นดำ 1280×720 ขยายเต็มจอ ซ้อน screen · #titleFx ห้ามมี opacity/transform ไม่งั้นขึ้นกล่องดำ */
+#titleFx{position:absolute;inset:0;pointer-events:none} /* ห้ามใส่ z-index ที่กล่องนี้ = กลายเป็นกลุ่มแยก วิดีโอผสมกับพื้นใสแล้วเห็นพื้นดำ */
+#titleFx video{position:absolute;inset:0;z-index:26;width:100%;height:100%;mix-blend-mode:screen;visibility:hidden}
+#titleFx video.on{visibility:visible}
 #laneCall{position:absolute;left:0;right:0;top:400px;z-index:25;text-align:center;pointer-events:none;opacity:0;line-height:0}
 #laneCall.on{animation:laneCall calc(2.2s*var(--spd)) cubic-bezier(.2,.9,.3,1) forwards} /* ตี้ 2026-10-28: ค้างนานขึ้น (เดิม 1.4 วิ) */
 @keyframes laneCall{0%{opacity:0;transform:scale(1.05)}10%{opacity:1;transform:none}86%{opacity:1;transform:none}100%{opacity:0;transform:scale(1.02)}}
@@ -1263,6 +1268,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
       <div id="winner" class="win-layer" hidden></div>
       <div class="match-clock" id="matchClock" role="timer" aria-label="เวลาที่ใช้ในแมตช์นี้" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="9.2" r="5.6"/><path d="M6.2 1.6h3.6M8 1.6v2M8 9.2V6.4M12.4 4.2l1.1-1.1"/></svg><b>00:00</b></div>
       <div id="vcFx" aria-hidden="true"></div>
+      <div id="titleFx" aria-hidden="true"></div>
       <div id="vdoCards" aria-hidden="true"></div>
       <div class="vdo-bar" id="vdoBar" hidden><span class="vdo-lane" id="vdoLane"></span><button type="button" class="vdo-skip" data-act="vdoSkip">SKIP <i>▶▶</i></button></div>
     </div>
@@ -3363,15 +3369,45 @@ function coatShow(s, sh, show) {
 }
 // รูปคำแบบ B + แสงกวาด (ดู CSS .fxw) · h = ความสูงเป็นพิกเซลบนเวที · extra = ตัวแปร CSS เพิ่ม เช่น ';--g:80,220,140;--fd:.25s'
 const fxImg = (name, h, extra = '') => `<span class="fxw" style="--h:${h}px;--img:url(assets/fx/${name}.webp)${extra}"><img src="assets/fx/${name}.webp" alt="" draggable="false"><i class="fx-shine"></i></span>`;
+// ป้ายข้อความขยับ (ตี้ 2026-10-29): round1–10 · fight · action1–3 · ko · dko → assets/title/*.mp4 · คืนเมื่อคลิปจบ (ROUND/FIGHT/ACTION ~0.9 วิ · K.O. ~1.5 วิ)
+// เล่นไม่ได้ (โหลดไม่ทัน/ปิดเสียงอัตโนมัติไม่ผ่าน) = คืนทันที แล้วใช้รูปคำแบบเดิมแทน
+const TITLE_MS = { ko: 1520, dko: 1520 };
+function titleFx(name) {
+  const box = $('#titleFx');
+  let v = box.querySelector(`video[data-t="${name}"]`);
+  if (!v) {
+    v = document.createElement('video');
+    Object.assign(v, { muted: true, playsInline: true, preload: 'auto' });
+    v.dataset.t = name; v.src = `assets/title/${name}.mp4`;
+    box.appendChild(v);
+  }
+  return new Promise(res => {
+    let done = false;
+    const end = ok => { if (done) return; done = true; v.classList.remove('on'); v.onended = null; res(ok); };
+    v.pause();
+    try { v.currentTime = 0; } catch (e) {}
+    const rate = ui.fast ? 1.5 : 1; // โหมดเร่งความเร็ว
+    v.playbackRate = rate;
+    v.onended = () => end(true);
+    v.play().then(() => v.classList.add('on'), () => end(false));
+    setTimeout(() => end(true), (TITLE_MS[name] || 920) / rate + 400);
+  });
+}
+// โหลดคลิปป้ายรอไว้ตอนเริ่มเกม (เล็ก ~1.8 MB รวม) จะได้ไม่กระตุกตอนขึ้นครั้งแรก
+function titlePreload(round) { for (const n of [`round${Math.min(10, round)}`, 'fight', 'action1', 'action2', 'action3', 'ko']) { const b = $('#titleFx'); if (!b.querySelector(`video[data-t="${n}"]`)) { const v = document.createElement('video'); Object.assign(v, { muted: true, playsInline: true, preload: 'auto' }); v.dataset.t = n; v.src = `assets/title/${n}.mp4`; b.appendChild(v); } } }
 // ป้าย ACTION 1/2/3 กลางจอตอนเริ่มเปิดช่อง i
 function laneCall(i) {
+  // ตี้ 2026-10-29: ใช้คลิป ACTION n (ผิวโลหะยับ) · เล่นไม่ได้ค่อยใช้รูปคำเดิม
+  sfx.play('tickHi');
+  return titleFx(`action${i + 1}`).then(ok => { if (!ok) laneCallImg(i); });
+}
+function laneCallImg(i) {
   const el = $('#laneCall');
   // ตี้ 2026-10-29: คำ ACTION + เลข ใหญ่ขึ้น 20% (124/128 → 149/154)
   el.innerHTML = `<span class="fxrow" aria-label="ACTION ${i + 1}">${fxImg('action', 149)}${fxImg(`d${i + 1}`, 154, ';--fd:.08s;margin-left:-19px')}</span>`;
   el.classList.remove('on');
   void el.offsetWidth;
   el.classList.add('on');
-  sfx.play('tickHi');
 }
 // การ์ดแตกที่มุมของฝั่ง victim n ใบ
 function vcLose(victim, n, text) {
@@ -3877,6 +3913,7 @@ async function startGame(opt = { mode: 'arcade' }) {
   $('#world').classList.add('intro');
   render();
   sfx.play('intro');
+  titlePreload((ui.g.round || 0) + 1);
   await wait(1400);
   if (gid !== ui.gid) return;
   $('#world').classList.remove('intro');
@@ -3886,6 +3923,9 @@ async function startGame(opt = { mode: 'arcade' }) {
 async function beginRound(gid) {
   const g = ui.g;
   clock.rounds.push(Date.now());
+  // ตี้ 2026-10-29: ป้าย ROUND n (คลิป AE) ทุกต้นรอบ · เกิน 10 รอบไม่มีคลิป ข้ามไป
+  const rn = g.round + 1; // doDraw ค่อยเพิ่ม g.round
+  if (rn <= 10) { await titleFx(`round${rn}`); if (gid !== ui.gid) return; }
   Object.assign(ui, { phase: 'draw', busy: true, picks: [], undo: [], pickShown: false, place: [], shown: -1, results: [], detail: null, pending: null, ko: null });
   const res = doDraw(g);
   if (ui.mode === 'arcade') botMood(g, OPP); // นิสัยประจำตัว + เปลี่ยนแผนตามสถานการณ์ (ไม่บอกผู้เล่นจนจบเกม)
@@ -4420,8 +4460,13 @@ async function runFight() {
   addLog('Fight Phase · เปิดทีละช่อง 1 → 2 → 3 · HP หมดเมื่อไหร่จบทันที');
   render();
   let last = SLOT_N - 1;
+  // ตี้ 2026-10-29: เริ่มเปิดปะทะ = FIGHT ก่อน แล้วค่อย ACTION 1 · 2 · 3 (ลำดับ ROUND n → … → FIGHT → ACTION 1–3)
+  await wait(350);
+  if (gid !== ui.gid) return;
+  sfx.play('tickHi');
+  await titleFx('fight');
   for (let i = 0; i < SLOT_N; i++) {
-    await wait(i ? 300 : 500);
+    await wait(i ? 300 : 150);
     if (gid !== ui.gid) return;
     laneCall(i);
     // 1) เปิดการ์ด + ท่าทาง
@@ -4526,7 +4571,10 @@ async function koFx(v) {
   const el = $('#ko'), dbl = v.ko.length > 1, side = v.winner === 'DRAW' ? 'draw' : v.winner.toLowerCase();
   const who = dbl ? 'HP หมดทั้งคู่' : `HP ของ ${v.ko[0]} หมด`;
   el.className = `${side}${dbl ? ' dbl' : ''}`;
-  el.innerHTML = `<b class="fxb" aria-label="${dbl ? 'DOUBLE K.O.' : 'K.O.!'}">${fxImg(dbl ? 'double-ko' : 'ko', dbl ? 250 : 230)}</b><small>${who}ที่ช่อง ${v.lane + 1}${v.lane < SLOT_N - 1 ? ' · จบเกมทันที' : ''}</small>`;
+  // ตี้ 2026-10-29: คำ K.O. เป็นคลิป AE (ค้าง ~1.1 วิ แล้วพุ่งเข้าหากล้อง) · ช่องคำเว้นว่างไว้ให้ข้อความ HP หมดอยู่ตำแหน่งเดิม
+  const koClip = titleFx(dbl ? 'dko' : 'ko');
+  el.innerHTML = `<b class="fxb ko-gap" aria-label="${dbl ? 'DOUBLE K.O.' : 'K.O.!'}" style="height:${dbl ? 250 : 230}px"></b><small>${who}ที่ช่อง ${v.lane + 1}${v.lane < SLOT_N - 1 ? ' · จบเกมทันที' : ''}</small>`;
+  koClip.then(ok => { const b = el.querySelector('.ko-gap'); if (!ok && b) { b.innerHTML = fxImg(dbl ? 'double-ko' : 'ko', dbl ? 250 : 230); b.style.height = ''; } }); // เล่นคลิปไม่ได้ = รูปคำเดิม
   el.hidden = false;
   sfx.play('ko');
   flashStage(side);
@@ -5184,7 +5232,7 @@ function render() {
   renderGate();
   renderVdoLoad();
   renderStartScreen();
-  $('#splash').hidden = !(inGame && ui.intro);
+  $('#splash').hidden = true; // ตี้ 2026-10-29: แทนด้วยคลิป ROUND n ตอนต้นรอบ (titleFx)
   for (const id of ['#strip', '#main', '#controls', '#hand']) $(id).hidden = !inGame || !!ui.intro;
   $('#quit').hidden = !inGame;
   $('#hexLabel').textContent = inGame ? 'ROUND' : '';
@@ -6484,7 +6532,7 @@ setInterval(clockTick, 250);
 fitStage();
 // ลายนิ้วมือสถานะเกม (ทดสอบว่า PVP สองเครื่องตรงกัน) — ลำดับการ์ดในมือตามอาร์เรย์ (ส่วนที่กระทบผลสุ่ม)
 const stateHash = () => { const g = ui.g; return g ? JSON.stringify({ r: g.round, hp: SIDES.map(s => g.p[s].hp), sh: SIDES.map(s => g.p[s].shield), ga: SIDES.map(s => `${g.p[s].gauge}/${g.p[s].gStack}/${g.p[s].gDmg}`), h: SIDES.map(s => g.p[s].hand.map(c => `${c.id}${c.type[0]}${c.lv}`).join(',')), d: g.deck.length, m: g.market.map(c => c.type[0]).join('') }) : null; };
-window.__dreamfight = { bgm, vdo, vdoBg, vdoClips, vdoPlan, stateHash, ui: () => ui, simulate, stackLanes, pickOne, swapHand, botAction, newGame, doLock, clash, effText, gain, forceDiscard, judge, sfx, calcSideHTML, discardText, drawCount, fitStage, fx: { vcClash, vcPop, vcReset, vcFlyTo, coatShow, vfxShield, vfxImpact } };
+window.__dreamfight = { bgm, vdo, vdoBg, vdoClips, vdoPlan, stateHash, ui: () => ui, simulate, stackLanes, pickOne, swapHand, botAction, newGame, doLock, clash, effText, gain, forceDiscard, judge, sfx, calcSideHTML, discardText, drawCount, fitStage, fx: { vcClash, vcPop, vcReset, vcFlyTo, coatShow, vfxShield, vfxImpact, titleFx } };
 render();
 if (accessOk && QS.has('go') && !ON_CLAUDE) pvpOpen(); // ระบบห้อง: ลิงก์ห้อง/ออกจากห้อง เปิดหน้า PVP เลยไม่ต้องกด START
 })();
