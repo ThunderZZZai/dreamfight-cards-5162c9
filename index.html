@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793253886">
+<meta name="df-build" content="1793253995">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -424,7 +424,7 @@ body:not(.portrait) #rotateHint{display:none}
 /* หน้าเข้าเกมแบบ B (ตี้ 2026-10-28 · artifact X2iF5zKGwXLoa9nTpTDXUd บอร์ด StartB/StartBSettings ขยาย ×1.5) — VDO วนเป็นพื้นหลัง · โลโก้มุมซ้ายบน · PLAY มุมซ้ายล่าง · ⚙ ตั้งค่า · การ์ด 4 ชนิดมุมขวาล่าง */
 #start{left:0;top:0;width:1920px;height:1080px;display:block;text-align:left;text-transform:none;background:#05070b url(assets/start-bg.webp) center/cover no-repeat}
 .st-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.st-shade{position:absolute;inset:0;background:radial-gradient(ellipse 980px 380px at 0% 100%,rgba(5,7,11,.6),rgba(5,7,11,0) 72%),linear-gradient(0deg,rgba(5,7,11,.55) 0%,rgba(5,7,11,0) 26%)} /* ตี้ 2026-10-29: เอาเงาไล่จากซ้ายออก (ซ้ายมืดกว่าขวา) · เหลือเงาจางมุมซ้ายล่างหลังปุ่ม */
+.st-shade{position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.9) 0%,rgba(0,0,0,.6) 13%,rgba(0,0,0,.2) 27%,rgba(0,0,0,0) 38%)} /* ตี้ 2026-10-29: ไม่มีเงาไล่จากซ้ายแล้ว · เฟดดำเต็มความกว้างด้านล่างหลังปุ่ม */
 .st-logo{position:absolute;left:750px;top:26px;width:420px;filter:drop-shadow(0 8px 22px rgba(0,0,0,.45))} /* ตี้ 2026-10-29: โลโก้กลางช่องขาวด้านบนของภาพพื้นหลัง */
 .st-dock{position:absolute;left:84px;bottom:81px;display:flex;flex-direction:column;align-items:flex-start;gap:21px}
 #start .st-lead{margin:0;max-width:705px;font-size:22px;line-height:1.5;color:#dfe5ee}
