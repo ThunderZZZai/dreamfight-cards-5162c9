@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793292265">
+<meta name="df-build" content="1793295120">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -1046,23 +1046,24 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
   --amt:linear-gradient(to left,#000 0,#000 var(--L),transparent calc(var(--L) + 30px));
   -webkit-mask-image:var(--amt),var(--tube);mask-image:var(--amt),var(--tube);-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-composite:source-in;mask-composite:intersect}
 .vfx-coat.blue{left:760px} .vfx-coat.red{left:53px;--mx:-1}
-.vfx-coat video,.vfx-coat img{filter:saturate(2.6) brightness(2.3) contrast(1.15)} /* ตี้ 2026-10-29: โล่บนเกจเห็นชัดขึ้น (เดิม saturate 3 · brightness 1.5) */
+.vfx-coat video{filter:saturate(2.6) brightness(2.3) contrast(1.15)} .vfx-coat img{filter:brightness(1.15)} /* ตี้ 2026-10-29: โล่บนเกจเห็นชัดขึ้น (เดิม saturate 3 · brightness 1.5) */
 /* แถบสีฟ้าอ่อนรองใต้ลายหกเหลี่ยม = บอกความยาวโล่ให้เห็นชัด (ตัดด้วยมาสก์เดียวกับลาย) */
 .vfx-coat.still::before{content:"";position:absolute;left:296px;top:72px;width:580px;height:38px;z-index:1;mix-blend-mode:screen;background:linear-gradient(180deg,rgba(170,225,255,.25),rgba(120,200,255,.62) 45%,rgba(200,240,255,.7) 55%,rgba(170,225,255,.25));filter:blur(1.5px)}
 /* ลายหกเหลี่ยมชั้นที่ 2 เลื่อนครึ่งช่อง ให้ลายในหลอดแน่นขึ้น */
-.vfx-coat.still::after{content:"";position:absolute;inset:0;z-index:1;mix-blend-mode:screen;background:url(assets/shield/bar_coat.webp) -150px 10px/1110px 240px no-repeat;filter:saturate(2.6) brightness(2) contrast(1.15);opacity:.85}
+/* ตี้ 2026-10-30: ผิวโลหะใหม่เต็มหลอด (text-fx/make_bar_coat.py) · แสงขาวกวาดผ่านโล่ช้า ๆ แทนลายชั้นที่ 2 */
+.vfx-coat.still::after{content:"";position:absolute;left:290px;top:66px;width:600px;height:50px;z-index:1;mix-blend-mode:screen;background:linear-gradient(100deg,transparent 0 40%,rgba(255,255,255,.75) 50%,transparent 60% 100%) no-repeat;background-size:30% 100%;background-position:-40% 0}
 .vfx-coat.part{--amt:linear-gradient(to left,transparent 0,transparent calc(var(--A) - 16px),#000 var(--A),#000 var(--L),transparent calc(var(--L) + 30px));transition:transform calc(.75s*var(--spd)) cubic-bezier(.2,.9,.25,1.12),opacity calc(.45s*var(--spd)) ease}
 .vfx-coat.loose{--amt:linear-gradient(to left,#000 0,#000 var(--L),transparent calc(var(--L) + 150px));-webkit-mask-image:var(--amt);mask-image:var(--amt);transition:transform calc(.75s*var(--spd)) cubic-bezier(.2,.9,.25,1.12),opacity calc(.45s*var(--spd)) ease}
 .vfx-coat.loose.tube{-webkit-mask-image:var(--amt),var(--tube);mask-image:var(--amt),var(--tube)}
 .vfx-coat.cut{transition:transform calc(.75s*var(--spd)) cubic-bezier(.2,.9,.25,1.12),opacity calc(.45s*var(--spd)) ease}
 .vfx-coat.hit img{animation:coatHit .5s ease}
-@keyframes coatHit{25%{filter:saturate(2.6) brightness(4) contrast(1.15)}}
+@keyframes coatHit{25%{filter:brightness(2.6)}}
 #world:not(.is-game) .vfx-coat,#world.vdo-full:not(.vdo-hp) .vfx-coat{--hy:-240px;opacity:0}
 /* ตี้ 2026-10-29: โล่บนเกจกระพริบเบา ๆ แบบหายใจ ไม่ถี่ (แถบฟ้า + ลายชั้น 2 สลับจังหวะกัน · รอบละ 2.6 วิ) */
 .vfx-coat.still::before{animation:coatBreath 2.6s ease-in-out infinite alternate}
-.vfx-coat.still::after{animation:coatBreath2 2.6s ease-in-out infinite alternate}
+.vfx-coat.still::after{animation:coatSweep 3.2s ease-in-out infinite}
 @keyframes coatBreath{from{opacity:.45}to{opacity:1}}
-@keyframes coatBreath2{from{opacity:1}to{opacity:.4}}
+@keyframes coatSweep{0%{background-position:-40% 0}60%,100%{background-position:140% 0}}
 @media (prefers-reduced-motion:reduce){.vfx-coat.still::before,.vfx-coat.still::after{animation:none}}
 /* หลอดชิลด์ขาวเดิมเลิกใช้ — แทนด้วยโล่บนเกจ (ตัวเลขชิลด์ยังอยู่) */
 .shbar{visibility:hidden}
@@ -3379,7 +3380,7 @@ const COAT_L = sh => 258 + (530 * sh) / SHIELD_MAX + (sh > 0 ? 6 : -40); // ป�
 function coatShow(s, sh, show) {
   if (!vfx.coat[s]) {
     const lc = s.toLowerCase();
-    vfx.coat[s] = { still: vfxEl(`vfx-coat still cut ${lc}`, 'bar_coat.webp'), form: vfxEl(`vfx-coat part off ${lc}`, 'bar_form.mp4'), brk: vfxEl(`vfx-coat loose tube off ${lc}`, 'bar_break.mp4'), sh: 0, tok: 0 };
+    vfx.coat[s] = { still: vfxEl(`vfx-coat still cut ${lc}`, 'bar_coat_full.webp'), form: vfxEl(`vfx-coat part off ${lc}`, 'bar_form.mp4'), brk: vfxEl(`vfx-coat loose tube off ${lc}`, 'bar_break.mp4'), sh: 0, tok: 0 };
     vfx.coat[s].still.style.setProperty('--L', `${COAT_L(0)}px`);
   }
   const c = vfx.coat[s], prev = c.sh, setL = (el, v) => el.style.setProperty('--L', `${v}px`);
@@ -6606,7 +6607,7 @@ setInterval(clockTick, 250);
 fitStage();
 // ลายนิ้วมือสถานะเกม (ทดสอบว่า PVP สองเครื่องตรงกัน) — ลำดับการ์ดในมือตามอาร์เรย์ (ส่วนที่กระทบผลสุ่ม)
 const stateHash = () => { const g = ui.g; return g ? JSON.stringify({ r: g.round, hp: SIDES.map(s => g.p[s].hp), sh: SIDES.map(s => g.p[s].shield), ga: SIDES.map(s => `${g.p[s].gauge}/${g.p[s].gStack}/${g.p[s].gDmg}`), h: SIDES.map(s => g.p[s].hand.map(c => `${c.id}${c.type[0]}${c.lv}`).join(',')), d: g.deck.length, m: g.market.map(c => c.type[0]).join('') }) : null; };
-window.__dreamfight = { bgm, vdo, vdoBg, vdoClips, vdoPlan, stateHash, ui: () => ui, simulate, stackLanes, pickOne, swapHand, botAction, newGame, doLock, clash, effText, gain, forceDiscard, judge, sfx, calcSideHTML, discardText, drawCount, fitStage, fx: { vcClash, vcPop, vcReset, vcFlyTo, coatShow, vfxShield, vfxImpact, titleFx, vcHand } };
+window.__dreamfight = { bgm, vdo, vdoBg, vdoClips, vdoPlan, stateHash, ui: () => ui, simulate, stackLanes, pickOne, swapHand, botAction, newGame, doLock, clash, effText, gain, forceDiscard, judge, sfx, calcSideHTML, discardText, drawCount, fitStage, fx: { vcClash, vcPop, vcReset, vcFlyTo, coatShow, vfxShield, vfxImpact, titleFx, vcHand, runFight } }; // runFight: ใช้ทดสอบฉากปะทะที่ตั้งเอง
 render();
 if (accessOk && QS.has('go') && !ON_CLAUDE) pvpOpen(); // ระบบห้อง: ลิงก์ห้อง/ออกจากห้อง เปิดหน้า PVP เลยไม่ต้องกด START
 })();
