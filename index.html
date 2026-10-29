@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793288924">
+<meta name="df-build" content="1793290256">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -1126,6 +1126,21 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 /* ม้วนกลับฝั่งเรา (ตี้ 2026-10-28): ขึ้นโค้งกลางจอ หมุน 3 รอบ แล้วลงมุมของเรา */
 @keyframes vcSteal{0%{left:var(--x0);top:var(--y0);transform:scale(.5) rotate(0);animation-timing-function:cubic-bezier(.3,.6,.5,1)}50%{left:var(--xm);top:var(--ym);transform:scale(1.15) rotate(calc(var(--r2) / 2));animation-timing-function:cubic-bezier(.5,0,.7,.4)}100%{left:var(--x1);top:var(--y1);transform:scale(1.2) rotate(var(--r2))}}
 .vc-lose{position:absolute;top:720px;width:120px;height:190px;z-index:4}
+/* ผู้ชม (ตี้ 2026-10-29): มือของฝั่งที่เสียการ์ด = การ์ดเทาเท่าจำนวนบนมือ แล้วใบที่โดนทำลายสลาย / ใบที่โดนขโมยลอยไปฝั่งตรงข้าม */
+.vc-hand{position:absolute;top:772px;z-index:4;display:flex;pointer-events:none;animation:vcHandIn .25s ease-out backwards}
+.vc-hand.blue{flex-direction:row-reverse}
+.vc-hand .gh{position:relative;flex:none;width:74px;height:116px;margin-right:-22px;border-radius:9px;border:2px solid #8b929e;background:#2b3038 url(assets/logo-df-mini.webp) center/62% no-repeat;filter:grayscale(1) brightness(.85);box-shadow:0 6px 14px rgba(0,0,0,.6);transform:rotate(calc((var(--i) - var(--m)) * 4deg));transform-origin:50% 120%}
+.vc-hand.blue .gh{margin-right:0;margin-left:-22px}
+.vc-hand .gh.crush{animation:ghCrush .7s ease-in forwards;animation-delay:calc(.45s + var(--o) * .12s)}
+.vc-hand .gh.stolen{animation:ghSteal .8s cubic-bezier(.5,0,.8,.4) forwards;animation-delay:calc(.45s + var(--o) * .14s)}
+.vc-hand.blue .gh.stolen{animation-name:ghStealL}
+.vc-hand.out{animation:vcHandOut .35s ease-in forwards}
+@keyframes vcHandIn{from{opacity:0;transform:translateY(30px)}}
+@keyframes vcHandOut{to{opacity:0;transform:translateY(20px)}}
+@keyframes ghCrush{0%{filter:grayscale(1) brightness(.85)}25%{filter:grayscale(0) brightness(2.2) drop-shadow(0 0 14px #ff5a62);transform:rotate(calc((var(--i) - var(--m)) * 4deg)) scale(1.1)}100%{opacity:0;filter:grayscale(1) brightness(.4) blur(6px);transform:rotate(calc((var(--i) - var(--m)) * 4deg + 25deg)) translateY(90px) scale(.6)}}
+@keyframes ghSteal{30%{filter:grayscale(0) brightness(1.6) drop-shadow(0 0 12px #3cdc82)}100%{opacity:0;transform:translate(600px,-160px) rotate(40deg) scale(.7)}}
+@keyframes ghStealL{30%{filter:grayscale(0) brightness(1.6) drop-shadow(0 0 12px #3cdc82)}100%{opacity:0;transform:translate(-600px,-160px) rotate(-40deg) scale(.7)}}
+@media (prefers-reduced-motion:reduce){.vc-hand .gh.crush,.vc-hand .gh.stolen{animation-duration:.01s}}
 .vc-lose i{position:absolute;inset:0;border-radius:12px;border:3px solid #ff5a62;background:#101a30 url(assets/logo-df-mini.webp) center/70% no-repeat;box-shadow:0 0 22px rgba(255,60,60,.85)}
 .vc-lose i:first-child{clip-path:polygon(0 0,62% 0,40% 38%,58% 60%,34% 100%,0 100%);animation:vcLoseL 1.15s ease-in forwards}
 .vc-lose i:last-child{clip-path:polygon(62% 0,100% 0,100% 100%,34% 100%,58% 60%,40% 38%);animation:vcLoseR 1.15s ease-in forwards}
@@ -3436,9 +3451,20 @@ function laneCallImg(i) {
   el.classList.add('on');
 }
 // การ์ดแตกที่มุมของฝั่ง victim n ใบ · ป้ายสั้น (ตี้ 2026-10-29): เสียการ์ด = "-n CARD" · Dodge ขโมย = "STEAL +n"
+// ผู้ชม: มือฝั่ง victim เป็นการ์ดเทา total ใบ แล้ว lost ใบท้ายสลาย (crush) หรือลอยไปฝั่งตรงข้าม (stolen)
+function vcHand(victim, total, lost, how = 'crush') {
+  total = Math.max(total, lost);
+  if (!total) return;
+  const m = (total - 1) / 2;
+  const cards = Array.from({ length: total }, (_, i) => { const gone = i >= total - lost; return `<i class="gh${gone ? ` ${how}` : ''}" style="--i:${i};--m:${m};--o:${gone ? i - (total - lost) : 0}"></i>`; }).join('');
+  const d = vcAdd(`vc-hand ${victim.toLowerCase()}`, cards, victim === 'RED' ? 'left:240px' : 'right:240px');
+  setTimeout(() => d.classList.add('out'), 2100);
+}
 function vcLose(victim, n, text) {
   const x = victim === 'RED' ? 250 : 1550, step = victim === 'RED' ? 44 : -44;
-  for (let k = 0; k < Math.min(n, 3); k++) vcAdd('vc-lose', '<i></i><i></i>', `left:${x + k * step}px`);
+  // ตี้ 2026-10-29: ผู้ชมเห็นมือเป็นการ์ดเทาเท่าจำนวนจริง แล้วใบที่โดนทำลายสลายไป · ผู้เล่นยังเป็นการ์ดแตกแบบเดิม
+  if (ui.mode === 'spec' && ui.g) vcHand(victim, ui.g.p[victim].hand.length, n, 'crush');
+  else for (let k = 0; k < Math.min(n, 3); k++) vcAdd('vc-lose', '<i></i><i></i>', `left:${x + k * step}px`);
   vcAdd('vc-tag lose', text, `left:${x + 60}px;top:660px`);
   sfx.play('discard');
 }
@@ -3607,6 +3633,7 @@ async function vcFinale(g, r, acts, hit, stop) {
     if (fx === 'steal') {
       const n = Math.min(a.n, g.p[to].hand.length), [xp, yp] = VC_POP[s];
       if (n) {
+        if (ui.mode === 'spec') vcHand(to, g.p[to].hand.length, n, 'stolen'); // ตี้ 2026-10-29: ผู้ชมเห็นมือเทาของฝั่งที่โดนขโมย ใบที่โดนขโมยลอยออก
         // การ์ดที่ขโมยม้วนตีลังกาเป็นโค้งกลับมาฝั่งเรา
         vcAdd('vc-steal', backHTML(), `--x0:${x1 - 48}px;--y0:${y1 - 76}px;--x1:${xp - 48}px;--y1:${yp - 76}px;--xm:${(x1 + xp) / 2 - 48}px;--ym:${y1 - 330}px;--r2:${s === 'RED' ? -1080 : 1080}deg`);
         setTimeout(() => { vcAdd(`vc-tag ${s.toLowerCase()}`, `STEAL +${n}`, `left:${xp}px;top:${yp - 150}px`); sfx.play('swap'); }, 1000);
@@ -6570,7 +6597,7 @@ setInterval(clockTick, 250);
 fitStage();
 // ลายนิ้วมือสถานะเกม (ทดสอบว่า PVP สองเครื่องตรงกัน) — ลำดับการ์ดในมือตามอาร์เรย์ (ส่วนที่กระทบผลสุ่ม)
 const stateHash = () => { const g = ui.g; return g ? JSON.stringify({ r: g.round, hp: SIDES.map(s => g.p[s].hp), sh: SIDES.map(s => g.p[s].shield), ga: SIDES.map(s => `${g.p[s].gauge}/${g.p[s].gStack}/${g.p[s].gDmg}`), h: SIDES.map(s => g.p[s].hand.map(c => `${c.id}${c.type[0]}${c.lv}`).join(',')), d: g.deck.length, m: g.market.map(c => c.type[0]).join('') }) : null; };
-window.__dreamfight = { bgm, vdo, vdoBg, vdoClips, vdoPlan, stateHash, ui: () => ui, simulate, stackLanes, pickOne, swapHand, botAction, newGame, doLock, clash, effText, gain, forceDiscard, judge, sfx, calcSideHTML, discardText, drawCount, fitStage, fx: { vcClash, vcPop, vcReset, vcFlyTo, coatShow, vfxShield, vfxImpact, titleFx } };
+window.__dreamfight = { bgm, vdo, vdoBg, vdoClips, vdoPlan, stateHash, ui: () => ui, simulate, stackLanes, pickOne, swapHand, botAction, newGame, doLock, clash, effText, gain, forceDiscard, judge, sfx, calcSideHTML, discardText, drawCount, fitStage, fx: { vcClash, vcPop, vcReset, vcFlyTo, coatShow, vfxShield, vfxImpact, titleFx, vcHand } };
 render();
 if (accessOk && QS.has('go') && !ON_CLAUDE) pvpOpen(); // ระบบห้อง: ลิงก์ห้อง/ออกจากห้อง เปิดหน้า PVP เลยไม่ต้องกด START
 })();
