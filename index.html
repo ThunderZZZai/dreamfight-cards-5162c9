@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793290256">
+<meta name="df-build" content="1793290600">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -1127,10 +1127,10 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 @keyframes vcSteal{0%{left:var(--x0);top:var(--y0);transform:scale(.5) rotate(0);animation-timing-function:cubic-bezier(.3,.6,.5,1)}50%{left:var(--xm);top:var(--ym);transform:scale(1.15) rotate(calc(var(--r2) / 2));animation-timing-function:cubic-bezier(.5,0,.7,.4)}100%{left:var(--x1);top:var(--y1);transform:scale(1.2) rotate(var(--r2))}}
 .vc-lose{position:absolute;top:720px;width:120px;height:190px;z-index:4}
 /* ผู้ชม (ตี้ 2026-10-29): มือของฝั่งที่เสียการ์ด = การ์ดเทาเท่าจำนวนบนมือ แล้วใบที่โดนทำลายสลาย / ใบที่โดนขโมยลอยไปฝั่งตรงข้าม */
-.vc-hand{position:absolute;top:772px;z-index:4;display:flex;pointer-events:none;animation:vcHandIn .25s ease-out backwards}
+.vc-hand{position:absolute;top:790px;z-index:4;display:flex;pointer-events:none;animation:vcHandIn .25s ease-out backwards}
 .vc-hand.blue{flex-direction:row-reverse}
-.vc-hand .gh{position:relative;flex:none;width:74px;height:116px;margin-right:-22px;border-radius:9px;border:2px solid #8b929e;background:#2b3038 url(assets/logo-df-mini.webp) center/62% no-repeat;filter:grayscale(1) brightness(.85);box-shadow:0 6px 14px rgba(0,0,0,.6);transform:rotate(calc((var(--i) - var(--m)) * 4deg));transform-origin:50% 120%}
-.vc-hand.blue .gh{margin-right:0;margin-left:-22px}
+.vc-hand .gh{position:relative;flex:none;width:157px;height:249px;margin-right:-79px;border-radius:14px;border:3px solid #8b929e;background:#2b3038 url(assets/logo-df-mini.webp) center/62% no-repeat; /* ตี้ 2026-10-29: เท่าการ์ดในมือฝั่งผู้ชม (157px) */filter:grayscale(1) brightness(.85);box-shadow:0 6px 14px rgba(0,0,0,.6);transform:rotate(calc((var(--i) - var(--m)) * 4deg));transform-origin:50% 120%}
+.vc-hand.blue .gh{margin-right:0;margin-left:-79px}
 .vc-hand .gh.crush{animation:ghCrush .7s ease-in forwards;animation-delay:calc(.45s + var(--o) * .12s)}
 .vc-hand .gh.stolen{animation:ghSteal .8s cubic-bezier(.5,0,.8,.4) forwards;animation-delay:calc(.45s + var(--o) * .14s)}
 .vc-hand.blue .gh.stolen{animation-name:ghStealL}
