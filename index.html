@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793266138">
+<meta name="df-build" content="1793266425">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -3299,7 +3299,10 @@ function fireTf(x, y, r, k) {
 // การ์ดพุ่งเข้าเกจแบบพริ้ว (ตี้ 2026-10-28: เดิมพุ่งตรงแข็ง ๆ): ง้างถอยนิดหนึ่ง → เร่งไปตามเส้นโค้ง แล้วหดเข้าเกจ · rot1 ไม่ใช้แล้ว (การ์ดหันตามทางพุ่ง)
 function vcFlyTo(d, s, [x1, y1], sc, rot1, ms) {
   const [x0, y0] = VC_POP[s], cs = getComputedStyle(d), m = new DOMMatrixReadOnly(cs.transform === 'none' ? undefined : cs.transform);
-  const sx = x0 + m.e, sy = y0 + m.f, s0 = Math.hypot(m.a, m.b) || 1, r0 = (Math.atan2(m.b, m.a) * 180) / Math.PI;
+  // ตี้ 2026-10-29 (ไฟไม่ตรงการ์ด): .vc-pop หมุน/ย่อรอบมุมซ้ายบน (transform-origin 0 0) → หาจุดกลางการ์ดจริงจากเมทริกซ์ แล้วเปลี่ยนเป็นหมุนรอบจุดกลาง ไฟกับการ์ดจะได้ใช้จุดเดียวกัน
+  const hw = d.offsetWidth / 2, hh = d.offsetHeight / 2;
+  const sx = x0 - hw + m.a * hw + m.c * hh + m.e, sy = y0 - hh + m.b * hw + m.d * hh + m.f, s0 = Math.hypot(m.a, m.b) || 1, r0 = (Math.atan2(m.b, m.a) * 180) / Math.PI;
+  d.style.transformOrigin = '50% 50%';
   const dx = x1 - sx, dy = y1 - sy, len = Math.hypot(dx, dy) || 1, ux = dx / len, uy = dy / len;
   let nx = -uy, ny = ux;
   if (ny > 0) { nx = -nx; ny = -ny; } // โค้งขึ้นด้านบน
