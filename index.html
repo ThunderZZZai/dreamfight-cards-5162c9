@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793266425">
+<meta name="df-build" content="1793266777">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -232,7 +232,7 @@ body:not(.portrait) #rotateHint{display:none}
 .card.lv3 .c-lv{background:linear-gradient(180deg,#ffb86b,#ff3d7a);border-color:#ffe3c9;color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.35);box-shadow:0 0 16px rgba(255,90,120,.95),0 2px 8px rgba(0,0,0,.65)}
 .card.lv2{filter:drop-shadow(0 0 calc(var(--cw,150px)*.07) rgba(255,200,61,.95)) drop-shadow(0 6px 10px rgba(0,0,0,.55))}
 .card.lv3{filter:drop-shadow(0 0 calc(var(--cw,150px)*.1) rgba(255,110,120,.95)) drop-shadow(0 6px 10px rgba(0,0,0,.55))}
-.c-name{position:absolute;left:50%;bottom:6.5%;transform:translateX(-50%);padding:.14em .6em;border-radius:999px;background:rgba(5,7,11,.72);font-family:var(--font-disp);font-weight:700;font-size:calc(var(--cw,150px)*.1);line-height:1.15;letter-spacing:.04em;white-space:nowrap}
+.c-name{position:absolute;left:50%;bottom:6.5%;transform:translateX(-50%);padding:.14em .6em;border-radius:999px;background:rgba(5,7,11,.72);font-family:var(--font-disp);font-weight:700;font-size:calc(var(--cw,150px)*.135);line-height:1.15;letter-spacing:.04em;white-space:nowrap} /* ตี้ 2026-10-29: ชื่อการ์ดใหญ่ขึ้น (เดิม ×.1) */
 .st-card .c-name{display:none}
 .c-new.c-pick{background:linear-gradient(180deg,#ff6b72,#d61f2b);color:#fff;box-shadow:0 0 12px rgba(255,61,69,.8),0 2px 8px rgba(0,0,0,.5)}
 .c-new.c-back{background:linear-gradient(180deg,#8ff5c2,#1fb36b);color:#04140b;box-shadow:0 0 12px rgba(70,227,145,.8),0 2px 8px rgba(0,0,0,.5)} /* การ์ดคืนจากคู่ Lv2 + Lv2 */
@@ -1003,7 +1003,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 /* ช่องว่าง (ฝั่งนั้นไม่ได้ลงการ์ด) = กรอบการ์ดใส ๆ + "ว่างเปล่า" */
 .vc-empty{display:grid;place-items:center;width:100%;aspect-ratio:820/1302;border-radius:14px;border:3px dashed rgba(255,255,255,.6);background:rgba(255,255,255,.07);box-shadow:0 0 0 2px var(--k) inset,0 0 24px rgba(0,0,0,.35);backdrop-filter:blur(3px)}
 .vc-empty b{font-family:var(--font-disp);font-weight:700;font-size:26px;color:rgba(255,255,255,.9);text-shadow:0 2px 8px rgba(0,0,0,.8)}
-.vc-pop.empty .vc-who{background:rgba(5,7,11,.8);border:2px solid var(--k)}
+.vc-pop.empty .vc-who{display:none} /* ตี้ 2026-10-29: ช่องว่างเปล่าไม่ต้องมีป้ายชื่อฝั่งด้านบน */
 /* โล่ + ไฟจากคลิป AE (ตี้ 2026-10-28 · เดโม artifact TmvSzwtJabbT2Tk6oaDX4g)
    คลิปพื้นดำซ้อนแบบ screen · #vcFx ห้ามมี z-index/transform/opacity ไม่งั้นลูก ๆ ผสมกับ VDO/เกจข้างใต้ไม่ได้ (ขึ้นกล่องดำ) */
 @property --L{syntax:'<length>';inherits:false;initial-value:0px}
