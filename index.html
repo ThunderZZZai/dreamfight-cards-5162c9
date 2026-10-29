@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793267274">
+<meta name="df-build" content="1793267611">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -3544,7 +3544,7 @@ async function vcFinale(g, r, acts, hit, stop) {
     if (a.fx === 'draw') {
       d.classList.add('drawn');
       const [ax, ay] = vc.at[s] || [x0, y0];
-      vcAdd('vc-tag draw', '+1 จั่ว', `left:${s === 'RED' ? ax - 150 : ax + 150}px;top:${ay - 30}px`);
+      vcAdd('vc-tag draw', '+1 CARD', `left:${s === 'RED' ? ax - 150 : ax + 150}px;top:${ay - 30}px`);
       sfx.play('draw');
       await sleep(VC_DRAW);
       continue;
@@ -3560,7 +3560,7 @@ async function vcFinale(g, r, acts, hit, stop) {
         await sleep(420);
         if (stop()) return;
         if (a.brk) vcLose(to, a.brk, `-${a.brk} CARD`);
-        else vcAdd('vc-tag miss', 'ทอยทิ้งไม่ติด', `left:${to === 'RED' ? 310 : 1610}px;top:660px`);
+        else vcAdd('vc-tag miss', 'MISS', `left:${to === 'RED' ? 310 : 1610}px;top:660px`);
         rest += VC_LOSE - 420;
       }
       if (a.cost) {
@@ -3594,13 +3594,13 @@ async function vcFinale(g, r, acts, hit, stop) {
         // การ์ดที่ขโมยม้วนตีลังกาเป็นโค้งกลับมาฝั่งเรา
         vcAdd('vc-steal', backHTML(), `--x0:${x1 - 48}px;--y0:${y1 - 76}px;--x1:${xp - 48}px;--y1:${yp - 76}px;--xm:${(x1 + xp) / 2 - 48}px;--ym:${y1 - 330}px;--r2:${s === 'RED' ? -1080 : 1080}deg`);
         setTimeout(() => { vcAdd(`vc-tag ${s.toLowerCase()}`, `STEAL +${n}`, `left:${xp}px;top:${yp - 150}px`); sfx.play('swap'); }, 1000);
-      } else vcAdd('vc-tag miss', 'มืออีกฝ่ายว่าง · จั่วแทน', `left:${x1}px;top:${y1 + 90}px`);
+      } else vcAdd('vc-tag miss', '+1 CARD', `left:${x1}px;top:${y1 + 90}px`);
     }
     if (a.brk || a.brkMiss) {
       await sleep(420);
       if (stop()) return;
       if (a.brk) vcLose(to, a.brk, `-${a.brk} CARD`);
-      else vcAdd('vc-tag miss', 'ทอยทิ้งไม่ติด', `left:${to === 'RED' ? 310 : 1610}px;top:660px`);
+      else vcAdd('vc-tag miss', 'MISS', `left:${to === 'RED' ? 310 : 1610}px;top:660px`);
       rest -= 420;
     }
     if (a.cost) {
