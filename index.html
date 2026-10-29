@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793291966">
+<meta name="df-build" content="1793292265">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -3212,6 +3212,12 @@ function vcActs(g, r) {
   }
   return acts.sort((x, y) => x.rank - y.rank);
 }
+// เวลาปะทะกลางจอ (vcClash) ของช่องนี้ · Defence เจอการ์ดตี = รอโล่ขึ้น ~0.95 วิ + พุ่ง 0.44 + ชน/เด้ง ~0.7 วิ
+const vcClashMs = r => {
+  const T = s => r[s].card && r[s].card.type, hit = s => !!(r[s].card && HIT_VDO[T(s)]);
+  if (SIDES.some(s => T(s) === 'DODGE' && hit(FOE[s]))) return VC_CLASH;
+  return SIDES.some(s => T(s) === 'DEF' && hit(FOE[s])) ? 2300 : VC_CLASH;
+};
 const vcMs = a => (a.fx === 'draw' ? VC_DRAW : a.fx === 'steal' ? VC_STEAL : a.noHp ? VC_FIZZ : VC_GAP) + (a.brk || a.brkMiss ? VC_LOSE : 0) + (a.cost ? VC_LOSE : 0);
 const vc = { pops: {}, at: {} };
 function vcAdd(cls, html, style) {
@@ -3715,8 +3721,13 @@ async function laneVdo(i, plan, gid, r, keep = false) {
           if (!lv.skip && !lv.failed) W.classList.add('vdo-full');
         }
         if (fin[k].length) {
-          // ตี้ 2026-10-29: VDO ต้องเห็นเต็มคลิป ไม่มีอะไรมาทับตอนท้าย — รอ VDO จบก่อน แล้วค่อยปะทะกลางจอ + พุ่งเข้าเกจ (ค้างเฟรมสุดท้ายไว้ระหว่างนั้น)
-          await until(() => stop() || el.ended);
+          // เริ่มปะทะ+พุ่งก่อน VDO จบ ให้จบพร้อม VDO พอดี — VDO เล่นต่อจนจบ ไม่หยุด ไม่ค้าง
+          // ตี้ 2026-10-29: ช่องที่มีโล่ (Defence เจอการ์ดตี) ปะทะนานกว่าปกติ (รอโล่ขึ้น + ชน) ต้องเผื่อเวลาให้พอ ไม่งั้น VDO จบก่อนแล้วค้างเฟรม
+          const lead = (fin[k].reduce((t, a) => t + vcMs(a), 0) + vcClashMs(r) + VC_PAD) / 1000;
+          const at = Math.max(0, VDO_FILES[clips[k]][1] - lead);
+          await until(() => stop() || el.ended || el.currentTime >= at);
+          // ถ้ายังพุ่งไม่จบแต่ VDO จบแล้ว = สลับเป็น Idle วนพื้นหลังแทนการค้างเฟรมสุดท้าย
+          el.addEventListener('ended', () => { if (ui.vdo === lv && !koNow()) { el.classList.remove('on'); vdoBg.sync(true); } }, { once: true });
           if (gone()) return false;
           await runFin(k);
           if (gone()) return false;
