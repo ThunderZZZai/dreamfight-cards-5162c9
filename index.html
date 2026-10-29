@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793253995">
+<meta name="df-build" content="1793254414">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -754,9 +754,15 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 #world.vdo-fight .tools{opacity:0;pointer-events:none} /* ปุ่มมุมจอหลบตั้งแต่เปิด VDO — ที่ตรงนั้นเป็นของ SKIP */
 .vdo-bar{position:absolute;right:40px;bottom:34px;z-index:30;display:flex;align-items:center;gap:14px}
 .vdo-bar[hidden]{display:none}
-.vdo-lane{padding:8px 20px;border-radius:999px;background:rgba(5,7,11,.62);border:1px solid rgba(255,255,255,.22);color:#dfe5ee;font-family:var(--font-disp);font-weight:700;font-size:22px;letter-spacing:.1em}
-.vdo-skip{display:inline-flex;align-items:center;gap:10px;height:56px;padding:0 28px;border-radius:999px;border:2px solid rgba(255,255,255,.6);background:rgba(5,7,11,.62);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:26px;letter-spacing:.14em;cursor:pointer}
-.vdo-skip:hover{background:rgba(255,255,255,.16);border-color:#fff}
+/* ตี้ 2026-10-29: ป้าย ACTION n + ปุ่ม SKIP ใช้กรอบตัดมุมแบบช่องใส่การ์ด/ปุ่ม PICK UP (เทาขอบ มุมสีฝั่ง) */
+.vdo-lane,.vdo-skip{position:relative;isolation:isolate;display:inline-flex;align-items:center;gap:10px;height:56px;padding:0 26px;border:0;border-radius:0;background:none;color:#dfe5ee;font-family:var(--font-disp);font-weight:700;font-size:22px;letter-spacing:.1em;--k2:var(--red)}
+.vdo-skip{padding:0 30px;color:#fff;font-size:26px;cursor:pointer}
+#world.me-blue .vdo-lane,#world.me-blue .vdo-skip{--k2:var(--blue)}
+.vdo-lane::before,.vdo-lane::after,.vdo-skip::before,.vdo-skip::after{content:"";position:absolute;z-index:-1;--c:13px;clip-path:polygon(var(--c) 0,calc(100% - var(--c)) 0,100% var(--c),100% calc(100% - var(--c)),calc(100% - var(--c)) 100%,var(--c) 100%,0 calc(100% - var(--c)),0 var(--c))}
+.vdo-lane::before,.vdo-skip::before{inset:0;background:linear-gradient(135deg,var(--k2) 0 9%,#7b818c 9% 91%,var(--k2) 91%)}
+.vdo-lane::after,.vdo-skip::after{inset:3px;--c:12px;background:rgba(22,23,27,.92)}
+.vdo-skip:hover::after{background:#24262c}
+.vdo-skip:focus-visible{outline:2px solid #fff;outline-offset:3px}
 .vdo-skip i{font-style:normal;letter-spacing:-.12em}
 /* หน้าเริ่ม: โหลด VDO ให้ครบก่อนเริ่มเกม */
 .vdo-load{display:flex;flex-direction:column;align-items:center;gap:8px;width:640px;margin-top:-4px;font-size:17px;color:var(--muted);text-transform:none}
