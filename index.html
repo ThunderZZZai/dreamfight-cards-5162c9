@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793295120">
+<meta name="df-build" content="1793295242">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -1525,13 +1525,13 @@ function stackLanes(stacks) {
    ได้เกจ: การ์ดตั้งรับที่วาง (Defence/Dodge) รวมเลเวลครบ 4 = 1 เกจ · การ์ดจู่โจมทำดาเมจสะสมครบ 50 = 1 เกจ (กฎชนะทาง +1 เกจ เอาออก 2026-10-22)
    เกจสูงสุด 3 (เต็มแล้วแต้มสะสมทิ้ง) · ใช้ในเฟส Action ก่อนกด FIGHT!:
    1 เกจ = จั่ว 1 ใบ · 2 เกจ = เปลี่ยนการ์ดบนมือ 1 ใบเป็นชนิดไหนก็ได้ + เลเวล +1 (ใบ Lv3 = ไม่บวกเลเวล จั่ว 1 ใบแทน)
-   3 เกจ (ตี้ 2026-10-22 v2) = จั่วจนมือครบ 6 ใบ (ครบแล้วไม่จั่ว) → เปลี่ยนการ์ดฟรี 2 ครั้ง (op 'ftr' · ชนิดไหนก็ได้ + เลเวล +1 · Lv3 = จั่วแทน)
+   3 เกจ (ตี้ 2026-10-22 v2 · 2026-10-30 เปลี่ยนฟรีเหลือ 1 ใบ เป็น Lv2) = จั่วจนมือครบ 6 ใบ (ครบแล้วไม่จั่ว) → เปลี่ยนการ์ดฟรี 1 ครั้ง (op 'ftr' · ชนิดไหนก็ได้ + เลเวล +1 · Lv3 = จั่วแทน)
      → รอบนั้นผสมการ์ดบนมือได้ (ลากทับใบชนิดเดียวกัน = op 'merge' · ไม่ต้องเลือกจากเมนู · Lv1+Lv1 = Lv2 · Lv1+Lv2 = Lv3 · Lv2+Lv2 = Lv3 + Lv1) → วางกี่ใบก็ได้
    รอบที่ใช้ 3 เกจ ฝั่งนั้นสะสม stack ตั้งรับ / ดาเมจ / เกจ ไม่ได้เลย (ตี้ 2026-10-22)
    การ์ดจากเกจใช้ตัวสุ่มของเกจเอง (g.gseed + ฝั่ง + รอบ + ครั้งที่ใช้) ไม่แตะกองกลาง/ตัวสุ่มหลัก → PVP คำนวณซ้ำตอนอีกฝ่ายกด FIGHT! ได้ผลเดียวกัน */
 const GAUGE_MAX = 3, GAUGE_STACK = 4, GAUGE_DMG = 50;
 const GAUGE_COST = { draw: 1, tr: 2, max: 3, ftr: 0, merge: 0 }; // ftr / merge ใช้ได้เฉพาะรอบที่ใช้ 3 เกจ
-const MAX_FREE_TR = 2;
+const MAX_FREE_TR = 1; // ตี้ 2026-10-30: พลังเต็มเปลี่ยนฟรีได้ 1 ใบ (เดิม 2) และใบที่เปลี่ยนเป็น Lv2
 const GAUGE_ID = 1e6; // id การ์ดจากเกจ = GAUGE_ID + รอบ × 100 + ฝั่ง (BLUE +50) + ลำดับ — ไม่ชนการ์ดปกติ/การ์ดคืน
 const unlimitedNow = (g, s) => g.p[s].unl === g.round;
 // แต้มสะสมไปหาเกจถัดไป (เต็ม 3 แล้วทิ้ง) — คืนจำนวนเกจที่ได้
@@ -1592,9 +1592,9 @@ function useGauge(g, s, op) {
     out.from = { type: c.type, lv: c.lv };
     const was3 = c.lv >= 3;
     c.type = op.to;
-    if (!was3) c.lv++;
+    if (op.k === 'ftr') { c.lv = Math.max(c.lv, 2); P.freeTr--; } // ตี้ 2026-10-30: เปลี่ยนฟรี (พลังเต็ม) = เป็น Lv2 (Lv3 คงเดิม)
+    else if (!was3) c.lv++;
     else gaugeDraw(g, s, 1, rnd, out);
-    if (op.k === 'ftr') P.freeTr--;
   } else if (op.k === 'merge') {
     // ผสมการ์ดบนมือ: ใบ a รับเลเวลของใบ b · เกิน Lv3 (Lv2 + Lv2) = a เป็น Lv3 และ b เหลือ Lv1
     const a = P.hand.find(x => x.id === op.a), b = P.hand.find(x => x.id === op.b);
@@ -5000,7 +5000,7 @@ function renderGaugeMenu() {
     const opt = (k, title, sub, off = n < GAUGE_COST[k]) => `<button type="button" class="gm-opt" data-act="gaugeUse" data-k="${k}"${off ? ' disabled' : ''}>${coins(GAUGE_COST[k])}<b>${title}</b><small>${sub}</small></button>`;
     el.innerHTML = unl
       ? head('พลังเต็ม · ฟรีรอบนี้')
-        + opt('ftr', `เปลี่ยนการ์ดฟรี · เหลือ ${free} ครั้ง`, 'เลือกการ์ดบนมือ 1 ใบ → เปลี่ยนเป็นชนิดไหนก็ได้ + เลเวล +1 · ใบ Lv3 = ไม่บวกเลเวล ได้จั่ว 1 ใบแทน', !free)
+        + opt('ftr', `เปลี่ยนการ์ดฟรี · เหลือ ${free} ครั้ง`, 'เลือกการ์ดบนมือ 1 ใบ → เปลี่ยนเป็นชนิดไหนก็ได้ เป็น Lv2 (ใบ Lv3 คงเดิม)', !free)
         + '<p class="gm-note"><b>ผสมการ์ด:</b> ลากการ์ดบนมือทับใบชนิดเดียวกัน (ไม่ใช่ Lv3) ได้เลย · Lv1+Lv1 = Lv2 · Lv1+Lv2 = Lv3 · Lv2+Lv2 = Lv3 + Lv1</p>'
         + '<p class="gm-note">รอบนี้วางกี่ใบก็ได้ · แต่สะสมเกจไม่ได้เลย</p>'
       : head('ใช้เกจ')
@@ -5012,7 +5012,7 @@ function renderGaugeMenu() {
   } else {
     const c = realCard(m.id);
     if (!c) { ui.gmenu = m.k || 'tr'; renderGaugeMenu(); return; }
-    const lv = Math.min(3, c.lv + 1);
+    const lv = m.k === 'ftr' ? Math.max(c.lv, 2) : Math.min(3, c.lv + 1); // เปลี่ยนฟรี = Lv2
     el.innerHTML = head(m.k === 'ftr' ? 'เปลี่ยนฟรีเป็น…' : 'เปลี่ยนเป็น…') + `<p class="gm-note">${INFO[c.type].name} Lv${c.lv} → เลือกชนิดใหม่ · ${c.lv >= 3 ? 'Lv3 อยู่แล้ว: ไม่บวกเลเวล ได้จั่ว 1 ใบแทน' : `เลเวล +1 เป็น Lv${lv}`}</p>
       <div class="gm-types">${TYPES.map(t => `<button type="button" class="gm-type" data-act="gaugeTo" data-k="${t}" aria-label="เปลี่ยนเป็น ${INFO[t].name} Lv${lv}">${cardHTML({ type: t, lv })}<span>${INFO[t].th}</span></button>`).join('')}</div>
       <button type="button" class="gm-back" data-act="gaugeUse" data-k="${m.k || 'tr'}">← เลือกการ์ดใบอื่น</button>`;
