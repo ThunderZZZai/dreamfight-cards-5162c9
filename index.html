@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793265866">
+<meta name="df-build" content="1793266138">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -914,7 +914,9 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
    คลิปพื้นดำ 1280×720 ขยายเต็มจอ ซ้อน screen · #titleFx ห้ามมี opacity/transform ไม่งั้นขึ้นกล่องดำ */
 #titleFx{position:absolute;inset:0;pointer-events:none} /* ห้ามใส่ z-index ที่กล่องนี้ = กลายเป็นกลุ่มแยก วิดีโอผสมกับพื้นใสแล้วเห็นพื้นดำ */
 /* ตี้ 2026-10-29: ตัวอักษรทึบ (WebM มี alpha · ไม่ใช้ screen แล้ว) + เล็กลงเหลือ 78% ของจอ · Safari เล่น alpha ของ WebM ไม่ได้ = ใช้ MP4 พื้นดำ + screen แทน */
-#titleFx video{position:absolute;left:11%;top:11%;z-index:26;width:78%;height:78%;visibility:hidden}
+/* ตี้ 2026-10-29: ขนาดเท่ารูปคำเดิม (ตัวอักษร ROUND/ACTION/FIGHT สูง ~110px · K.O. ~190px) · กลางจอที่ y ~46% ตำแหน่งเดียวกับป้ายเดิม */
+#titleFx video{position:absolute;--s:44%;left:calc((100% - var(--s)) / 2);top:calc(46% - var(--s) / 2);z-index:26;width:var(--s);height:var(--s);visibility:hidden}
+#titleFx video[data-t="ko"],#titleFx video[data-t="dko"]{--s:64%}
 #titleFx video.scr{mix-blend-mode:screen}
 #titleFx video.on{visibility:visible}
 #laneCall{position:absolute;left:0;right:0;top:400px;z-index:25;text-align:center;pointer-events:none;opacity:0;line-height:0}
