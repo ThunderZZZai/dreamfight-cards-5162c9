@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793267611">
+<meta name="df-build" content="1793276880">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -891,6 +891,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 #world.lay-player[data-phase="pick"] #controls .hint,#world.lay-player[data-phase="action"] #controls .hint{visibility:hidden}
 #world.lay-player #controls .hint{text-shadow:0 2px 6px rgba(0,0,0,.9),0 0 2px rgba(0,0,0,.9)}
 #world.lay-spec #controls.spec-mini{left:auto;right:16px;top:138px;width:auto;max-width:620px;height:36px;display:flex;gap:10px;padding:0 4px 0 12px;border-radius:999px;background:rgba(5,7,11,.42);border-color:rgba(255,255,255,.1)}
+#world.lay-spec #controls.spec-mini:empty{display:none} /* ตี้ 2026-10-29: แถบชมว่าง = ซ่อน */
 #world.lay-spec #controls.spec-mini .hint{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#d6dde8}
 #world.lay-spec #controls.spec-mini .spec-badge{font-size:11px;padding:0 8px;margin-right:6px}
 #world.lay-spec #controls.spec-mini .btns-main:empty{display:none}
@@ -4610,7 +4611,7 @@ function toStart(screen = 'start') {
 }
 let quitArmed = 0;
 function quit(btn) {
-  if (Date.now() - quitArmed < 3000) { quitArmed = 0; btn.textContent = 'ออกจากเกม'; toStart(ui.mode === 'pvp' || ui.mode === 'spec' ? 'pvp' : 'lobby'); return; }
+  if (Date.now() - quitArmed < 3000) { quitArmed = 0; btn.textContent = 'ออกจากเกม'; toStart(ui.mode === 'pvp' || (ui.mode === 'spec' && !(ui.spec && ui.spec.bot)) ? 'pvp' : 'lobby'); return; } // BOT VS BOT ออก = กลับ LOBBY
   quitArmed = Date.now();
   btn.textContent = 'กดอีกครั้งเพื่อออก';
   setTimeout(() => { btn.textContent = 'ออกจากเกม'; }, 3000);
@@ -5135,6 +5136,8 @@ function renderControls() {
   if (ui.mode === 'spec') {
     $('#controls').classList.remove('has-clock');
     $('#controls').classList.toggle('spec-mini', !ui.winner);
+    // ตี้ 2026-10-29: ระหว่างชมไม่ต้องมีแถบ OBSERVE + ปุ่มออกจากการชม (ออกได้ที่ ⚙ → ออกจากเกม) · จบเกมยังมีปุ่มดูอีกเกม/กลับห้อง
+    if (!ui.winner) { $('#controls').innerHTML = ''; return; }
     $('#controls').innerHTML = `<div class="hint"><span class="spec-badge">OBSERVE</span>${specStatus()}</div>
       <div class="btns-main">${ui.winner ? (ui.spec.bot ? '<button type="button" class="btn primary cta" data-act="bvb">ดูอีกเกม</button>' : '<button type="button" class="btn primary cta" data-act="toPvp">กลับห้อง PVP</button>') : ''}</div>
       <div class="btns">${ui.winner ? '<button type="button" class="btn ghost" data-act="unpeek">ดูผลแพ้ชนะ</button>' : `<button type="button" class="btn ghost" data-act="${ui.spec.bot ? 'toLobby' : 'toPvp'}">ออกจากการชม</button>`}</div>`;
