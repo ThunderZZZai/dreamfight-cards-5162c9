@@ -426,6 +426,69 @@
    "author": "DRAGON-STUDIO",
    "page": "https://pixabay.com/sound-effects/film-special-effects-sword-slice-2-393845/",
    "note": "ตี้ 2026-10-30: การ์ดชนกันกลางจอ (เดิม ctrATK) · เสียงเดิมแบบทุ้มหนักแน่น Ver 2: ลด 5 ครึ่งเสียง + ตุ้บเบส · audio-src/build_epic.py"
+  },
+  "voRound1": {
+   "file": "assets/audio/vo-round1.mp3?v=20261030",
+   "gain": 1.0,
+   "dur": 1.65,
+   "source": "seed-audio-1.0",
+   "title": "Announcer \"Round One\"",
+   "author": "BytePlus Seed Audio 1.0 (AI voice · Siamshort Studio)",
+   "note": "ตี้ 2026-10-30: เสียงพากย์ผู้ประกาศ Ver 1 Arcade (ผู้ชายบาริโทนทุ้มดุ) · ต้นฉบับ audio-src/announcer/aud_v1_arcade.wav · หั่นด้วย audio-src/build_announcer.py"
+  },
+  "voRound2": {
+   "file": "assets/audio/vo-round2.mp3?v=20261030",
+   "gain": 1.0,
+   "dur": 1.41,
+   "source": "seed-audio-1.0",
+   "title": "Announcer \"Round Two\"",
+   "author": "BytePlus Seed Audio 1.0 (AI voice · Siamshort Studio)",
+   "note": "ตี้ 2026-10-30: เสียงพากย์ผู้ประกาศ Ver 1 Arcade (ผู้ชายบาริโทนทุ้มดุ) · ต้นฉบับ audio-src/announcer/aud_v1_arcade.wav · หั่นด้วย audio-src/build_announcer.py"
+  },
+  "voRound3": {
+   "file": "assets/audio/vo-round3.mp3?v=20261030",
+   "gain": 1.0,
+   "dur": 1.69,
+   "source": "seed-audio-1.0",
+   "title": "Announcer \"Round Three\"",
+   "author": "BytePlus Seed Audio 1.0 (AI voice · Siamshort Studio)",
+   "note": "ตี้ 2026-10-30: เสียงพากย์ผู้ประกาศ Ver 1 Arcade (ผู้ชายบาริโทนทุ้มดุ) · ต้นฉบับ audio-src/announcer/aud_v1_arcade.wav · หั่นด้วย audio-src/build_announcer.py"
+  },
+  "voFight": {
+   "file": "assets/audio/vo-fight.mp3?v=20261030",
+   "gain": 1.0,
+   "dur": 0.79,
+   "source": "seed-audio-1.0",
+   "title": "Announcer \"Fight\"",
+   "author": "BytePlus Seed Audio 1.0 (AI voice · Siamshort Studio)",
+   "note": "ตี้ 2026-10-30: เสียงพากย์ผู้ประกาศ Ver 1 Arcade (ผู้ชายบาริโทนทุ้มดุ) · ต้นฉบับ audio-src/announcer/aud_v1_arcade.wav · หั่นด้วย audio-src/build_announcer.py"
+  },
+  "voKO": {
+   "file": "assets/audio/vo-ko.mp3?v=20261030",
+   "gain": 1.0,
+   "dur": 1.7,
+   "source": "seed-audio-1.0",
+   "title": "Announcer \"K.O.\"",
+   "author": "BytePlus Seed Audio 1.0 (AI voice · Siamshort Studio)",
+   "note": "ตี้ 2026-10-30: เสียงพากย์ผู้ประกาศ Ver 1 Arcade (ผู้ชายบาริโทนทุ้มดุ) · ต้นฉบับ audio-src/announcer/aud_v1_arcade.wav · หั่นด้วย audio-src/build_announcer.py"
+  },
+  "voBlueWin": {
+   "file": "assets/audio/vo-bluewin.mp3?v=20261030",
+   "gain": 1.0,
+   "dur": 1.73,
+   "source": "seed-audio-1.0",
+   "title": "Announcer \"Blue Win\"",
+   "author": "BytePlus Seed Audio 1.0 (AI voice · Siamshort Studio)",
+   "note": "ตี้ 2026-10-30: เสียงพากย์ผู้ประกาศ Ver 1 Arcade (ผู้ชายบาริโทนทุ้มดุ) · ต้นฉบับ audio-src/announcer/aud_v1_arcade.wav · หั่นด้วย audio-src/build_announcer.py"
+  },
+  "voRedWin": {
+   "file": "assets/audio/vo-redwin.mp3?v=20261030",
+   "gain": 1.0,
+   "dur": 2.55,
+   "source": "seed-audio-1.0",
+   "title": "Announcer \"Red Win\"",
+   "author": "BytePlus Seed Audio 1.0 (AI voice · Siamshort Studio)",
+   "note": "ตี้ 2026-10-30: เสียงพากย์ผู้ประกาศ Ver 1 Arcade (ผู้ชายบาริโทนทุ้มดุ) · ต้นฉบับ audio-src/announcer/aud_v1_arcade.wav · หั่นด้วย audio-src/build_announcer.py"
   }
  },
  "bgm": {

@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793367578">
+<meta name="df-build" content="1793372257">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -3809,6 +3809,14 @@ async function laneVdo(i, plan, gid, r, keep = false) {
     duckMusic(false);
   }
 }
+// ตี้ 2026-10-30: เสียงพากย์ BLUE WIN / RED WIN ครั้งเดียวต่อเกม — ขึ้นพร้อมคำ WIN ในท่าชนะ · ไม่มี VDO หรือกดข้ามก่อนคำขึ้น = ขึ้นตอนเข้าหน้าผลแทน
+// คำ K.O. ยาว ~1.7 วิ: ถ้ายังพูดไม่จบ (ปิด VDO + เร่งความเร็ว หน้าผลขึ้นหลัง K.O. แค่ ~0.6 วิ) รอให้จบก่อนค่อยพูด WIN
+function winVo(side) {
+  if (ui.winVo === ui.gid) return;
+  const gid = ui.winVo = ui.gid, gap = 1650 - (performance.now() - (ui.koVoAt || -1e9));
+  const say = () => { if (gid === ui.gid) sfx.play(side === 'RED' ? 'voRedWin' : 'voBlueWin'); };
+  if (gap > 0) setTimeout(say, gap); else say();
+}
 // ท่าชนะ (ตี้ 2026-10-28 · Drive "07. Winner"): หลัง K.O. เล่น VDO ของฝั่งที่ชนะเต็มจอ แล้วค่อยเข้าหน้าผล · SKIP ข้ามได้
 async function winVdo(side, gid) {
   const name = `winner-${side.toLowerCase()}`, W = $('#world'), el = $('#vdoFight'), lv = { skip: false, failed: false, clips: [name] }, v0 = Date.now();
@@ -3821,7 +3829,7 @@ async function winVdo(side, gid) {
   W.classList.add('vdo-fight', 'vdo-full');
   $('#vdoLane').textContent = `${side} WIN`;
   $('#vdoBar').hidden = false;
-  setTimeout(() => { if (ui.vdo === lv) vcAdd('vc-win', fxImg(side === 'RED' ? 'red-win' : 'blue-win', 170, side === 'RED' ? ';--g:255,80,80' : ';--g:90,150,255')); }, 1200); // คำ WIN กลางล่าง (ไม่บังหน้าตัวละคร)
+  setTimeout(() => { if (ui.vdo === lv) { vcAdd('vc-win', fxImg(side === 'RED' ? 'red-win' : 'blue-win', 170, side === 'RED' ? ';--g:255,80,80' : ';--g:90,150,255')); winVo(side); } }, 1200); // คำ WIN กลางล่าง (ไม่บังหน้าตัวละคร) + เสียงพากย์
   el.src = vdo.url(name);
   el.volume = sfx.vol;
   el.muted = !sfx.on;
@@ -4031,6 +4039,7 @@ async function beginRound(gid) {
   const rn = g.round + 1; // doDraw ค่อยเพิ่ม g.round
   // ตี้ 2026-10-29 (จั่วเบิ้ล 4 ใบ): ระหว่างรอป้าย ROUND ต้องตั้ง busy/phase ก่อน ไม่งั้น nextRound ถูกเรียกซ้ำ (ผู้ชม/PVP วนเช็กทุกจังหวะ) แล้วจั่วสองรอบ
   Object.assign(ui, { phase: 'draw', busy: true });
+  if (rn <= 3) sfx.play(`voRound${rn}`); // ตี้ 2026-10-30: เสียงพากย์ ROUND 1–3 พร้อมป้าย (Seed Audio · Ver 1 Arcade) · รอบ 4 ขึ้นไปยังไม่มีเสียงพากย์
   if (rn <= 10) { await titleFx(`round${rn}`); if (gid !== ui.gid) return; }
   Object.assign(ui, { phase: 'draw', busy: true, picks: [], undo: [], pickShown: false, place: [], shown: -1, results: [], detail: null, pending: null, ko: null });
   const res = doDraw(g);
@@ -4570,6 +4579,7 @@ async function runFight() {
   await wait(350);
   if (gid !== ui.gid) return;
   sfx.play('tickHi');
+  sfx.play('voFight'); // ตี้ 2026-10-30: เสียงพากย์ FIGHT! พร้อมป้าย
   await titleFx('fight');
   for (let i = 0; i < SLOT_N; i++) {
     await wait(i ? 300 : 150);
@@ -4673,6 +4683,7 @@ async function runFight() {
   if (ui.winner && ui.mode === 'arcade') addLog(`เฉลย · ${botStyleText(g, OPP)}`, 'sys');
   render();
   if (ui.winner) sfx.play(ui.winner === 'DRAW' ? 'levelup' : ui.mode === 'spec' || ui.winner === ME ? 'win' : 'lose');
+  if (ui.winner && ui.winner !== 'DRAW') winVo(ui.winner);
 }
 async function koFx(v) {
   const el = $('#ko'), dbl = v.ko.length > 1, side = v.winner === 'DRAW' ? 'draw' : v.winner.toLowerCase();
@@ -4684,6 +4695,7 @@ async function koFx(v) {
   koClip.then(ok => { const b = el.querySelector('.ko-gap'); if (!ok && b) { b.innerHTML = fxImg(dbl ? 'double-ko' : 'ko', dbl ? 250 : 230); b.style.height = ''; } }); // เล่นคลิปไม่ได้ = รูปคำเดิม
   el.hidden = false;
   sfx.play('ko');
+  sfx.play('voKO'); ui.koVoAt = performance.now(); // ตี้ 2026-10-30: เสียงพากย์ K.O. (DOUBLE K.O. ก็ใช้คำเดียวกัน)
   flashStage(side);
   quake(true);
   await wait(1600);

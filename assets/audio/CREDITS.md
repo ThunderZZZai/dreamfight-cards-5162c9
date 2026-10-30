@@ -1,6 +1,6 @@
 # DreamFight Cards — audio credits
 
-Every sound and music file in `assets/audio/` is made from free audio downloaded from [Pixabay](https://pixabay.com). All of it is under the **Pixabay Content License** (https://pixabay.com/service/license-summary/): free to use in commercial and non-commercial projects and free to edit. No attribution is required. The authors are listed here anyway, as thanks and so each source can be traced.
+Every sound and music file in `assets/audio/` is made from free audio downloaded from [Pixabay](https://pixabay.com), except the announcer voice (`vo-*.mp3`, see **Announcer voice** below). All of it is under the **Pixabay Content License** (https://pixabay.com/service/license-summary/): free to use in commercial and non-commercial projects and free to edit. No attribution is required. The authors are listed here anyway, as thanks and so each source can be traced.
 
 You may not sell or redistribute these files as they are, on their own (for example as a sound pack). Here they are part of the game, which the licence allows.
 
@@ -66,6 +66,20 @@ Layered sounds list every source they use.
 |  |  | Heartbeat - Single (383748) | Universfield | https://pixabay.com/sound-effects/film-special-effects-heartbeat-single-383748/ |
 | swap | `sfx-swap.mp3` | Shuffle cards (46455) | freesound_community | https://pixabay.com/sound-effects/film-special-effects-shuffle-cards-46455/ |
 
+## Announcer voice
+
+AI-generated with **BytePlus Seed Audio 1.0** (text-to-audio, via Siamshort Studio) on 2026-10-30. There is no Pixabay source. The voice is "Ver 1 Arcade": a deep male baritone announcer. The prompt is in `audio-src/announcer/auditions_seed10.json`.
+
+| Sound | File | Line |
+|---|---|---|
+| voRound1 | `vo-round1.mp3` | Round One |
+| voRound2 | `vo-round2.mp3` | Round Two |
+| voRound3 | `vo-round3.mp3` | Round Three |
+| voFight | `vo-fight.mp3` | Fight |
+| voKO | `vo-ko.mp3` | K.O. |
+| voBlueWin | `vo-bluewin.mp3` | Blue Win |
+| voRedWin | `vo-redwin.mp3` | Red Win |
+
 ## Authors (15), 41 Pixabay sources in total
 
 Alex_Kizenkov, AlexGrohl, AudioPapkin, DavidDumaisAudio, DRAGON-STUDIO, floraphonic, freesound_community, Kulakovka, LordSonny, OxidVideos, RescopicSound, SoulProdMusic, TanwerAman, u_fe12rqkbth, Universfield
@@ -76,3 +90,5 @@ Alex_Kizenkov, AlexGrohl, AudioPapkin, DavidDumaisAudio, DRAGON-STUDIO, florapho
 2026-10-30: ตี้เลือกเสียงแนว Epic จากหน้าฟัง sfx-epic.html — `shieldHit` = shield guard (การ์ด Defence พุ่งเข้าหลอดโล่ · max momentary −16 LUFS) · `gauge` = Sword Schwing ลด 5 ครึ่งเสียง + เบส (ใช้เกจพร 1–3 เกจ · −17 LUFS) · ไฟล์ต้นฉบับใน audio-src/raw-new/ · ทำซ้ำด้วย audio-src/build_epic.py
 
 2026-10-30 (ต่อ): การ์ดชนกันกลางจอ — ตี้ขอ "เอาอันเดิมแต่ทุ้ม ๆ หนักแน่น" ทำ 3 เวอร์ชันจาก Sword Slice 2 (sfx-ctrATK.mp3) ตี้เลือก Ver 2 → `clash` = ลด 5 ครึ่งเสียง + ตุ้บเบสลึกตรงจังหวะชน + เก็บความคมดาบเดิม (max momentary −15.2 LUFS · จังหวะกระแทก 0.14 วิเท่าเดิม) · ทำซ้ำด้วย `python3 audio-src/build_epic.py clash`
+
+2026-10-30 (ต่อ): เสียงพากย์ผู้ประกาศ — ตี้ขอโทนผู้ชายเข้มดุทัน ทำ 4 แบบด้วย Seed Audio 1.0 (Seed Audio 1.5 ล้ม error 500 ทุกงาน) ตี้เลือก Ver 1 Arcade → หั่นเป็น 7 ไฟล์ `vo-*.mp3` (max momentary −14.5 LUFS ดังกว่า SFX อื่นนิดหน่อยให้ลอยเหนือเพลง) · ทำซ้ำด้วย `python3 audio-src/build_announcer.py`
