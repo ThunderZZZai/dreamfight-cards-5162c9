@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793372612">
+<meta name="df-build" content="1793378549">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -3532,8 +3532,8 @@ function vcCall(main, sub, cls, ctr) {
 // ปะทะกลางจอ (ตี้ 2026-10-28) ก่อนพุ่งเข้าเกจ — อ่านผลจาก r (rollClash) อย่างเดียว ไม่แตะตัวสุ่ม
 // โจมตีเจอหลบพ้น = การ์ดตีพุ่งใส่ การ์ด Dodge กระโดดหลบ "MISS!" · โจมตีเจอโล่ = ชนการ์ดโล่ บาเรียขึ้น "BLOCK!/ลดดาเมจ!"
 // ตีกันทั้งคู่ = ชนกันกลางจอ "CLASH!" · อีกฝั่งว่าง = พุ่งมากลางจอตัวเดียว · ไม่มีใครตี = มาพบกันเฉย ๆ
-// ตี้ 2026-10-30: การ์ดชนกันกลางจอใช้เสียง clash (Sword Slice 2 แบบทุ้ม) · Ultimate ยังใช้ ctrULT · การ์ดพุ่งเข้าหลอด HP ยังเป็น ctrATK
-const clashSnd = t => t === 'ATK' ? 'clash' : `ctr${t}`;
+// ตี้ 2026-10-30: การ์ดชนกันกลางจอใช้เสียง clash (Sword Slice 2 แบบทุ้ม)
+// ตี้ 2026-10-30 (ต่อ): Ultimate ชนด้วย (เดิม ctrULT หินแตก) + การ์ดพุ่งเข้าหลอด HP ด้วย (เดิม ctrATK/ctrULT) = clash ตัวเดียวทุกจังหวะที่ชนแล้วโดนเลือด
 async function vcClash(r, stop) {
   const has = SIDES.filter(s => r[s].card);
   for (const s of SIDES) vcPop(s, r[s].card);
@@ -3565,7 +3565,7 @@ async function vcClash(r, stop) {
       if (stop()) return;
       vfxImpact('clash', mx, my); quake(true); flashStage(atk);
       vcCall('หลบไม่พ้น!', `${atk} โจมตีเข้า`, 'hit', ctr);
-      sfx.play(clashSnd(T(atk)));
+      sfx.play('clash');
       vcMove(dodger, [mx + away * 60, my + 20], { rot: away * 14, ms: 260, ease: 'cubic-bezier(.2,.8,.3,1)' });
       await sleep(420);
       vcMove(atk, VC_MID[atk], { ms: 320, ease: 'cubic-bezier(.2,.8,.3,1.3)' });
@@ -3592,7 +3592,7 @@ async function vcClash(r, stop) {
     quake(ult || o.hpLoss > 0);
     const main = o.hpLoss > 0 ? (ctr === atk ? 'ทะลวงโล่!' : 'ลดดาเมจ!') : 'BLOCK!';
     vcCall(main, o.hpLoss > 0 ? `โล่รับ ${o.absorbed} · ทะลุ ${o.hpLoss}` : `โล่รับไว้หมด${o.absorbed ? ` ${o.absorbed}` : ''}`, o.hpLoss > 0 ? 'hit' : 'block', ctr);
-    sfx.play(ult || o.hpLoss > 0 ? clashSnd(T(atk)) : 'defend');
+    sfx.play(ult || o.hpLoss > 0 ? 'clash' : 'defend');
     if (ult) vcMove(atk, at(750), { rot: away * 13.5, ms: 260, ease: 'cubic-bezier(.2,.8,.3,1)' });
     else {
       vcMove(atk, at(541), { rot: away * 7.5, ms: 300, ease: 'cubic-bezier(.2,.8,.3,1)' });
@@ -3608,7 +3608,7 @@ async function vcClash(r, stop) {
     if (stop()) return;
     vfxImpact('clash', 960, 850); quake(true); flashStage(ctr || 'RED');
     vcCall('CLASH!', ctr ? '' : 'ปะทะกันเต็มแรง', 'clash', ctr);
-    sfx.play(T('RED') === 'ULT' || T('BLUE') === 'ULT' ? 'ctrULT' : 'clash');
+    sfx.play('clash');
     for (const s of SIDES) vcMove(s, [VC_MID[s][0] + (s === 'RED' ? -36 : 36), 850], { rot: s === 'RED' ? -9 : 9, ms: 260, ease: 'cubic-bezier(.2,.8,.3,1)' });
     await sleep(380);
     for (const s of SIDES) vcMove(s, VC_MID[s], { ms: 320, ease: 'cubic-bezier(.2,.8,.3,1.3)' });
@@ -3676,7 +3676,7 @@ async function vcFinale(g, r, acts, hit, stop) {
     if (fx === 'hit' || fx === 'block' || fx === 'shield') vfxImpact(fx === 'hit' ? HIT_COL[a.card.type] : 'hp_blue', x1, y1, fx === 'hit' ? 1 : y1 === VC_SH[to][1] ? 0.55 : 0.8);
     else vcAdd(`vc-fx ${fx} on-${to.toLowerCase()}`, VC_FX_HTML, `left:${x1}px;top:${y1}px`);
     if (fx === 'hit' || fx === 'steal') { quake(true); flashStage(s); }
-    sfx.play(fx === 'hit' ? `ctr${a.card.type}` : fx === 'block' ? 'defend' : fx === 'shield' ? 'shieldHit' : fx === 'steal' ? 'ctrDODGE' : 'miss');
+    sfx.play(fx === 'hit' ? 'clash' : fx === 'block' ? 'defend' : fx === 'shield' ? 'shieldHit' : fx === 'steal' ? 'ctrDODGE' : 'miss');
     let rest = vcMs(a) - VC_FLY;
     if (fx === 'steal') {
       const n = Math.min(a.n, g.p[to].hand.length), [xp, yp] = VC_POP[s];
