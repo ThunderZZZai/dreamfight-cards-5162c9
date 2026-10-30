@@ -35,6 +35,7 @@ Layered sounds list every source they use.
 | hurt | `sfx-hurt.mp3` | Power Punch (192118) | Universfield | https://pixabay.com/sound-effects/film-special-effects-power-punch-192118/ |
 | heal | `sfx-heal.mp3` | Spell Casting (229208) | Universfield | https://pixabay.com/sound-effects/film-special-effects-spell-casting-229208/ |
 | levelup3 | `sfx-levelup3.mp3` | Brass Fanfare (144755) | Universfield | https://pixabay.com/sound-effects/film-special-effects-brass-fanfare-144755/ |
+| gauge | `sfx-gauge.mp3` | Sword Schwing (40520) | freesound_community | https://pixabay.com/sound-effects/film-special-effects-sword-schwing-40520/ |
 | levelup | `sfx-levelup.mp3` | Level Up 02 (528919) | Tithuh | https://pixabay.com/sound-effects/film-special-effects-level-up-02-528919/ |
 | win | `sfx-win.mp3` | Turbo / Action Powerful Rock Logo (122875) | SoulProdMusic | https://pixabay.com/music/rock-turbo-action-powerful-rock-logo-intro-outro-rock-music-122875/ |
 |  |  | Aggressive Huge Hit Logo (139134) | Alex_Kizenkov | https://pixabay.com/sound-effects/film-special-effects-aggressive-huge-hit-logo-139134/ |
@@ -51,6 +52,7 @@ Layered sounds list every source they use.
 | ctrULT | `sfx-ctrULT.mp3` | Whoosh Cinematic (376875) | DRAGON-STUDIO | https://pixabay.com/sound-effects/film-special-effects-whoosh-cinematic-376875/ |
 |  |  | Small Rock Break (194553) | LordSonny | https://pixabay.com/sound-effects/film-special-effects-small-rock-break-194553/ |
 |  |  | Cinematic Impact Boom 05 (352465) | Universfield | https://pixabay.com/sound-effects/film-special-effects-cinematic-impact-boom-05-352465/ |
+| shieldHit | `sfx-shieldHit.mp3` | shield guard (6963) | freesound_community | https://pixabay.com/sound-effects/film-special-effects-shield-guard-6963/ |
 | ctrDEF | `sfx-ctrDEF.mp3` | Sword Clash (241729) | u_fe12rqkbth | https://pixabay.com/sound-effects/film-special-effects-sword-clash-241729/ |
 |  |  | Cinematic Impact Boom 03 (294435) | Universfield | https://pixabay.com/sound-effects/film-special-effects-cinematic-impact-boom-03-294435/ |
 |  |  | Magic Spell 02 (250240) | Universfield | https://pixabay.com/sound-effects/film-special-effects-magic-spell-02-250240/ |
@@ -70,3 +72,4 @@ Alex_Kizenkov, AlexGrohl, AudioPapkin, DavidDumaisAudio, DRAGON-STUDIO, florapho
 2026-10-28: ตี้เลือกเสียงใหม่ — `ult` = Epic Spell Impact (ตัด 2.1 วิ เฟดท้าย), `levelup3` = Brass Fanfare (ตัด 2.2 วิ เฟดท้าย) · ระดับ max momentary −16 LUFS เท่าเดิม · ไฟล์ต้นฉบับใน audio-src/raw-new/
 2026-10-28: `levelup` = Gaming victory (ตัด 1.8 วิ เฟดท้าย, max momentary −18 LUFS — เบากว่า levelup3 −16)
 2026-10-28 (รอบ 2): `levelup` เปลี่ยนเป็น Level Up 02 by Tithuh (แนวทุ้ม · ตัด 2.0 วิ เฟดท้าย, max momentary −18 LUFS)
+2026-10-30: ตี้เลือกเสียงแนว Epic จากหน้าฟัง sfx-epic.html — `shieldHit` = shield guard (การ์ด Defence พุ่งเข้าหลอดโล่ · max momentary −16 LUFS) · `gauge` = Sword Schwing ลด 5 ครึ่งเสียง + เบส (ใช้เกจพร 1–3 เกจ · −17 LUFS) · ไฟล์ต้นฉบับใน audio-src/raw-new/ · ทำซ้ำด้วย audio-src/build_epic.py

@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793353319">
+<meta name="df-build" content="1793355770">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -2263,6 +2263,8 @@ const sfx = (() => {
     // Defence ปราบ Attack: ปัดป้องดังเคร้ง (โลหะหนัก + แตก + บูม) → คอรัสศักดิ์สิทธิ์ + ประกาย (ได้ HP คืน)
     ctrDEF:  () => { metal({ base: 520, dur: 1.8, vol: 0.42 }); noise({ dur: 0.05, vol: 0.5, type: 'highpass', f0: 3000, q: 0.8, attack: 0.001, send: 0.3 }); boom({ f0: 140, f1: 60, dur: 0.5, vol: 0.7 }); choir({ at: 0.15, notes: [N.D4, N.Fs4, N.A4, N.D5], dur: 1.4, vol: 0.06, attack: 0.1 }); sparkle({ at: 0.2, notes: [N.A5, N.D6, N.Fs6, N.A6], step: 0.06, vol: 0.06 }); },
     // Dodge ปราบ Ultimate: ลมพุ่งหลบวูบ → ท่อนเวทย์พุ่งขึ้น + ประกาย · อัลติเมทวืดเป็นบูมอู้อี้
+    shieldHit: () => SOUND.ctrDEF(), // ตี้ 2026-10-30: ไฟล์จริง sfx-shieldHit (shield guard) · โหลดไม่ได้ใช้เสียงสังเคราะห์ของ ctrDEF
+    gauge: () => SOUND.levelup(),    // ตี้ 2026-10-30: ไฟล์จริง sfx-gauge (Sword Schwing แบบทุ้ม)
     ctrDODGE: () => { swish({ dur: 0.45, f0: 400, f1: 6000, vol: 0.5, q: 0.7, attack: 0.1 }); swish({ at: 0.25, dur: 0.5, f0: 6000, f1: 700, vol: 0.3, q: 0.8, attack: 0.05 }); tone({ at: 0.1, f0: 900, f1: 2400, dur: 0.35, vol: 0.11, send: 0.7 }); sparkle({ at: 0.2, notes: [N.E5, N.A5, N.E6, N.A6], step: 0.05, vol: 0.08 }); boom({ at: 0.05, f0: 90, f1: 40, dur: 0.6, vol: 0.6 }); brass({ at: 0.15, notes: [N.A3, N.E4], dur: 0.5, vol: 0.08, attack: 0.02 }); },
     // นับเวลา: ติ๊กไม้เบา ๆ ทุกวินาที · 10 วิสุดท้ายสูงและดังขึ้น · 5 วิสุดท้ายมีตุ้บเหมือนหัวใจเต้น
     tick:    () => { noise({ dur: 0.03, vol: 0.07, f0: 2600, q: 6, attack: 0.001, send: 0.06 }); tone({ type: 'triangle', f0: 1250, f1: 1100, dur: 0.045, vol: 0.028, attack: 0.001, send: 0.05 }); },
@@ -3668,7 +3670,7 @@ async function vcFinale(g, r, acts, hit, stop) {
     if (fx === 'hit' || fx === 'block' || fx === 'shield') vfxImpact(fx === 'hit' ? HIT_COL[a.card.type] : 'hp_blue', x1, y1, fx === 'hit' ? 1 : y1 === VC_SH[to][1] ? 0.55 : 0.8);
     else vcAdd(`vc-fx ${fx} on-${to.toLowerCase()}`, VC_FX_HTML, `left:${x1}px;top:${y1}px`);
     if (fx === 'hit' || fx === 'steal') { quake(true); flashStage(s); }
-    sfx.play(fx === 'hit' ? `ctr${a.card.type}` : fx === 'block' ? 'defend' : fx === 'shield' ? 'ctrDEF' : fx === 'steal' ? 'ctrDODGE' : 'miss');
+    sfx.play(fx === 'hit' ? `ctr${a.card.type}` : fx === 'block' ? 'defend' : fx === 'shield' ? 'shieldHit' : fx === 'steal' ? 'ctrDODGE' : 'miss');
     let rest = vcMs(a) - VC_FLY;
     if (fx === 'steal') {
       const n = Math.min(a.n, g.p[to].hand.length), [xp, yp] = VC_POP[s];
@@ -5112,7 +5114,7 @@ function gaugeFx(s, res, delay = 0) {
   flyGains({ [s]: res });
   gainFx({ [s]: res });
   gaugeFloat(s, { draw: 'ใช้เกจ: จั่ว 1', tr: 'ใช้เกจ: เปลี่ยนการ์ด', ftr: 'เปลี่ยนการ์ดฟรี', merge: 'ผสมการ์ด', max: 'พลังเต็ม!' }[res.k], delay, res.k === 'max' ? fxImg('full-power', 64) : '');
-  sfx.play(res.k === 'max' ? 'levelup3' : res.k === 'draw' ? 'draw' : 'levelup', delay);
+  sfx.play(res.k === 'ftr' || res.k === 'merge' ? 'levelup' : 'gauge', delay); // ตี้ 2026-10-30: ใช้เกจพร (จั่ว / เปลี่ยน / พลังเต็ม) = เสียง gauge ตัวเดียว
 }
 // ใช้พร: คลื่นวงแหวนสีรุ้งพุ่งออกจากกรอบเกจ + แสงรุ้งวาบทั้งจอ (เฉพาะกรอบที่มองเห็นอยู่)
 function gaugeBurst(s) {
