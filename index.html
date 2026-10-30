@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793361522">
+<meta name="df-build" content="1793362254">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -940,9 +940,10 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
    มีเกจ = กรอบเรืองรุ้ง · ใช้พร = คลื่นรุ้ง · การ์ดที่ได้/เปลี่ยนจากพร = กรอบรุ้งแว้บ · รอบพลังเต็ม = การ์ดบนมือ + ช่องวางเรืองรุ้ง */
 #world.lay-player .gauge,#world.lay-spec .gauge{align-items:flex-end;gap:10px}
 #world.lay-player .gin,#world.lay-spec .gin,#world.lay-player .gbtn,#world.lay-spec .gbtn{align-items:flex-end}
-#world.lay-player:not(.me-blue) #gaugeBLUE,#world.lay-player.me-blue #gaugeRED{display:none}
 /* ตี้ 2026-10-28: กรอบเกจชิดขอบนอกช่องการ์ด (RED ขอบซ้าย 40 · BLUE ขอบขวา 1880) */
 #world.lay-player .gauge.red{left:40px;right:auto;top:793px} #world.lay-player .gauge.blue{left:auto;right:40px;top:793px}
+/* ตี้ 2026-10-30: เกจพรของฝั่งตรงข้ามแสดงด้วย (ดูอย่างเดียว · กดไม่ได้) มุมล่างฝั่งตรงข้าม ยกขึ้นเหนือปุ่ม ⚙ (เดิมซ่อน) */
+#world.lay-player:not(.me-blue) #gaugeBLUE,#world.lay-player.me-blue #gaugeRED{top:728px}
 #world.lay-spec .gauge.red{left:35px;right:auto;top:811px} #world.lay-spec .gauge.blue{left:auto;right:35px;top:811px}
 #world.vdo-fight .gauge{opacity:0}
 .gfr{position:relative;flex:none;width:35px;height:250px}
