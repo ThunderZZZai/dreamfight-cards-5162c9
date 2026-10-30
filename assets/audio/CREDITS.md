@@ -68,13 +68,20 @@ Layered sounds list every source they use.
 
 ## Announcer voice
 
-AI-generated with **BytePlus Seed Audio 1.0** (text-to-audio, via Siamshort Studio) on 2026-10-30. There is no Pixabay source. The voice is "Ver 1 Arcade": a deep male baritone announcer. The prompt is in `audio-src/announcer/auditions_seed10.json`.
+AI-generated with **BytePlus Seed Audio 1.0** (text-to-audio, via Siamshort Studio) on 2026-10-30. There is no Pixabay source. The voice is "Ver 1 Arcade": a deep male baritone announcer. The prompt is in `audio-src/announcer/auditions_seed10.json`. Round Four–Ten were generated afterwards with the Ver 1 take attached as the voice reference (`@Audio1`), so they share the same voice.
 
 | Sound | File | Line |
 |---|---|---|
 | voRound1 | `vo-round1.mp3` | Round One |
 | voRound2 | `vo-round2.mp3` | Round Two |
 | voRound3 | `vo-round3.mp3` | Round Three |
+| voRound4 | `vo-round4.mp3` | Round Four |
+| voRound5 | `vo-round5.mp3` | Round Five |
+| voRound6 | `vo-round6.mp3` | Round Six |
+| voRound7 | `vo-round7.mp3` | Round Seven |
+| voRound8 | `vo-round8.mp3` | Round Eight |
+| voRound9 | `vo-round9.mp3` | Round Nine |
+| voRound10 | `vo-round10.mp3` | Round Ten |
 | voFight | `vo-fight.mp3` | Fight |
 | voKO | `vo-ko.mp3` | K.O. |
 | voBlueWin | `vo-bluewin.mp3` | Blue Win |
@@ -92,3 +99,4 @@ Alex_Kizenkov, AlexGrohl, AudioPapkin, DavidDumaisAudio, DRAGON-STUDIO, florapho
 2026-10-30 (ต่อ): การ์ดชนกันกลางจอ — ตี้ขอ "เอาอันเดิมแต่ทุ้ม ๆ หนักแน่น" ทำ 3 เวอร์ชันจาก Sword Slice 2 (sfx-ctrATK.mp3) ตี้เลือก Ver 2 → `clash` = ลด 5 ครึ่งเสียง + ตุ้บเบสลึกตรงจังหวะชน + เก็บความคมดาบเดิม (max momentary −15.2 LUFS · จังหวะกระแทก 0.14 วิเท่าเดิม) · ทำซ้ำด้วย `python3 audio-src/build_epic.py clash`
 
 2026-10-30 (ต่อ): เสียงพากย์ผู้ประกาศ — ตี้ขอโทนผู้ชายเข้มดุทัน ทำ 4 แบบด้วย Seed Audio 1.0 (Seed Audio 1.5 ล้ม error 500 ทุกงาน) ตี้เลือก Ver 1 Arcade → หั่นเป็น 7 ไฟล์ `vo-*.mp3` (max momentary −14.5 LUFS ดังกว่า SFX อื่นนิดหน่อยให้ลอยเหนือเพลง) · ทำซ้ำด้วย `python3 audio-src/build_announcer.py`
+2026-10-30 (ต่อ 2): ตี้ขอ Round 4–10 → เจนด้วยเสียงต้นแบบ aud_v1_arcade.wav (@Audio1) ได้ `vo-round4..10.mp3` เสียงคนเดิม · เกมพากย์ ROUND ครบ 1–10

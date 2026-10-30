@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793372257">
+<meta name="df-build" content="1793372612">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -4039,7 +4039,7 @@ async function beginRound(gid) {
   const rn = g.round + 1; // doDraw ค่อยเพิ่ม g.round
   // ตี้ 2026-10-29 (จั่วเบิ้ล 4 ใบ): ระหว่างรอป้าย ROUND ต้องตั้ง busy/phase ก่อน ไม่งั้น nextRound ถูกเรียกซ้ำ (ผู้ชม/PVP วนเช็กทุกจังหวะ) แล้วจั่วสองรอบ
   Object.assign(ui, { phase: 'draw', busy: true });
-  if (rn <= 3) sfx.play(`voRound${rn}`); // ตี้ 2026-10-30: เสียงพากย์ ROUND 1–3 พร้อมป้าย (Seed Audio · Ver 1 Arcade) · รอบ 4 ขึ้นไปยังไม่มีเสียงพากย์
+  if (rn <= 10) sfx.play(`voRound${rn}`); // ตี้ 2026-10-30: เสียงพากย์ ROUND 1–10 พร้อมป้าย (Seed Audio · Ver 1 Arcade) · เกิน 10 รอบไม่มีทั้งป้ายและเสียง
   if (rn <= 10) { await titleFx(`round${rn}`); if (gid !== ui.gid) return; }
   Object.assign(ui, { phase: 'draw', busy: true, picks: [], undo: [], pickShown: false, place: [], shown: -1, results: [], detail: null, pending: null, ko: null });
   const res = doDraw(g);
