@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793347831">
+<meta name="df-build" content="1793348749">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -4951,9 +4951,10 @@ function renderHud(s) {
   if (bo) {
     ui.boDot = ui.boDot || {};
     const w = bo.w[s], wPrev = ui.boDot[s] != null ? ui.boDot[s] : w;
-    dots.forEach((d, k) => { d.className = `dot ${lc} bo${k < w ? ' on' : ''}${k < w && k >= wPrev ? ' new' : ''}`; });
+    const dx = ((dots.length - bo.n) * 23.5 / 2) * (s === 'RED' ? 1 : -1); // ดวงห่างกัน ~23.5 px · ใช้ n ดวงจากด้านนอก แล้วเลื่อนเข้ากลางแผ่น
+    dots.forEach((d, k) => { d.className = `dot ${lc} bo${k < w ? ' on' : ''}${k < w && k >= wPrev ? ' new' : ''}`; d.hidden = k >= bo.n; d.style.translate = dx ? `${dx}px 0` : ''; });
     ui.boDot[s] = w;
-  } else dots.forEach((d, k) => { d.className = `dot ${lc} g k${k}${k < gN ? ' on' : ''}${gN >= GAUGE_MAX ? ' full' : ''}${k < gN && k >= gPrev ? ' new' : ''}`; });
+  } else dots.forEach((d, k) => { d.hidden = false; d.style.translate = ''; d.className = `dot ${lc} g k${k}${k < gN ? ' on' : ''}${gN >= GAUGE_MAX ? ' full' : ''}${k < gN && k >= gPrev ? ' new' : ''}`; });
   ui.gDot[s] = gN;
   renderShield(s, inGame ? ui.g.p[s].shield : 0, inGame && !ui.intro);
   renderGauge(s);
@@ -5749,11 +5750,12 @@ const roomLock = () => (roomMeta() && roomMeta().lock) || '';
 const roomAuthed = () => !roomLock() || ssGet(`df-key-${ROOM.id}`) === roomLock();
 const roomReady = () => net.state === 'on' && (!!roomMeta() || (net.onAt && Date.now() - net.onAt > 2500)); // รอเห็นชื่อ/รหัสห้องก่อน กันกด READY ห้องที่ล็อก
 /* ───────── ห้อง Bo (ตี้ 2026-10-30) ─────────
-   ห้อง PVP ที่สร้างเองเลือกแข่งแบบ Bo 3 ได้ (ไว้จัดโชว์แมตช์) — ใครชนะครบ BO_WINS เกมก่อนชนะซีรีส์ · โหมดอื่นยังชนะเกมเดียว
+   ห้อง PVP ที่สร้างเองเลือกแข่งแบบ Bo 3 ได้ (ไว้จัดโชว์แมตช์) — ชนะ 2 ใน 3 เกม (ใครชนะครบ BO_WINS เกมก่อนชนะซีรีส์) · โหมดอื่นยังชนะเกมเดียว
    แต่ละเกมยังเป็น PVP ปกติ (จบเกม → ปล่อยที่นั่ง → READY ใหม่) · ปุ่ม "เกมต่อไป" พากลับนั่งฝั่งเดิมเอง ผู้ชมตามไปดูเกมถัดไปเอง
    meta.bo = จำนวนเกมที่ต้องชนะ (1 = เกมเดียว) · presence.ser = { s: รหัสซีรีส์, u: เวลาเริ่ม, g: [[รหัสเกม, 'R'|'B'], …] }
    ทุกคนในห้องถือซีรีส์ชุดล่าสุด (u มากสุด) รวมผลจากทุกคนตามรหัสเกม (ผลเกมคำนวณตรงกันทุกเครื่องอยู่แล้ว) · นับตามฝั่ง RED/BLUE */
-const BO_WINS = 3;
+const BO_WINS = 2; // ตี้ 2026-10-30: ชนะ 2 ใน 3 เกม
+const boLabel = n => `Bo ${n * 2 - 1}`; // จำนวนเกมที่ต้องชนะ → ชื่อแบบ (2 = Bo 3)
 function roomBo() { const m = !ON_CLAUDE && !LIST_MODE ? roomMeta() : null; return m && m.bo > 1 ? m.bo : 1; }
 function boLive() { return ui.mode === 'pvp' ? !!ui.pvp : ui.mode === 'spec' && !!ui.spec && !ui.spec.bot; }
 function boSer() {
@@ -5794,12 +5796,12 @@ function boRecord(mid, winner) {
 function boNextOpen() { const b = boLive() && ui.winner ? boScore() : null; return !!b && !b.done; }
 function boChip() {
   const b = boScore();
-  return b ? `<span class="bo">🏆 Bo ${b.n} · RED ${b.w.RED} – ${b.w.BLUE} BLUE${b.done ? ` · ${b.done} ชนะซีรีส์` : b.games ? ` · เกมถัดไป: เกมที่ ${b.games + 1}` : ' · ชนะครบ ' + b.n + ' เกมก่อนชนะ'}</span>` : '';
+  return b ? `<span class="bo">🏆 ${boLabel(b.n)} · RED ${b.w.RED} – ${b.w.BLUE} BLUE${b.done ? ` · ${b.done} ชนะซีรีส์` : b.games ? ` · เกมถัดไป: เกมที่ ${b.games + 1}` : ' · ชนะครบ ' + b.n + ' เกมก่อนชนะ'}</span>` : '';
 }
 function boWinHTML() {
   const b = boLive() ? boScore() : null;
   if (!b) return '';
-  return `<p class="win-bo"><b>Bo ${b.n}</b>RED ${b.w.RED} – ${b.w.BLUE} BLUE · ${b.done ? `${b.done} ชนะซีรีส์!` : `ต่อเกมที่ ${b.games + 1}`}</p>`;
+  return `<p class="win-bo"><b>${boLabel(b.n)}</b>RED ${b.w.RED} – ${b.w.BLUE} BLUE · ${b.done ? `${b.done} ชนะซีรีส์!` : `ต่อเกมที่ ${b.games + 1}`}</p>`;
 }
 function boWinBtns() {
   if (!boNextOpen()) return '<button type="button" class="btn primary big" data-act="toPvp">กลับห้อง PVP</button>';
@@ -5842,7 +5844,7 @@ function renderRooms() {
     const st = r.live ? `<span class="room-pill live">⚔ กำลังแข่ง รอบ ${r.live}</span>` : '<span class="room-pill wait">● รอผู้เล่น</span>';
     const btn = r.live ? `<button type="button" class="btn ghost" data-act="roomWatch" data-i="${esc(r.id)}">👁 ดูการแข่ง</button>`
       : `<button type="button" class="btn primary" data-act="roomJoin" data-i="${esc(r.id)}">เข้าห้อง</button>`;
-    return `<div class="room-row${r.live ? ' live' : ''}"><div><div class="rn"><span>${esc(r.name || r.id)}</span>${r.lock ? '<i aria-label="มีรหัสผ่าน">🔒</i>' : ''}${r.bo > 1 ? `<span class="room-pill bo">Bo ${r.bo}</span>` : ''}</div>
+    return `<div class="room-row${r.live ? ' live' : ''}"><div><div class="rn"><span>${esc(r.name || r.id)}</span>${r.lock ? '<i aria-label="มีรหัสผ่าน">🔒</i>' : ''}${r.bo > 1 ? `<span class="room-pill bo">${boLabel(r.bo)}</span>` : ''}</div>
       <div class="rm">${r.host ? `เจ้าของห้อง ${esc(r.host)} · ` : ''}${st} · ในห้อง ${r.n} คน</div></div>
       <div class="seats">${seat('RED', r.red)}${seat('BLUE', r.blue)}</div>${btn}</div>`;
   }).join('');
@@ -5866,8 +5868,8 @@ function roomModal(kind, id) {
       <div class="lockrow"><span style="font-size:18px;color:#c9d2de">รหัสผ่าน</span><label><input type="checkbox" id="rmLock"${edit && m && m.lock ? ' checked' : ''}> ล็อกห้อง</label></div>
       <input type="password" id="rmPw" maxlength="30" autocomplete="new-password" placeholder="${edit && m && m.lock ? 'เว้นว่าง = ใช้รหัสเดิม' : 'ตั้งรหัสผ่าน'}">
       <span class="hint">คนที่จะเข้าห้องต้องใส่รหัสนี้ · ไม่ติ๊กล็อกห้อง = ใครก็เข้าได้</span>
-      <label>รูปแบบการแข่ง</label><div class="rm-sides"><label><input type="radio" name="rmBo" value="1"${bo ? '' : ' checked'}>ชนะเกมเดียว</label><label><input type="radio" name="rmBo" value="${BO_WINS}"${bo ? ' checked' : ''}>Bo 3 · ชนะ ${BO_WINS} เกมก่อน</label></div>
-      <span class="hint">Bo 3 = แข่งต่อกันหลายเกม ใครชนะครบ ${BO_WINS} เกมก่อนชนะ · จุดเหลืองใต้แถบ HP นับเกมที่ชนะ${edit ? ' · เปลี่ยนแบบ = เริ่มนับใหม่' : ''}</span>
+      <label>รูปแบบการแข่ง</label><div class="rm-sides"><label><input type="radio" name="rmBo" value="1"${bo ? '' : ' checked'}>ชนะเกมเดียว</label><label><input type="radio" name="rmBo" value="${BO_WINS}"${bo ? ' checked' : ''}>${boLabel(BO_WINS)} · ชนะ ${BO_WINS} ใน ${BO_WINS * 2 - 1} เกม</label></div>
+      <span class="hint">${boLabel(BO_WINS)} = แข่งสูงสุด ${BO_WINS * 2 - 1} เกม ใครชนะครบ ${BO_WINS} เกมก่อนชนะซีรีส์ · จุดเหลืองใต้แถบ HP นับเกมที่ชนะ${edit ? ' · เปลี่ยนแบบ = เริ่มนับใหม่' : ''}</span>
       ${edit ? '' : `<label>ฝั่งของคุณ</label><div class="rm-sides"><label class="red"><input type="radio" name="rmSide" value="RED" checked>RED</label><label class="blue"><input type="radio" name="rmSide" value="BLUE">BLUE</label><label><input type="radio" name="rmSide" value="any">สุ่ม</label></div>`}
       <div class="err" id="rmErr" role="alert"></div>
       <div class="rm-acts"><button type="button" class="btn ghost" data-act="roomClose">ยกเลิก</button><button type="submit" class="btn gold">${edit ? 'บันทึก' : 'สร้างห้อง แล้วเข้าห้อง →'}</button></div></form>`;
