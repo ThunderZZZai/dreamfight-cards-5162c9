@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793350913">
+<meta name="df-build" content="1793353319">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -1064,7 +1064,8 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 .vfx-coat.red{left:911.9px;top:-29.0px;--sx:0.4813;--sy:0.8286;--mx:-1;--ga:144.73deg;--ux:0.5774;--k0:73.89px;--tube:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='1110' height='240'><filter id='f' x='-5%' y='-50%' width='110%' height='200%'><feGaussianBlur stdDeviation='1.6 0.9'/></filter><polygon points='864.0,73.0 347.7,73.0 344.6,80.8 337.3,85.7 328.0,90.5 322.8,95.3 312.4,100.2 305.1,105.0 302.0,108.0 813.1,108.0' fill='white' filter='url(%23f)'/></svg>")}
 .vfx-coat video{filter:saturate(2.6) brightness(2.3) contrast(1.15)} .vfx-coat img{filter:brightness(1.15)}
 /* ตี้ 2026-10-30: คลิปก่อตัวชุดใหม่ (text-fx/make_notch_form.py) ทำจากลายโล่จริง หกเหลี่ยมเด้งจนเต็ม · เฟรมท้าย = โล่นิ่ง → ใช้ฟิลเตอร์เดียวกับรูปโล่ จบคลิปสลับเป็นรูปได้เนียน */
-.vfx-coat.part video{filter:brightness(1.15)} /* ตี้ 2026-10-29: โล่บนเกจเห็นชัดขึ้น (เดิม saturate 3 · brightness 1.5) */
+.vfx-coat.part video{filter:brightness(1.15)}
+.vfx-coat video{object-fit:fill} /* วิดีโอยืดเต็มผืน 1110×240 — ค่าเริ่มของ video คือ contain (คลิปใหม่ 1086×398 สัดส่วนไม่ตรงผืน → ถูกบีบเข้ากลาง ตำแหน่งหกเหลี่ยมเพี้ยน) */ /* ตี้ 2026-10-29: โล่บนเกจเห็นชัดขึ้น (เดิม saturate 3 · brightness 1.5) */
 /* แถบสีฟ้าอ่อนรองใต้ลายหกเหลี่ยม = บอกความยาวโล่ให้เห็นชัด (ตัดด้วยมาสก์เดียวกับลาย) */
 .vfx-coat.still::before{content:"";position:absolute;left:296px;top:72px;width:580px;height:38px;z-index:1;mix-blend-mode:screen;background:linear-gradient(180deg,rgba(170,225,255,.25),rgba(120,200,255,.62) 45%,rgba(200,240,255,.7) 55%,rgba(170,225,255,.25));filter:blur(1.5px)}
 /* ลายหกเหลี่ยมชั้นที่ 2 เลื่อนครึ่งช่อง ให้ลายในหลอดแน่นขึ้น */
@@ -3400,6 +3401,9 @@ function vcFlyTo(d, s, [x1, y1], sc, rot1, ms) {
 // ตี้ 2026-10-30: งอกจากฝั่งกลางจอ · COAT_C = x ในผืนที่แถวกลางหลอด [ขอบแผ่นเงินฝั่งกลาง, ปลายเฉียง+เฟดเลยขอบนอก] (make_notch_coat.py)
 const COAT_C = { RED: [328, 852.6], BLUE: [323.2, 852.9] };
 const COAT_L = (s, sh) => { const [a, b] = COAT_C[s]; return sh > 0 ? a + (b - a) * Math.min(1, sh / SHIELD_MAX) : a - 120; };
+// คลิปโล่ก่อตัว bar_form2 (ตี้ 2026-10-30 รอบ 2: ขึ้นไล่จากฝั่งกลางจอออกขอบนอก) — กวาด x ในผืน FORM_C0 → FORM_C1 ใน FORM_T วิ · ค่าเดียวกับ text-fx/make_notch_form.py
+const FORM_C0 = 300, FORM_C1 = 880, FORM_T = 2.0, FORM_POP = 0.2, FORM_END = FORM_T + FORM_POP;
+const formT = x => Math.max(0, Math.min(1, (x - FORM_C0) / (FORM_C1 - FORM_C0))) * FORM_T;
 function coatShow(s, sh, show) {
   if (!vfx.coat[s]) {
     const lc = s.toLowerCase();
@@ -3414,12 +3418,17 @@ function coatShow(s, sh, show) {
   const tok = ++c.tok;
   if (!show || ui.intro) { c.form.classList.add('off'); c.brk.classList.add('off'); cut(COAT_L(s, sh)); return; }
   if (sh > prev) {
-    c.form.style.setProperty('--A', `${prev > 0 ? COAT_L(s, prev) : 0}px`);
-    setL(c.form, COAT_L(s, sh));
-    const v = vfxPlay(c.form);
-    // คลิปจบ (ภาพเต็มช่วงใหม่แล้ว) → สลับเป็นโล่นิ่งในเฟรมเดียวกัน · กันวิดีโอค้าง/โหลดช้า: 3.2 วิไปต่อเอง
-    const done = () => { if (tok !== c.tok) return; cut(COAT_L(s, c.sh)); c.form.classList.add('off'); };
-    v.onended = done; setTimeout(done, 3200);
+    const A = prev > 0 ? COAT_L(s, prev) : 0, L = COAT_L(s, sh);
+    c.form.style.setProperty('--A', `${A}px`);
+    setL(c.form, L);
+    // เล่นเฉพาะช่วงที่หน้ากวาดวิ่งจากปลายเดิม A → ปลายใหม่ L (+ เผื่อเฟดปลาย + เวลาเด้งช่องสุดท้าย) · ช่วงสั้นช้าลง ช่วงยาวเร็วขึ้นนิดหน่อย
+    const tA = prev > 0 ? formT(A) : 0, tL = Math.min(FORM_END, formT(L + 24) + FORM_POP), real = 0.45 + 1.1 * (tL - tA) / FORM_END;
+    const v = vfxPlay(c.form, Math.max(0, tA - 0.04));
+    v.onended = null;
+    v.playbackRate = Math.max(0.5, Math.min(2.5, (tL - tA) / real));
+    // ถึงปลายใหม่ (ภาพช่วงนี้เต็มแล้ว) → สลับเป็นโล่นิ่งในเฟรมเดียวกัน · กันวิดีโอค้าง/โหลดช้า: เลยเวลาไปต่อเอง
+    const done = () => { if (tok !== c.tok) return; v.playbackRate = 1; cut(COAT_L(s, c.sh)); c.form.classList.add('off'); };
+    vidAt(v, tL, real * 1000 + 1500).then(done);
   } else if (sh === 0) {
     c.form.classList.add('off');
     setL(c.brk, COAT_L(s, prev));
