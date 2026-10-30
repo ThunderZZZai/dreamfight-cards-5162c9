@@ -427,6 +427,16 @@
    "page": "https://pixabay.com/sound-effects/film-special-effects-sword-slice-2-393845/",
    "note": "ตี้ 2026-10-30: การ์ดชนกันกลางจอ (เดิม ctrATK) · เสียงเดิมแบบทุ้มหนักแน่น Ver 2: ลด 5 ครึ่งเสียง + ตุ้บเบส · audio-src/build_epic.py"
   },
+  "title": {
+   "file": "assets/audio/sfx-title.mp3?v=20261030",
+   "gain": 1.0,
+   "dur": 0.83,
+   "source": 376875,
+   "title": "Whoosh Cinematic",
+   "author": "DRAGON-STUDIO",
+   "page": "https://pixabay.com/sound-effects/film-special-effects-whoosh-cinematic-376875/",
+   "note": "ตี้ 2026-10-30: เสียงป้าย ROUND / FIGHT / ACTION ขึ้น (เดิม tickHi เหมือนนาฬิกา) · เลือก A จาก sfx-title.html · ตัด 0.64–1.47 วิ · audio-src/build_epic.py title"
+  },
   "voRound1": {
    "file": "assets/audio/vo-round1.mp3?v=20261030",
    "gain": 1.0,

@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793378892">
+<meta name="df-build" content="1793379647">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -2267,6 +2267,7 @@ const sfx = (() => {
     // Dodge ปราบ Ultimate: ลมพุ่งหลบวูบ → ท่อนเวทย์พุ่งขึ้น + ประกาย · อัลติเมทวืดเป็นบูมอู้อี้
     shieldHit: () => SOUND.ctrDEF(), // ตี้ 2026-10-30: ไฟล์จริง sfx-shieldHit (shield guard) · โหลดไม่ได้ใช้เสียงสังเคราะห์ของ ctrDEF
     gauge: () => SOUND.levelup(),    // ตี้ 2026-10-30: ไฟล์จริง sfx-gauge (Sword Schwing แบบทุ้ม)
+    title: () => { swish({ dur: 0.3, f0: 300, f1: 2400, vol: 0.3, q: 0.8, attack: 0.22 }); boom({ at: 0.25, f0: 110, f1: 40, dur: 0.5, vol: 0.6 }); }, // ตี้ 2026-10-30: ไฟล์จริง sfx-title (Whoosh Cinematic) · ป้าย ROUND / FIGHT / ACTION ขึ้น
     clash: () => SOUND.ctrATK(),     // ตี้ 2026-10-30: ไฟล์จริง sfx-clash (Sword Slice 2 แบบทุ้มหนักแน่น) · การ์ดชนกันกลางจอ
     ctrDODGE: () => { swish({ dur: 0.45, f0: 400, f1: 6000, vol: 0.5, q: 0.7, attack: 0.1 }); swish({ at: 0.25, dur: 0.5, f0: 6000, f1: 700, vol: 0.3, q: 0.8, attack: 0.05 }); tone({ at: 0.1, f0: 900, f1: 2400, dur: 0.35, vol: 0.11, send: 0.7 }); sparkle({ at: 0.2, notes: [N.E5, N.A5, N.E6, N.A6], step: 0.05, vol: 0.08 }); boom({ at: 0.05, f0: 90, f1: 40, dur: 0.6, vol: 0.6 }); brass({ at: 0.15, notes: [N.A3, N.E4], dur: 0.5, vol: 0.08, attack: 0.02 }); },
     // นับเวลา: ติ๊กไม้เบา ๆ ทุกวินาที · 10 วิสุดท้ายสูงและดังขึ้น · 5 วิสุดท้ายมีตุ้บเหมือนหัวใจเต้น
@@ -3469,6 +3470,9 @@ const fxImg = (name, h, extra = '') => `<span class="fxw" style="--h:${h}px;--im
 const TITLE_MS = { ko: 1520, dko: 1520 };
 // ตี้ 2026-10-30: ป้ายทั้งหมด (ROUND · FIGHT · ACTION · K.O.) ดูเร็วไป → เล่นช้าลง 0.7 เท่า (คลิป 60 fps → ~42 fps ยังลื่น) · ป้ายปกติ ~0.9 → ~1.3 วิ · โหมดเร่งความเร็วคูณ 1.5 ทับอีกที
 const TITLE_RATE = 0.7;
+// ตี้ 2026-10-30: เสียงป้าย (title · Whoosh Cinematic) แทนติ๊กนาฬิกา · ดังสุดที่ 0.25 วิ · คำในคลิปกระแทกเข้าจอที่ ~0.067 วิ (ความเร็วปกติ)
+// → เล่นเสียงก่อน แล้วเริ่มคลิปตามหลังให้คำกระแทกตรงจุดดังสุด (ปกติช้า ~0.15 วิ) · K.O. มีเสียงของตัวเอง ไม่เล่น
+const TITLE_SND_HIT = 0.25, TITLE_LAND = 0.067;
 function titleFx(name) {
   const box = $('#titleFx');
   let v = box.querySelector(`video[data-t="${name}"]`);
@@ -3486,8 +3490,10 @@ function titleFx(name) {
     const rate = (ui.fast ? 1.5 : 1) * TITLE_RATE; // โหมดเร่งความเร็ว
     v.playbackRate = rate;
     v.onended = () => end(true);
-    v.play().then(() => v.classList.add('on'), () => end(false));
-    setTimeout(() => end(true), (TITLE_MS[name] || 920) / rate + 400);
+    const snd = !/ko$/.test(name), lag = snd ? Math.max(0, TITLE_SND_HIT - TITLE_LAND / rate) * 1000 : 0;
+    if (snd) sfx.play('title');
+    setTimeout(() => { if (!done) v.play().then(() => v.classList.add('on'), () => end(false)); }, lag);
+    setTimeout(() => end(true), lag + (TITLE_MS[name] || 920) / rate + 400);
   });
 }
 // WebM VP9 + alpha (Chrome/Edge/Firefox) · Safari แสดง alpha ของ WebM ไม่ได้ → MP4 พื้นดำผสมแบบ screen
@@ -3498,7 +3504,6 @@ function titlePreload(round) { for (const n of [`round${Math.min(10, round)}`, '
 // ป้าย ACTION 1/2/3 กลางจอตอนเริ่มเปิดช่อง i
 function laneCall(i) {
   // ตี้ 2026-10-29: ใช้คลิป ACTION n (ผิวโลหะยับ) · เล่นไม่ได้ค่อยใช้รูปคำเดิม
-  sfx.play('tickHi');
   return titleFx(`action${i + 1}`).then(ok => { if (!ok) laneCallImg(i); });
 }
 function laneCallImg(i) {
@@ -4593,7 +4598,6 @@ async function runFight() {
   // ตี้ 2026-10-29: เริ่มเปิดปะทะ = FIGHT ก่อน แล้วค่อย ACTION 1 · 2 · 3 (ลำดับ ROUND n → … → FIGHT → ACTION 1–3)
   await wait(350);
   if (gid !== ui.gid) return;
-  sfx.play('tickHi');
   sfx.play('voFight'); // ตี้ 2026-10-30: เสียงพากย์ FIGHT! พร้อมป้าย
   await titleFx('fight');
   for (let i = 0; i < SLOT_N; i++) {
