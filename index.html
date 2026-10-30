@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793345331">
+<meta name="df-build" content="1793347831">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -140,6 +140,11 @@ body:not(.portrait) #rotateHint{display:none}
 .dot.g.on.k1{animation-delay:-.73s,-.73s} .dot.g.on.k2{animation-delay:-1.46s,-1.46s}
 .dot.g.on.new{animation:dotIn .7s ease-out,dotSpin 2.2s linear infinite,dotRb 2.2s linear infinite alternate}
 .dot.g.on.full{animation-duration:1.2s,1.2s}
+/* ห้อง Bo (ตี้ 2026-10-30): จุด ●●● = เกมที่ชนะในซีรีส์ · สีเหลือง · เติมจากด้านนอกเข้าหากลาง */
+.dot.bo{background:rgba(8,10,16,.85);box-shadow:inset 0 0 0 1.5px rgba(255,214,90,.5)}
+.dot.bo.on{background:radial-gradient(circle at 35% 30%,#fff 0 14%,#ffe680 34%,#ffc21a 64%,#c98600);box-shadow:0 0 10px #ffc21a,0 0 2px #fff}
+.dot.bo.new{animation:boIn 1s ease-out}
+@keyframes boIn{0%{transform:scale(.2);filter:brightness(3)}55%{transform:scale(1.7);filter:brightness(2)}100%{transform:none;filter:none}}
 @keyframes dotSpin{to{--dra:360deg}}
 @media (prefers-reduced-motion:reduce){.dot.g.on.k0,.dot.g.on.k1,.dot.g.on.k2{animation:none}}
 @keyframes dotIn{0%{transform:scale(2.2);filter:brightness(2.5)}100%{transform:none;filter:none}}
@@ -168,6 +173,8 @@ body:not(.portrait) #rotateHint{display:none}
 .gauge.unl .orbs{border-color:var(--gold)}
 .gauge .gunl{padding:2px 12px;border-radius:999px;background:var(--gold);color:#1a1204;font-size:16px;font-weight:700;white-space:nowrap}
 @keyframes gGlow{50%{box-shadow:0 0 0 3px rgba(255,255,255,.35),0 0 28px rgba(170,120,255,.95)}}
+.win-bo{margin:12px auto 0;font-family:var(--font-disp);font-size:26px;font-weight:700;color:#ffe08a;text-transform:none}
+.win-bo b{display:inline-block;margin-right:10px;padding:2px 14px;border-radius:999px;background:rgba(255,200,61,.2);border:1px solid rgba(255,200,61,.7)}
 .win-bot{margin:10px auto 0;max-width:820px;font-size:19px;line-height:1.45;color:var(--muted);text-transform:none}
 .gmenu{position:absolute;top:200px;z-index:9;width:520px;padding:16px;border-radius:18px;background:var(--panel);border:2px solid rgba(255,255,255,.18);box-shadow:0 18px 50px rgba(0,0,0,.7),0 0 0 1px rgba(170,120,255,.4),0 0 40px rgba(170,120,255,.25);text-transform:none}
 .gmenu.side-red{left:320px} .gmenu.side-blue{right:320px}
@@ -549,6 +556,8 @@ body:not(.portrait) #rotateHint{display:none}
 .room-pill{display:inline-flex;align-items:center;gap:6px;padding:2px 12px;border-radius:999px;font-size:14px;font-weight:700}
 .room-pill.wait{background:rgba(60,220,130,.14);color:#7ff0aa;border:1px solid rgba(60,220,130,.45)}
 .room-pill.live{background:rgba(255,200,61,.14);color:#ffd76a;border:1px solid rgba(255,200,61,.5)}
+.room-pill.bo{margin-left:10px;background:rgba(255,200,61,.24);color:#ffe08a;border:1px solid rgba(255,200,61,.8);font-family:var(--font-disp)}
+.room-chips span.bo{background:rgba(255,200,61,.16);border-color:rgba(255,200,61,.7);color:#ffe08a;font-weight:700}
 .rooms-empty{padding:40px;border-radius:18px;border:1px dashed rgba(255,255,255,.2);font-size:20px;color:var(--muted)}
 .room-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
 .room-chips span{padding:4px 16px;border-radius:999px;font-size:17px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);color:#c9d2de}
@@ -4633,6 +4642,7 @@ async function runFight() {
   if (gid !== ui.gid) return;
   Object.assign(ui, { phase: 'end', busy: false, winner: verdict.winner, winReason: verdict.reason, oppHidden: 0 });
   if (ui.pvp) ui.pvp.endAt = Date.now();
+  if (ui.winner && boLive()) boRecord(ui.pvp ? ui.pvp.mid : ui.spec.mid, ui.winner); // ห้อง Bo: นับเกมที่ชนะ
   if (net.mine.vdo) presence({ vdo: null });
   if (ui.pvp && ui.winner) presence({ seat: null, at: null, inp: {} }); // จบแมตช์ = ปล่อยที่นั่งให้คนอื่น (mid ยังอยู่จนกว่าจะออก)
   addLog(`End Phase · HP ${tagOf('RED')} ${hpDelta(ui.hpStart.RED, g.p.RED.hp)} · ${tagOf('BLUE')} ${hpDelta(ui.hpStart.BLUE, g.p.BLUE.hp)}`);
@@ -4937,7 +4947,13 @@ function renderHud(s) {
   ui.gDot = ui.gDot || {};
   const gPrev = ui.gDot[s] != null ? ui.gDot[s] : gN, dots = [...document.querySelectorAll(`.dot.${lc}`)];
   if (s === 'BLUE') dots.reverse();
-  dots.forEach((d, k) => { d.className = `dot ${lc} g k${k}${k < gN ? ' on' : ''}${gN >= GAUGE_MAX ? ' full' : ''}${k < gN && k >= gPrev ? ' new' : ''}`; });
+  const bo = inGame && boLive() ? boScore() : null; // ตี้ 2026-10-30: ห้อง Bo → จุด = เกมที่ชนะในซีรีส์ (สีเหลือง)
+  if (bo) {
+    ui.boDot = ui.boDot || {};
+    const w = bo.w[s], wPrev = ui.boDot[s] != null ? ui.boDot[s] : w;
+    dots.forEach((d, k) => { d.className = `dot ${lc} bo${k < w ? ' on' : ''}${k < w && k >= wPrev ? ' new' : ''}`; });
+    ui.boDot[s] = w;
+  } else dots.forEach((d, k) => { d.className = `dot ${lc} g k${k}${k < gN ? ' on' : ''}${gN >= GAUGE_MAX ? ' full' : ''}${k < gN && k >= gPrev ? ' new' : ''}`; });
   ui.gDot[s] = gN;
   renderShield(s, inGame ? ui.g.p[s].shield : 0, inGame && !ui.intro);
   renderGauge(s);
@@ -5210,7 +5226,7 @@ function renderControls() {
     // ตี้ 2026-10-29: ระหว่างชมไม่ต้องมีแถบ OBSERVE + ปุ่มออกจากการชม (ออกได้ที่ ⚙ → ออกจากเกม) · จบเกมยังมีปุ่มดูอีกเกม/กลับห้อง
     if (!ui.winner) { $('#controls').innerHTML = ''; return; }
     $('#controls').innerHTML = `<div class="hint"><span class="spec-badge">OBSERVE</span>${specStatus()}</div>
-      <div class="btns-main">${ui.winner ? (ui.spec.bot ? '<button type="button" class="btn primary cta" data-act="bvb">ดูอีกเกม</button>' : '<button type="button" class="btn primary cta" data-act="toPvp">กลับห้อง PVP</button>') : ''}</div>
+      <div class="btns-main">${ui.winner ? (ui.spec.bot ? '<button type="button" class="btn primary cta" data-act="bvb">ดูอีกเกม</button>' : `<button type="button" class="btn primary cta" data-act="toPvp">${boNextOpen() ? 'ดูเกมต่อไป →' : 'กลับห้อง PVP'}</button>`) : ''}</div>
       <div class="btns">${ui.winner ? '<button type="button" class="btn ghost" data-act="unpeek">ดูผลแพ้ชนะ</button>' : `<button type="button" class="btn ghost" data-act="${ui.spec.bot ? 'toLobby' : 'toPvp'}">ออกจากการชม</button>`}</div>`;
     return;
   }
@@ -5240,7 +5256,7 @@ function renderControls() {
   else if (ui.phase === 'end') {
     if (ui.winner) {
       hint = `จบเกม · ${ui.winner === 'DRAW' ? 'เสมอ' : `${ui.winner} WIN`}${ui.ko ? ` · K.O. ที่ช่อง ${ui.ko.lane + 1}` : ''}`;
-      main = ui.mode === 'pvp' ? '<button type="button" class="btn primary cta" data-act="toPvp">กลับห้อง PVP</button>' : '<button type="button" class="btn primary cta" data-act="toLobby">กลับ LOBBY</button>';
+      main = ui.mode === 'pvp' ? (boNextOpen() ? '<button type="button" class="btn primary cta" data-act="boNext">เกมต่อไป →</button>' : '<button type="button" class="btn primary cta" data-act="toPvp">กลับห้อง PVP</button>') : '<button type="button" class="btn primary cta" data-act="toLobby">กลับ LOBBY</button>';
       btns = '<button type="button" class="btn ghost" data-act="unpeek">ดูผลแพ้ชนะ</button>';
     } else {
       hint = `จบรอบ ${g.round} · ${tagOf('RED')} ${hpDelta(ui.hpStart.RED, g.p.RED.hp)} · ${tagOf('BLUE')} ${hpDelta(ui.hpStart.BLUE, g.p.BLUE.hp)} · แตะเลข 1-3 ดูช่องอื่น`;
@@ -5283,9 +5299,10 @@ function renderWinner() {
     <div class="win-title" id="winTitle" aria-label="${w === 'DRAW' ? 'DRAW' : `${w} WIN`}">${w === 'DRAW' ? '<span class="fxt">DRAW</span>' : fxImg(w === 'RED' ? 'red-win' : 'blue-win', 150, w === 'RED' ? ';--g:255,80,80' : ';--g:90,150,255')}</div>
     <p>${line}</p>
     <div class="win-stats"><span class="t-red">RED ${g.p.RED.hp} HP</span><span class="t-blue">BLUE ${g.p.BLUE.hp} HP</span><span>${g.round} รอบ</span></div>
+    ${boWinHTML()}
     ${clockSummaryHTML()}
     ${ui.mode === 'arcade' && g.persona ? `<p class="win-bot">${esc(botStyleText(g, OPP))}</p>` : ''}
-    <div class="win-btns">${ui.mode === 'spec' && ui.spec && ui.spec.bot ? '<button type="button" class="btn primary big" data-act="bvb">ดูอีกเกม</button><button type="button" class="btn ghost" data-act="toLobby">กลับ LOBBY</button>' : ui.mode === 'pvp' || ui.mode === 'spec' ? '<button type="button" class="btn primary big" data-act="toPvp">กลับห้อง PVP</button>' : '<button type="button" class="btn primary big" data-act="toLobby">กลับ LOBBY</button>'}<button type="button" class="btn ghost" data-act="peek">ดูกระดานรอบสุดท้าย</button></div>
+    <div class="win-btns">${ui.mode === 'spec' && ui.spec && ui.spec.bot ? '<button type="button" class="btn primary big" data-act="bvb">ดูอีกเกม</button><button type="button" class="btn ghost" data-act="toLobby">กลับ LOBBY</button>' : ui.mode === 'pvp' || ui.mode === 'spec' ? boWinBtns() : '<button type="button" class="btn primary big" data-act="toLobby">กลับ LOBBY</button>'}<button type="button" class="btn ghost" data-act="peek">ดูกระดานรอบสุดท้าย</button></div>
   </div>`;
 }
 function renderDrawer() {
@@ -5406,7 +5423,9 @@ document.addEventListener('click', e => {
     case 'pvpLobby': pvpOpen(); break;
     case 'seat': pvpSeat(t.dataset.i); break;
     case 'toLobby': toStart('lobby'); break;
-    case 'toPvp': toStart('pvp'); break;
+    case 'toPvp': if (ui.mode === 'spec' && boNextOpen()) ui.boFollow = true; toStart('pvp'); break; // ผู้ชมห้อง Bo: ตามไปดูเกมถัดไปเอง
+    case 'boNext': { const side = ME; toStart('pvp'); net.autoSeat = side; pvpOnPeers(); break; } // ห้อง Bo: กลับนั่งฝั่งเดิม → พร้อมทั้งคู่ = เริ่มเกมถัดไป
+    case 'boReset': presence({ ser: { s: Math.random().toString(36).slice(2, 10), u: Date.now(), g: [] } }); toast('เริ่มนับ Bo ใหม่แล้ว'); renderPvp(); break;
     case 'pick': takeMarket(i); break;
     case 'unpick': unpick(i); break;
     case 'unpickOver': unpickOver(); break;
@@ -5485,7 +5504,7 @@ document.addEventListener('keydown', e => {
    vdo = รอบที่เรากำลังดู VDO ฉากปะทะอยู่ (อีกฝ่ายหยุดนับเวลารอ) — ไม่มี = ไม่ได้ดู
    t0 = เวลาเริ่มแมตช์ (Date.now ของเรา) — ผู้ชมที่เข้ากลางเกมใช้ตั้งนาฬิกาแมตช์ · แสดงผลเท่านั้น
    inp เก็บทั้งแมตช์ (ผู้ชมที่เข้ากลางเกมย้อนคำนวณจากรอบ 1) · ผู้ชม: { watch: mid } อย่างเดียว ไม่ส่งอะไรให้ผู้เล่น */
-const PVP_V = 21; // เปลี่ยนกติกา/เอนจินเมื่อไหร่ต้องเพิ่มเลขนี้ — คนละเวอร์ชันจะไม่ถูกจับคู่ (เล่นคนละกติกา = ผลเพี้ยน) · 4 = Fight Phase เป็น VDO (ยาวขึ้นมาก + presence.vdo) · 5 = Dodge Lv3 มีเพดาน HP 10 + HP สูงสุด 100 → 150 (ตี้ 2026-10-22) · 6 = Lv2 + Lv2 คืนการ์ด Lv1 (validLock รับ id การ์ดคืน) · 7 = เกจ (การวางส่ง gauge ops ไปด้วย · newGame สุ่ม gseed) · 8 = Attack ทอยให้อีกฝ่ายทิ้งการ์ด (rollClash ใช้ตัวสุ่มเพิ่ม) · 9 = Dodge เจอ Ultimate หลบ 100% + Lv2-3 อีกฝ่ายทิ้ง/เสียเกจ · 10 = ชิลด์ (Defence) + Ultimate ใหม่ + เอาเกจชนะทางออก · 11 = Ultimate ดาเมจ 20/40/60 · 12 = Attack เจอ Defence ไม่ทอยทิ้ง (ตัวสุ่มหลักใช้น้อยลง) · 13 = มือว่างเสีย HP เฉพาะค่า Ultimate (Attack / Dodge บังคับทิ้งไม่เสีย HP) · 14 = Defence ชนะทาง Attack ชิลด์เพิ่ม 5/10/15 · 15 = รอบที่ใช้ 3 เกจ สะสมเกจไม่ได้ · 16 = ค่าจากตาราง: ดาเมจเพิ่มชนะทาง Attack/Ultimate 5/10/15 + มือว่าง 15 HP · 17 = Dodge หลบได้เฉพาะ Ultimate · Attack ไม่มีลดหลบ (ตัวสุ่มใช้น้อยลง) + มือว่างกลับเป็น 10 HP · 18 = Attack ดาเมจ 10/25/40 · 19 = Defence ชิลด์ 10/25/40 · 20 = Dodge จั่ว 1 + ขโมยการ์ด 0/1/2 (ตัวสุ่มหลักใช้ตอนขโมย) · เลิกทิ้ง/เสียเกจตอนเจอ Ultimate · 21 = 3 เกจใหม่: จั่วครบมือ + เปลี่ยนฟรี 2 + ผสมการ์ดบนมือ (op ftr / merge)
+const PVP_V = 22; // เปลี่ยนกติกา/เอนจินเมื่อไหร่ต้องเพิ่มเลขนี้ — คนละเวอร์ชันจะไม่ถูกจับคู่ (เล่นคนละกติกา = ผลเพี้ยน) · 4 = Fight Phase เป็น VDO (ยาวขึ้นมาก + presence.vdo) · 5 = Dodge Lv3 มีเพดาน HP 10 + HP สูงสุด 100 → 150 (ตี้ 2026-10-22) · 6 = Lv2 + Lv2 คืนการ์ด Lv1 (validLock รับ id การ์ดคืน) · 7 = เกจ (การวางส่ง gauge ops ไปด้วย · newGame สุ่ม gseed) · 8 = Attack ทอยให้อีกฝ่ายทิ้งการ์ด (rollClash ใช้ตัวสุ่มเพิ่ม) · 9 = Dodge เจอ Ultimate หลบ 100% + Lv2-3 อีกฝ่ายทิ้ง/เสียเกจ · 10 = ชิลด์ (Defence) + Ultimate ใหม่ + เอาเกจชนะทางออก · 11 = Ultimate ดาเมจ 20/40/60 · 12 = Attack เจอ Defence ไม่ทอยทิ้ง (ตัวสุ่มหลักใช้น้อยลง) · 13 = มือว่างเสีย HP เฉพาะค่า Ultimate (Attack / Dodge บังคับทิ้งไม่เสีย HP) · 14 = Defence ชนะทาง Attack ชิลด์เพิ่ม 5/10/15 · 15 = รอบที่ใช้ 3 เกจ สะสมเกจไม่ได้ · 16 = ค่าจากตาราง: ดาเมจเพิ่มชนะทาง Attack/Ultimate 5/10/15 + มือว่าง 15 HP · 17 = Dodge หลบได้เฉพาะ Ultimate · Attack ไม่มีลดหลบ (ตัวสุ่มใช้น้อยลง) + มือว่างกลับเป็น 10 HP · 18 = Attack ดาเมจ 10/25/40 · 19 = Defence ชิลด์ 10/25/40 · 20 = Dodge จั่ว 1 + ขโมยการ์ด 0/1/2 (ตัวสุ่มหลักใช้ตอนขโมย) · เลิกทิ้ง/เสียเกจตอนเจอ Ultimate · 21 = 3 เกจใหม่: จั่วครบมือ + เปลี่ยนฟรี 2 + ผสมการ์ดบนมือ (op ftr / merge) · 22 = พลังเต็มเปลี่ยนฟรี 1 ใบเป็น Lv2 (MAX_FREE_TR) + ห้อง Bo (meta.bo · presence.ser)
 // ตี้ 2026-10-28: โชว์แมตช์อาจคุยกันนาน → ไม่จับเวลาเฟส (ไม่มีนาฬิกา ไม่ยืนยันให้อัตโนมัติ ไม่ตัดสิทธิ์เพราะช้า) · หลุดการเชื่อมต่อยังตัดสินตาม PVP_GONE_MS
 const PVP_TIMER = false;
 const PVP_SEC = 60, PVP_CUT = 30, PVP_GONE_MS = 8000, PVP_NEXT_MS = 10000, PVP_WAIT_MS = 90000, VDO_HOLD_MS = 240000;
@@ -5557,11 +5576,16 @@ function cleanPresence(p) {
   if (Number.isFinite(p.t0)) o.t0 = p.t0;
   if (Number.isFinite(p.j)) o.j = p.j;
   const hex = v => (typeof v === 'string' && /^[0-9a-f]{64}$/.test(v) ? v : '');
-  if (p.meta && typeof p.meta === 'object' && !Array.isArray(p.meta)) o.meta = Object.freeze({ name: str(p.meta.name, 30) || '', lock: hex(p.meta.lock), u: Number.isFinite(p.meta.u) ? p.meta.u : 0 });
+  if (p.meta && typeof p.meta === 'object' && !Array.isArray(p.meta)) o.meta = Object.freeze({ name: str(p.meta.name, 30) || '', lock: hex(p.meta.lock), u: Number.isFinite(p.meta.u) ? p.meta.u : 0, bo: Number.isInteger(p.meta.bo) && p.meta.bo >= 1 && p.meta.bo <= 9 ? p.meta.bo : 1 });
   const R = p.room;
   if (R && typeof R === 'object' && !Array.isArray(R) && typeof R.id === 'string' && /^[a-z0-9_-]{1,24}$/.test(R.id)) {
     const int = (v, lo, hi, d) => (Number.isInteger(v) && v >= lo && v <= hi ? v : d);
-    o.room = Object.freeze({ id: R.id, name: str(R.name, 30) || '', lock: hex(R.lock), red: str(R.red, 16), blue: str(R.blue, 16), host: str(R.host, 16), live: int(R.live, 0, 999, 0), n: int(R.n, 1, 500, 1) });
+    o.room = Object.freeze({ id: R.id, name: str(R.name, 30) || '', lock: hex(R.lock), red: str(R.red, 16), blue: str(R.blue, 16), host: str(R.host, 16), live: int(R.live, 0, 999, 0), n: int(R.n, 1, 500, 1), bo: int(R.bo, 1, 9, 1) });
+  }
+  const S = p.ser, sid = v => typeof v === 'string' && /^[a-z0-9]{1,12}$/.test(v);
+  if (S && typeof S === 'object' && !Array.isArray(S) && sid(S.s) && Number.isFinite(S.u)) {
+    const g = Array.isArray(S.g) ? S.g.filter(x => Array.isArray(x) && sid(x[0]) && (x[1] === 'R' || x[1] === 'B')).slice(0, 19).map(x => Object.freeze([x[0], x[1]])) : [];
+    o.ser = Object.freeze({ s: S.s, u: S.u, g: Object.freeze(g) });
   }
   o.inp = {};
   if (p.inp && typeof p.inp === 'object' && !Array.isArray(p.inp)) {
@@ -5689,7 +5713,7 @@ async function netInit() {
     ssSet(`df-new-${ROOM.id}`, '');
     try {
       const b = JSON.parse(born);
-      presence({ meta: { name: String(b.name || '').slice(0, 30), lock: b.lock || '', u: Date.now() } });
+      presence({ meta: { name: String(b.name || '').slice(0, 30), lock: b.lock || '', u: Date.now(), bo: b.bo > 1 ? BO_WINS : 1 } });
       ssSet(`df-key-${ROOM.id}`, b.lock || '');
       net.autoSeat = b.side;
     } catch (e) { /* ข้ามได้ */ }
@@ -5724,13 +5748,71 @@ const roomName = () => (roomMeta() && roomMeta().name) || (ROOM.id === 'lobby' ?
 const roomLock = () => (roomMeta() && roomMeta().lock) || '';
 const roomAuthed = () => !roomLock() || ssGet(`df-key-${ROOM.id}`) === roomLock();
 const roomReady = () => net.state === 'on' && (!!roomMeta() || (net.onAt && Date.now() - net.onAt > 2500)); // รอเห็นชื่อ/รหัสห้องก่อน กันกด READY ห้องที่ล็อก
+/* ───────── ห้อง Bo (ตี้ 2026-10-30) ─────────
+   ห้อง PVP ที่สร้างเองเลือกแข่งแบบ Bo 3 ได้ (ไว้จัดโชว์แมตช์) — ใครชนะครบ BO_WINS เกมก่อนชนะซีรีส์ · โหมดอื่นยังชนะเกมเดียว
+   แต่ละเกมยังเป็น PVP ปกติ (จบเกม → ปล่อยที่นั่ง → READY ใหม่) · ปุ่ม "เกมต่อไป" พากลับนั่งฝั่งเดิมเอง ผู้ชมตามไปดูเกมถัดไปเอง
+   meta.bo = จำนวนเกมที่ต้องชนะ (1 = เกมเดียว) · presence.ser = { s: รหัสซีรีส์, u: เวลาเริ่ม, g: [[รหัสเกม, 'R'|'B'], …] }
+   ทุกคนในห้องถือซีรีส์ชุดล่าสุด (u มากสุด) รวมผลจากทุกคนตามรหัสเกม (ผลเกมคำนวณตรงกันทุกเครื่องอยู่แล้ว) · นับตามฝั่ง RED/BLUE */
+const BO_WINS = 3;
+function roomBo() { const m = !ON_CLAUDE && !LIST_MODE ? roomMeta() : null; return m && m.bo > 1 ? m.bo : 1; }
+function boLive() { return ui.mode === 'pvp' ? !!ui.pvp : ui.mode === 'spec' && !!ui.spec && !ui.spec.bot; }
+function boSer() {
+  const all = [net.mine.ser, ...net.peers.map(p => p.presence && p.presence.ser)].filter(Boolean);
+  if (!all.length) return null;
+  const top = all.reduce((a, b) => (b.u > a.u || (b.u === a.u && b.s > a.s) ? b : a));
+  const g = new Map();
+  for (const x of all) if (x.s === top.s) for (const [id, w] of x.g) if (!g.has(id)) g.set(id, w);
+  return { s: top.s, u: top.u, g: [...g] };
+}
+// สกอร์ซีรีส์ของห้องนี้ (null = ห้องนี้ไม่ใช่ Bo) · done = ฝั่งที่ชนะซีรีส์แล้ว
+function boScore() {
+  const n = roomBo();
+  if (n < 2) return null;
+  const S = boSer(), w = { RED: 0, BLUE: 0 };
+  if (S) for (const [, x] of S.g) w[x === 'R' ? 'RED' : 'BLUE']++;
+  return { n, w, done: w.RED >= n ? 'RED' : w.BLUE >= n ? 'BLUE' : null, s: S ? S.s : null, games: S ? S.g.length : 0 };
+}
+// ถือซีรีส์ชุดล่าสุดไว้ใน presence ของเราด้วย (คนอื่นออกจากห้องไป สกอร์ก็ยังอยู่)
+function boHold() {
+  if (roomBo() < 2 || !roomAuthed()) return;
+  const S = boSer(), mine = net.mine.ser;
+  if (S && (!mine || mine.s !== S.s || mine.g.length !== S.g.length)) presence({ ser: { s: S.s, u: S.u, g: S.g } });
+}
+// เริ่มเกมในห้อง Bo: ยังไม่มีซีรีส์ / ซีรีส์ก่อนจบแล้ว → เปิดซีรีส์ใหม่ (รหัสจาก mid → ผู้เล่นสองเครื่องได้รหัสเดียวกัน)
+function boStart(mid) {
+  const b = boScore();
+  if (b && (!b.s || b.done)) presence({ ser: { s: hashStr(`s|${mid}`).toString(36), u: Date.now(), g: [] } });
+}
+// จบเกมที่มีผู้ชนะ → บันทึกลงซีรีส์ (รหัสเกมจาก mid กันนับซ้ำ · ซีรีส์จบแล้วไม่นับเพิ่ม)
+function boRecord(mid, winner) {
+  const b = boScore(), S = boSer();
+  if (!b || b.done || !S || !mid || (winner !== 'RED' && winner !== 'BLUE')) return;
+  const id = hashStr(`g|${mid}`).toString(36);
+  if (!S.g.some(([x]) => x === id)) presence({ ser: { s: S.s, u: S.u, g: [...S.g, [id, winner[0]]] } });
+}
+// จบเกมแล้วซีรีส์ยังไม่จบ → ปุ่มเกมต่อไป
+function boNextOpen() { const b = boLive() && ui.winner ? boScore() : null; return !!b && !b.done; }
+function boChip() {
+  const b = boScore();
+  return b ? `<span class="bo">🏆 Bo ${b.n} · RED ${b.w.RED} – ${b.w.BLUE} BLUE${b.done ? ` · ${b.done} ชนะซีรีส์` : b.games ? ` · เกมถัดไป: เกมที่ ${b.games + 1}` : ' · ชนะครบ ' + b.n + ' เกมก่อนชนะ'}</span>` : '';
+}
+function boWinHTML() {
+  const b = boLive() ? boScore() : null;
+  if (!b) return '';
+  return `<p class="win-bo"><b>Bo ${b.n}</b>RED ${b.w.RED} – ${b.w.BLUE} BLUE · ${b.done ? `${b.done} ชนะซีรีส์!` : `ต่อเกมที่ ${b.games + 1}`}</p>`;
+}
+function boWinBtns() {
+  if (!boNextOpen()) return '<button type="button" class="btn primary big" data-act="toPvp">กลับห้อง PVP</button>';
+  return ui.mode === 'pvp' ? '<button type="button" class="btn primary big" data-act="boNext">เกมต่อไป →</button><button type="button" class="btn ghost" data-act="toPvp">กลับห้อง PVP</button>'
+    : '<button type="button" class="btn primary big" data-act="toPvp">ดูเกมต่อไป →</button>';
+}
 function dirAnnounce() {
   if (!dirNet.room || LIST_MODE || ON_CLAUDE) return;
   let room = null;
   if (net.state === 'on' && roomReady() && roomAuthed()) {
     const h = seatHolders(), hp = roomHost();
     const live = h.RED && h.BLUE && h.RED.presence.mid && h.RED.presence.mid === h.BLUE.presence.mid ? (ui.screen === 'game' && ui.g ? ui.g.round : 1) : 0;
-    room = { id: ROOM.id, name: roomName(), lock: roomLock(), red: h.RED ? nickOf(h.RED) : null, blue: h.BLUE ? nickOf(h.BLUE) : null, host: hp ? nickOf(hp) : null, live, n: Math.max(1, net.peers.length) };
+    room = { id: ROOM.id, name: roomName(), lock: roomLock(), red: h.RED ? nickOf(h.RED) : null, blue: h.BLUE ? nickOf(h.BLUE) : null, host: hp ? nickOf(hp) : null, live, n: Math.max(1, net.peers.length), bo: roomBo() };
   }
   const key = JSON.stringify(room);
   if (key === dirNet.last) return;
@@ -5760,7 +5842,7 @@ function renderRooms() {
     const st = r.live ? `<span class="room-pill live">⚔ กำลังแข่ง รอบ ${r.live}</span>` : '<span class="room-pill wait">● รอผู้เล่น</span>';
     const btn = r.live ? `<button type="button" class="btn ghost" data-act="roomWatch" data-i="${esc(r.id)}">👁 ดูการแข่ง</button>`
       : `<button type="button" class="btn primary" data-act="roomJoin" data-i="${esc(r.id)}">เข้าห้อง</button>`;
-    return `<div class="room-row${r.live ? ' live' : ''}"><div><div class="rn"><span>${esc(r.name || r.id)}</span>${r.lock ? '<i aria-label="มีรหัสผ่าน">🔒</i>' : ''}</div>
+    return `<div class="room-row${r.live ? ' live' : ''}"><div><div class="rn"><span>${esc(r.name || r.id)}</span>${r.lock ? '<i aria-label="มีรหัสผ่าน">🔒</i>' : ''}${r.bo > 1 ? `<span class="room-pill bo">Bo ${r.bo}</span>` : ''}</div>
       <div class="rm">${r.host ? `เจ้าของห้อง ${esc(r.host)} · ` : ''}${st} · ในห้อง ${r.n} คน</div></div>
       <div class="seats">${seat('RED', r.red)}${seat('BLUE', r.blue)}</div>${btn}</div>`;
   }).join('');
@@ -5777,13 +5859,15 @@ function roomModal(kind, id) {
       <div class="err" id="rmErr" role="alert"></div>
       <div class="rm-acts"><button type="button" class="btn ghost" data-act="${LIST_MODE ? 'roomClose' : 'roomLeave'}">${LIST_MODE ? 'ยกเลิก' : '← กลับหน้ารายการห้อง'}</button><button type="submit" class="btn primary">เข้าห้อง →</button></div></form>`;
   } else {
-    const edit = kind === 'edit', m = roomMeta();
-    box.innerHTML = `<form class="rm-box" id="rmForm"><small class="eb">${edit ? 'EDIT ROOM' : 'CREATE ROOM'}</small><h3>${edit ? 'แก้ชื่อ/รหัสห้อง' : 'สร้างห้อง'}</h3>
+    const edit = kind === 'edit', m = roomMeta(), bo = edit && m && m.bo > 1;
+    box.innerHTML = `<form class="rm-box" id="rmForm"><small class="eb">${edit ? 'EDIT ROOM' : 'CREATE ROOM'}</small><h3>${edit ? 'ตั้งค่าห้อง' : 'สร้างห้อง'}</h3>
       <label for="rmName">ชื่อห้อง</label><input type="text" id="rmName" maxlength="30" autocomplete="off" value="${esc(edit ? roomName() : `ห้องของ ${nick}`)}">
       <span class="hint">ไม่เกิน 30 ตัวอักษร</span>
       <div class="lockrow"><span style="font-size:18px;color:#c9d2de">รหัสผ่าน</span><label><input type="checkbox" id="rmLock"${edit && m && m.lock ? ' checked' : ''}> ล็อกห้อง</label></div>
       <input type="password" id="rmPw" maxlength="30" autocomplete="new-password" placeholder="${edit && m && m.lock ? 'เว้นว่าง = ใช้รหัสเดิม' : 'ตั้งรหัสผ่าน'}">
       <span class="hint">คนที่จะเข้าห้องต้องใส่รหัสนี้ · ไม่ติ๊กล็อกห้อง = ใครก็เข้าได้</span>
+      <label>รูปแบบการแข่ง</label><div class="rm-sides"><label><input type="radio" name="rmBo" value="1"${bo ? '' : ' checked'}>ชนะเกมเดียว</label><label><input type="radio" name="rmBo" value="${BO_WINS}"${bo ? ' checked' : ''}>Bo 3 · ชนะ ${BO_WINS} เกมก่อน</label></div>
+      <span class="hint">Bo 3 = แข่งต่อกันหลายเกม ใครชนะครบ ${BO_WINS} เกมก่อนชนะ · จุดเหลืองใต้แถบ HP นับเกมที่ชนะ${edit ? ' · เปลี่ยนแบบ = เริ่มนับใหม่' : ''}</span>
       ${edit ? '' : `<label>ฝั่งของคุณ</label><div class="rm-sides"><label class="red"><input type="radio" name="rmSide" value="RED" checked>RED</label><label class="blue"><input type="radio" name="rmSide" value="BLUE">BLUE</label><label><input type="radio" name="rmSide" value="any">สุ่ม</label></div>`}
       <div class="err" id="rmErr" role="alert"></div>
       <div class="rm-acts"><button type="button" class="btn ghost" data-act="roomClose">ยกเลิก</button><button type="submit" class="btn gold">${edit ? 'บันทึก' : 'สร้างห้อง แล้วเข้าห้อง →'}</button></div></form>`;
@@ -5810,12 +5894,14 @@ async function roomSubmit() {
     return;
   }
   const name = $('#rmName').value.trim().slice(0, 30), lockOn = $('#rmLock').checked, pw = $('#rmPw').value;
+  const bo = Number((document.querySelector('input[name=rmBo]:checked') || {}).value) > 1 ? BO_WINS : 1;
   if (!name) { err.textContent = 'ใส่ชื่อห้องก่อน'; return; }
   if (M.kind === 'edit') {
     const lock = !lockOn ? '' : pw ? await roomLockHash(ROOM.id, pw) : roomLock();
     if (lockOn && !lock) { err.textContent = 'ตั้งรหัสผ่านก่อน (หรือเอาติ๊กล็อกห้องออก)'; return; }
     ssSet(`df-key-${ROOM.id}`, lock);
-    presence({ meta: { name, lock, u: Date.now() } });
+    if (bo !== roomBo()) presence({ ser: bo > 1 ? { s: Math.random().toString(36).slice(2, 10), u: Date.now(), g: [] } : null });
+    presence({ meta: { name, lock, u: Date.now(), bo } });
     roomClose();
     toast('บันทึกห้องแล้ว');
     renderPvp();
@@ -5827,7 +5913,7 @@ async function roomSubmit() {
   do id = 'r' + Math.random().toString(36).slice(2, 8); while (taken.has(id));
   const lock = lockOn ? await roomLockHash(id, pw) : '';
   const side = (document.querySelector('input[name=rmSide]:checked') || {}).value || 'RED';
-  ssSet(`df-new-${id}`, JSON.stringify({ name, lock, side }));
+  ssSet(`df-new-${id}`, JSON.stringify({ name, lock, side, bo }));
   location.href = roomUrl(id);
 }
 // ห้องที่ล็อกและเรายังไม่ได้ใส่รหัส → หน้าต่างใส่รหัสค้างไว้ (ปิดไม่ได้นอกจากกลับหน้ารายการ)
@@ -5897,8 +5983,8 @@ function renderPvp() {
     $('#pvpEyebrow').textContent = 'PVP · ROOM';
     $('#pvpTitle').textContent = `${roomName()}${roomLock() ? ' 🔒' : ''}`;
     $('#roomChips').hidden = net.state !== 'on';
-    $('#roomChips').innerHTML = `${hp ? `<span>👑 เจ้าของห้อง ${isHost ? 'คุณ' : esc(nickOf(hp))}</span>` : ''}<span>ในห้อง ${net.peers.length} คน</span><span>ไม่จับเวลา</span>`;
-    $('#roomBtns').innerHTML = `${isHost && m ? '<button type="button" class="btn ghost" data-act="roomEdit">⚙ แก้ชื่อ/รหัสห้อง</button>' : ''}<button type="button" class="btn ghost" data-act="copyRoom">🔗 คัดลอกลิงก์ห้อง</button><button type="button" class="btn ghost" data-act="roomLeave">← ออกจากห้อง</button>`;
+    $('#roomChips').innerHTML = `${hp ? `<span>👑 เจ้าของห้อง ${isHost ? 'คุณ' : esc(nickOf(hp))}</span>` : ''}<span>ในห้อง ${net.peers.length} คน</span><span>ไม่จับเวลา</span>${boChip()}`;
+    $('#roomBtns').innerHTML = `${isHost && m ? '<button type="button" class="btn ghost" data-act="roomEdit">⚙ ตั้งค่าห้อง</button>' : ''}${isHost && boScore() && boScore().games ? '<button type="button" class="btn ghost" data-act="boReset">↺ เริ่มนับ Bo ใหม่</button>' : ''}<button type="button" class="btn ghost" data-act="copyRoom">🔗 คัดลอกลิงก์ห้อง</button><button type="button" class="btn ghost" data-act="roomLeave">← ออกจากห้อง</button>`;
     roomGate();
   } else $('#roomBtns').innerHTML = '<button type="button" class="btn ghost" data-act="toLobby">← กลับ LOBBY</button>';
   const n = net.peers.length;
@@ -5949,7 +6035,10 @@ function pvpOnPeers() {
   if (!ON_CLAUDE && !LIST_MODE && net.state === 'on') {
     const m = roomMeta(), mine = net.mine.meta;
     // ช่วยถือชื่อ/รหัสห้องไว้ (เจ้าของออกไป ห้องก็ยังอยู่) — เฉพาะคนที่เข้าห้องถูกต้อง
-    if (m && roomAuthed() && (!mine || mine.u < m.u)) presence({ meta: { name: m.name, lock: m.lock, u: m.u } });
+    if (m && roomAuthed() && (!mine || mine.u < m.u)) presence({ meta: { name: m.name, lock: m.lock, u: m.u, bo: m.bo || 1 } });
+    boHold();
+    // ผู้ชมห้อง Bo ที่ออกมาจากเกมที่จบ → ตามไปดูเกมถัดไปเองเมื่อเริ่ม
+    if (ui.boFollow && ui.screen === 'pvp' && roomAuthed() && watchable() && !vdoNeed()) { ui.boFollow = false; specStart(); }
     if (net.autoSeat && roomReady() && ui.screen === 'pvp') {
       const want = net.autoSeat === 'any' ? SIDES[Math.random() < 0.5 ? 0 : 1] : net.autoSeat, h = seatHolders();
       net.autoSeat = null;
@@ -5996,6 +6085,7 @@ function pvpCheckStart() {
       ui.pvpStarting = null; ui.pvpNoAck = s.mid; presence({ mid: null }); toast('อีกฝ่ายไม่ตอบรับ — กด READY ใหม่'); renderPvp(); return;
     }
     ui.pvpStarting = null;
+    boStart(s.mid);
     startGame({ mode: 'pvp', me: s.me, seed: hashStr(s.mid), mid: s.mid, oppPeer: s.oppPeer, oppNick: nickOf(o) });
   };
   renderPvp();
@@ -6219,6 +6309,7 @@ function pvpEnd(winner, reason, keepGid = false, extra = {}) {
   if (!keepGid) ui.gid++; // หยุดแอนิเมชันที่ค้าง
   Object.assign(ui, { phase: 'end', busy: false, winner, winReason: reason, oppHidden: 0 });
   addLog(`Winner Phase · ${winner === 'DRAW' ? 'ไม่มีผล' : `${tagOf(winner)} WIN!`} — ${reason}`, 'sys');
+  if (ui.pvp) boRecord(ui.pvp.mid, winner);
   presence({ seat: null, at: null, inp: {}, ...extra });
   render();
   sfx.play(winner === ME ? 'win' : winner === OPP ? 'lose' : 'levelup');
@@ -6366,6 +6457,7 @@ function specStatus() {
 function specEnd(winner, reason) {
   ui.gid++;
   Object.assign(ui, { phase: 'end', busy: false, winner, winReason: reason });
+  if (ui.spec && !ui.spec.bot) boRecord(ui.spec.mid, winner);
   addLog(`Winner Phase · ${winner === 'DRAW' ? 'ไม่มีผล' : `${tagOf(winner)} WIN!`} — ${reason}`, 'sys');
   render();
   sfx.play(winner === 'DRAW' ? 'levelup' : 'win');
