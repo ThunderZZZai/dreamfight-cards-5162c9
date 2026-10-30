@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793340645">
+<meta name="df-build" content="1793343992">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -100,16 +100,17 @@ body:not(.portrait) #rotateHint{display:none}
 .hp-trail.loss{background:#fff1bf} .hp-trail.gain{background:var(--heal)}
 @keyframes trail{0%,55%{opacity:1}100%{opacity:0}}
 .hpbar.hit{animation:barHit calc(.5s*var(--spd)) ease}
-/* ชิลด์ (ตี้ 2026-10-22): หลอดสีขาวเล็ก ๆ เหนือแถบ HP · ยาวตามชิลด์ / SHIELD_MAX · ตัวเลขข้างป้ายชื่อฝั่ง */
-.shbar{position:absolute;top:84px;height:7px;overflow:hidden;background:rgba(255,255,255,.06)}
-.shbar.red{left:324px;width:516px;transform:skewX(39.4deg)} .shbar.blue{left:1081px;width:516px;transform:skewX(-39.4deg)}
+/* ชิลด์ (ตี้ 2026-10-22): หลอดสีขาวเล็ก ๆ เหนือแถบ HP · ยาวตามชิลด์ / SHIELD_MAX · ตัวเลขข้างป้ายชื่อฝั่ง
+   ตี้ 2026-10-30: กรอบ v2 → หลอดโล่ย้ายไปช่องเว้าด้านบน (ระหว่างแผ่นเงินสองแผ่น · จอ y 31–60) เป็นหลอดมืดเปล่า · โล่หกเหลี่ยม (.vfx-coat) ขึ้นทับ */
+.shbar{position:absolute;top:35.5px;height:21px;overflow:hidden;background:linear-gradient(180deg,rgba(0,0,0,.85),rgba(12,18,30,.92));box-shadow:inset 0 0 0 1px rgba(150,200,255,.22)}
+.shbar.red{left:512px;width:220px;transform:skewX(32.2deg)} .shbar.blue{left:1190px;width:228px;transform:skewX(-32.2deg)}
 .sh-fill{position:absolute;top:0;bottom:0;width:0;background:linear-gradient(180deg,#ffffff,#d9e4f5);box-shadow:0 0 10px rgba(255,255,255,.9);transition:width calc(.45s*var(--spd)) ease}
 .shbar.red .sh-fill{left:0} .shbar.blue .sh-fill{right:0}
 .shbar.flash{animation:shFlash calc(.6s*var(--spd)) ease}
 @keyframes shFlash{30%{background:rgba(255,255,255,.55);box-shadow:0 0 18px #fff}}
-.shnum{position:absolute;top:52px;display:flex;align-items:center;gap:5px;font-family:var(--font-disp);font-weight:700;font-size:20px;color:#fff;text-shadow:0 0 8px rgba(255,255,255,.7),0 1px 0 #000;pointer-events:none;white-space:nowrap}
-.shnum.red{left:446px} .shnum.blue{right:446px}
-.shnum svg{width:18px;height:18px}
+.shnum{position:absolute;top:36px;height:20px;display:flex;align-items:center;gap:4px;font-family:var(--font-disp);font-weight:700;font-size:17px;color:#fff;text-shadow:0 0 3px #000,0 0 7px rgba(0,0,0,.85),0 1px 0 #000;z-index:1;pointer-events:none;white-space:nowrap}
+.shnum.red{left:522px} .shnum.blue{right:514px} /* ตี้ 2026-10-30: อยู่ปลายนอกของหลอดโล่ (โล่งอกจากฝั่งกลาง) */
+.shnum svg{width:15px;height:15px}
 .hp-float.shield{color:#fff;text-shadow:0 0 10px rgba(255,255,255,.9),0 3px 0 rgba(0,0,0,.6)}
 @keyframes barHit{25%{filter:brightness(2.4)}}
 .hpbar.healed{animation:barHeal calc(.7s*var(--spd)) ease}
@@ -1039,22 +1040,23 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 .vfx-fire video{filter:brightness(1.45) saturate(1.4)} /* ตี้ 2026-10-29: ไฟเห็นชัดขึ้น */
 /* เอฟเฟกต์ชน (ตี้ 2026-10-29 · แบบ A แฉกแสง จาก artifact EDbToKabfQnDyKFM1cEKMb): ชนการ์ด 640×640 · ชนเกจ 700×300 (จุดชน 350,130) · อยู่เหนือการ์ด */
 .vfx-hit{z-index:22}
-/* โล่บนเกจ HP: ผืน 1110×240 = จอ x 760–1870 y 14–254 (BLUE) · RED กลับด้าน · คลุมหลอดเลือดเลยขอบออกมานิดหน่อย (ตี้ 2026-10-29) เฟดขอบ · ยาวตามโล่/50 จากปลายด้านนอก
-   ตามแถบ HP ขึ้นลงเหมือน #hud ทุกจังหวะ */
-.vfx-coat{z-index:4;top:14px;width:1110px;height:240px;--hy:0px;--mx:1;transform:translateY(var(--hy)) scaleX(var(--mx));
+/* โล่บนเกจ: ผืน 1110×240 (หลอดในผืน x 302–864 y 73–108) · RED กลับด้าน · เฟดขอบ
+   ตี้ 2026-10-30: ย้ายจากแถบ HP ไปหลอดโล่ในช่องเว้าด้านบน (.shbar) → ย่อผืนทั้งชุด --s (ลายหกเหลี่ยม/คลิปก่อตัว/คลิปแตก ไม่บิด)
+   ยาวตามโล่/50 งอกจากฝั่งกลางจอ (แบบเดียวกับ HP) · ตามแถบ HP ขึ้นลงเหมือน #hud ทุกจังหวะ */
+.vfx-coat{z-index:4;width:1110px;height:240px;--hy:0px;--mx:1;--s:1;transform-origin:0 0;transform:translateY(var(--hy)) scale(calc(var(--s)*var(--mx)),var(--s));
   transition:transform calc(.75s*var(--spd)) cubic-bezier(.2,.9,.25,1.12),opacity calc(.45s*var(--spd)) ease,--L .5s cubic-bezier(.2,.8,.2,1);
   --tube:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='1110' height='240'><defs><linearGradient id='g' gradientUnits='userSpaceOnUse' x1='296' y1='0' x2='870' y2='0'><stop offset='0' stop-color='white' stop-opacity='0'/><stop offset='.07' stop-color='white'/><stop offset='.93' stop-color='white'/><stop offset='1' stop-color='white' stop-opacity='0'/></linearGradient><filter id='f' x='-10%' y='-100%' width='120%' height='300%'><feGaussianBlur stdDeviation='4'/></filter></defs><polygon points='324,73 864,73 846,108 302,108' fill='url(%23g)' filter='url(%23f)'/></svg>");
-  --amt:linear-gradient(to left,#000 0,#000 var(--L),transparent calc(var(--L) + 30px));
+  --amt:linear-gradient(to right,#000 0,#000 var(--L),transparent calc(var(--L) + 30px));
   -webkit-mask-image:var(--amt),var(--tube);mask-image:var(--amt),var(--tube);-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-composite:source-in;mask-composite:intersect}
-.vfx-coat.blue{left:760px} .vfx-coat.red{left:53px;--mx:-1}
+.vfx-coat.blue{left:1058.5px;top:8px;--s:.42} .vfx-coat.red{left:858.8px;top:9.4px;--s:.405;--mx:-1} /* ช่องเว้า RED สั้นกว่า BLUE ~10px */
 .vfx-coat video{filter:saturate(2.6) brightness(2.3) contrast(1.15)} .vfx-coat img{filter:brightness(1.15)} /* ตี้ 2026-10-29: โล่บนเกจเห็นชัดขึ้น (เดิม saturate 3 · brightness 1.5) */
 /* แถบสีฟ้าอ่อนรองใต้ลายหกเหลี่ยม = บอกความยาวโล่ให้เห็นชัด (ตัดด้วยมาสก์เดียวกับลาย) */
 .vfx-coat.still::before{content:"";position:absolute;left:296px;top:72px;width:580px;height:38px;z-index:1;mix-blend-mode:screen;background:linear-gradient(180deg,rgba(170,225,255,.25),rgba(120,200,255,.62) 45%,rgba(200,240,255,.7) 55%,rgba(170,225,255,.25));filter:blur(1.5px)}
 /* ลายหกเหลี่ยมชั้นที่ 2 เลื่อนครึ่งช่อง ให้ลายในหลอดแน่นขึ้น */
 /* ตี้ 2026-10-30: ผิวโลหะใหม่เต็มหลอด (text-fx/make_bar_coat.py) · แสงขาวกวาดผ่านโล่ช้า ๆ แทนลายชั้นที่ 2 */
 .vfx-coat.still::after{content:"";position:absolute;left:290px;top:66px;width:600px;height:50px;z-index:1;mix-blend-mode:screen;background:linear-gradient(100deg,transparent 0 40%,rgba(255,255,255,.75) 50%,transparent 60% 100%) no-repeat;background-size:30% 100%;background-position:-40% 0}
-.vfx-coat.part{--amt:linear-gradient(to left,transparent 0,transparent calc(var(--A) - 16px),#000 var(--A),#000 var(--L),transparent calc(var(--L) + 30px));transition:transform calc(.75s*var(--spd)) cubic-bezier(.2,.9,.25,1.12),opacity calc(.45s*var(--spd)) ease}
-.vfx-coat.loose{--amt:linear-gradient(to left,#000 0,#000 var(--L),transparent calc(var(--L) + 150px));-webkit-mask-image:var(--amt);mask-image:var(--amt);transition:transform calc(.75s*var(--spd)) cubic-bezier(.2,.9,.25,1.12),opacity calc(.45s*var(--spd)) ease}
+.vfx-coat.part{--amt:linear-gradient(to right,transparent 0,transparent calc(var(--A) - 16px),#000 var(--A),#000 var(--L),transparent calc(var(--L) + 30px));transition:transform calc(.75s*var(--spd)) cubic-bezier(.2,.9,.25,1.12),opacity calc(.45s*var(--spd)) ease}
+.vfx-coat.loose{--amt:linear-gradient(to right,#000 0,#000 var(--L),transparent calc(var(--L) + 150px));-webkit-mask-image:var(--amt);mask-image:var(--amt);transition:transform calc(.75s*var(--spd)) cubic-bezier(.2,.9,.25,1.12),opacity calc(.45s*var(--spd)) ease}
 .vfx-coat.loose.tube{-webkit-mask-image:var(--amt),var(--tube);mask-image:var(--amt),var(--tube)}
 .vfx-coat.cut{transition:transform calc(.75s*var(--spd)) cubic-bezier(.2,.9,.25,1.12),opacity calc(.45s*var(--spd)) ease}
 .vfx-coat.hit img{animation:coatHit .5s ease}
@@ -1066,8 +1068,8 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 @keyframes coatBreath{from{opacity:.45}to{opacity:1}}
 @keyframes coatSweep{0%{background-position:-40% 0}60%,100%{background-position:140% 0}}
 @media (prefers-reduced-motion:reduce){.vfx-coat.still::before,.vfx-coat.still::after{animation:none}}
-/* หลอดชิลด์ขาวเดิมเลิกใช้ — แทนด้วยโล่บนเกจ (ตัวเลขชิลด์ยังอยู่) */
-.shbar{visibility:hidden}
+/* หลอดชิลด์ขาวเดิมเลิกใช้ — แทนด้วยโล่หกเหลี่ยม (ตัวเลขชิลด์ยังอยู่) · ตี้ 2026-10-30 เหลือแค่หลอดเปล่าในช่องเว้า */
+.shbar .sh-fill{visibility:hidden}
 /* ปะทะกลางจอ (ตี้ 2026-10-28): การ์ดชนกันกลางล่าง (y 850) · ข้อความผลปะทะเหนือการ์ด · โล่บาเรีย */
 .vc-verdict{position:absolute;top:618px;z-index:6;transform:translateX(-50%);white-space:nowrap;padding:4px 24px;border-radius:999px;font-family:var(--font-disp);font-weight:700;font-size:40px;line-height:1.2;pointer-events:none;animation:vcVerdict 1.6s cubic-bezier(.2,.9,.3,1.2) forwards}
 .vc-verdict.win{background:linear-gradient(180deg,#ffe58a,#ffc83d 55%,#e09a12);color:#1a1204;box-shadow:0 0 0 2px #fff4c2 inset,0 0 26px rgba(255,200,61,.9)}
@@ -3184,6 +3186,7 @@ const VC_POP = { RED: [133, 847], BLUE: [1787, 847] }; // จุดกึ่ง�
 // ปะทะกลางจอ (ตี้ 2026-10-28): การ์ดพุ่งมาชนกันกลางจอก่อน แล้วค่อยพุ่งเข้าเกจ · MID = จุดพัก · HIT = จุดชน (ขอบการ์ดแตะกัน)
 const VC_CLASH = 1600, VC_MID = { RED: [858, 850], BLUE: [1062, 850] }, VC_HIT = { RED: [888, 850], BLUE: [1032, 850] };
 const VC_BAR = { RED: [579, 104], BLUE: [1343, 104] }; // จุดกึ่งกลางแถบ HP
+const VC_SH = { RED: [622, 46], BLUE: [1304, 46] }; // จุดกึ่งกลางหลอดโล่ (ช่องเว้าเหนือแถบ HP · ตี้ 2026-10-30)
 const VC_FX_HTML = `<span class="bu"></span><span class="ri"></span>${'<span class="sd"></span>'.repeat(10)}<span class="ri b"></span><span class="ch"></span>`
   + '<svg class="ck" viewBox="0 0 180 40" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M90 20 L72 8 L58 14 L40 4M90 20 L104 6 L122 12 L140 2M90 20 L80 34 L64 30M90 20 L110 32 L128 28 L150 38M72 8 L66 0"/></svg>';
 // ผลต่อ HP ของฝั่ง s ในช่องนี้ ก่อน applyDamage จะรัน (คิดแบบเดียวกัน: ได้ชิลด์ช่องนี้ก่อน แล้วดาเมจหักชิลด์ก่อน HP)
@@ -3205,6 +3208,8 @@ function vcActs(g, r) {
     else {
       // ตี้ 2026-10-29: การ์ดตีพุ่งชนหลอดเลือดทุกใบ (โล่กันหมด/HP หมดก่อนก็พุ่ง) — มีแค่ Dodge ที่ไม่พุ่งเข้าเลือด
       Object.assign(a, { fx: 'hit', to: f, rank: 1, noHp: false });
+      const h = vcHp(g, r, f);
+      if (!r[f].evaded && h.hpLoss <= 0 && h.absorbed > 0) a.blk = true; // ตี้ 2026-10-30: โล่รับไว้หมด = พุ่งชนหลอดโล่ ไม่ใช่หลอดเลือด
       const brk = (st.brk || 0) + (isCounter(c, r[f].card) ? st.brkVs || 0 : 0) + (r[s].atkBrk ? r[s].atkBrk.hit : 0);
       if (brk) a.brk = Math.min(brk, g.p[f].hand.length); else if (r[s].atkBrk) a.brkMiss = true;
       const cost = costOf(c, r[f].card);
@@ -3377,7 +3382,7 @@ function vcFlyTo(d, s, [x1, y1], sc, rot1, ms) {
   }
 }
 // โล่บนเกจ HP ฝั่ง s · sh = ชิลด์ตอนนี้ · show = อยู่ในเกม (ไม่ใช่ intro)
-const COAT_L = sh => 258 + (530 * sh) / SHIELD_MAX + (sh > 0 ? 6 : -40); // ปลายนอกเกจที่ x 1612 = ระยะ 258 จากขอบขวาผืน
+const COAT_L = sh => 316 + (540 * sh) / SHIELD_MAX + (sh > 0 ? 6 : -70); // ตี้ 2026-10-30: งอกจากฝั่งกลางจอ · ปลายในหลอดที่ x ~313 จากขอบผืนด้านกลางจอ
 function coatShow(s, sh, show) {
   if (!vfx.coat[s]) {
     const lc = s.toLowerCase();
@@ -3588,7 +3593,7 @@ async function vcFinale(g, r, acts, hit, stop) {
   for (const a of acts) {
     if (stop()) return;
     // ตี้ 2026-10-28: Dodge ขโมยพุ่งไปที่การ์ดอีกฝ่าย (มุมล่างฝั่งตรงข้าม) ไม่ใช่แถบ HP
-    const { s, to } = a, [x0, y0] = VC_POP[s], [x1, y1] = a.fx === 'steal' ? VC_POP[to] : VC_BAR[to];
+    const { s, to } = a, [x0, y0] = VC_POP[s], [x1, y1] = a.fx === 'steal' ? VC_POP[to] : a.fx === 'shield' || a.blk ? VC_SH[to] : VC_BAR[to];
     vcPop(s, a.card);
     const d = vc.pops[s];
     if (a.fx === 'draw') {
@@ -3633,7 +3638,7 @@ async function vcFinale(g, r, acts, hit, stop) {
     let fx = a.fx;
     if (fx === 'hit') { const o = r[to]; fx = o.evaded ? 'miss' : o.hpLoss > 0 ? 'hit' : o.absorbed > 0 ? 'block' : 'miss'; }
     // ชนเกจ (ตี้ 2026-10-29): ชนเลือด/โล่/Defence เติมโล่ = คลิป AE สีตามการ์ด · หลบพ้น/ขโมย = เอฟเฟกต์เดิม
-    if (fx === 'hit' || fx === 'block' || fx === 'shield') vfxImpact(fx === 'hit' ? HIT_COL[a.card.type] : 'hp_blue', x1, y1, fx === 'hit' ? 1 : 0.8);
+    if (fx === 'hit' || fx === 'block' || fx === 'shield') vfxImpact(fx === 'hit' ? HIT_COL[a.card.type] : 'hp_blue', x1, y1, fx === 'hit' ? 1 : y1 === VC_SH[to][1] ? 0.55 : 0.8);
     else vcAdd(`vc-fx ${fx} on-${to.toLowerCase()}`, VC_FX_HTML, `left:${x1}px;top:${y1}px`);
     if (fx === 'hit' || fx === 'steal') { quake(true); flashStage(s); }
     sfx.play(fx === 'hit' ? `ctr${a.card.type}` : fx === 'block' ? 'defend' : fx === 'shield' ? 'ctrDEF' : fx === 'steal' ? 'ctrDODGE' : 'miss');
