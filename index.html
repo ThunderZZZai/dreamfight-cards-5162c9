@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793378549">
+<meta name="df-build" content="1793378892">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -3203,6 +3203,7 @@ function popAt(clip, side) {
   return own ? (m[2] === 'ult' ? 3 : 3.5) : 6;           // VDO ฝั่งตี (ไฟล์เดียว: อีกฝ่ายโผล่ตอนโดน)
 }
 const VC_FLY = 460, VC_FIZZ = 550, VC_GAP = 950, VC_STEAL = 1650, VC_DRAW = 650, VC_LOSE = 750, VC_HUD = 450, VC_PAD = 600;
+const VC_FORM = 1000; // ตี้ 2026-10-30: รอโล่ก่อตัวบนหลอด (คลิป bar_form2 ~0.5–1.5 วิ) ก่อนการ์ดตีพุ่งตามมา
 const VC_POP = { RED: [133, 847], BLUE: [1787, 847] }; // จุดกึ่งกลางการ์ดมุมล่าง (.vc-pop 146px)
 // ปะทะกลางจอ (ตี้ 2026-10-28): การ์ดพุ่งมาชนกันกลางจอก่อน แล้วค่อยพุ่งเข้าเกจ · MID = จุดพัก · HIT = จุดชน (ขอบการ์ดแตะกัน)
 const VC_CLASH = 1600, VC_MID = { RED: [858, 850], BLUE: [1062, 850] }, VC_HIT = { RED: [888, 850], BLUE: [1032, 850] };
@@ -3224,7 +3225,8 @@ function vcActs(g, r) {
     const c = r[s].card;
     if (!c) continue;
     const f = FOE[s], st = stat(c), a = { s, card: c };
-    if (c.type === 'DEF') Object.assign(a, { fx: 'shield', to: s, rank: 0 });
+    // ตี้ 2026-10-30: Defence เจอการ์ดตี = โล่ต้องก่อตัวบนหลอดให้เสร็จก่อน (form) แล้วการ์ดตีค่อยพุ่งมาตีโล่ให้หาย
+    if (c.type === 'DEF') Object.assign(a, { fx: 'shield', to: s, rank: 0, form: r[s].shieldGain > 0 && !!(r[f].card && HIT_VDO[r[f].card.type]) });
     else if (c.type === 'DODGE') Object.assign(a, st.steal ? { fx: 'steal', to: f, n: st.steal, rank: 2 } : { fx: 'draw', to: s, rank: 2 });
     else {
       // ตี้ 2026-10-29: การ์ดตีพุ่งชนหลอดเลือดทุกใบ (โล่กันหมด/HP หมดก่อนก็พุ่ง) — มีแค่ Dodge ที่ไม่พุ่งเข้าเลือด
@@ -3247,7 +3249,7 @@ const vcClashMs = r => {
   if (SIDES.some(s => T(s) === 'DODGE' && hit(FOE[s]))) return VC_CLASH;
   return SIDES.some(s => T(s) === 'DEF' && hit(FOE[s])) ? 2300 : VC_CLASH;
 };
-const vcMs = a => (a.fx === 'draw' ? VC_DRAW : a.fx === 'steal' ? VC_STEAL : a.noHp ? VC_FIZZ : VC_GAP) + (a.brk || a.brkMiss ? VC_LOSE : 0) + (a.cost ? VC_LOSE : 0);
+const vcMs = a => (a.fx === 'draw' ? VC_DRAW : a.fx === 'steal' ? VC_STEAL : a.noHp ? VC_FIZZ : VC_GAP) + (a.form ? VC_FORM : 0) + (a.brk || a.brkMiss ? VC_LOSE : 0) + (a.cost ? VC_LOSE : 0);
 const vc = { pops: {}, at: {} };
 function vcAdd(cls, html, style) {
   const d = document.createElement('div');
@@ -3269,7 +3271,16 @@ function vcPop(s, c) {
   if (c) vfxFire(s, c);
   sfx.play('flip');
 }
-function vcReset() { vc.pops = {}; vc.at = {}; $('#vdoCards').innerHTML = ''; vfxStop(); }
+function vcReset() { vc.pops = {}; vc.at = {}; $('#vdoCards').innerHTML = ''; vfxStop(); ui.shPrev = null; }
+// ตี้ 2026-10-30: Defence ชนหลอดโล่ = โล่บนหลอดเพิ่มขึ้นก่อน (ชิลด์เดิม + ที่ได้ช่องนี้) ยังไม่หักดาเมจ — การ์ดตีชนทีหลังค่อยหัก (showResult ล้างค่านี้)
+// r[s].sh0 มีแล้ว = หักดาเมจช่องนี้ไปแล้ว ไม่ต้องโชว์ค่ากลางทาง
+function shieldPreview(g, r, s) {
+  if (r[s].sh0 != null || !(r[s].shieldGain > 0)) return;
+  ui.shPrev = { ...(ui.shPrev || {}), [s]: Math.min(SHIELD_MAX, g.p[s].shield + r[s].shieldGain) };
+  renderShield(s, ui.shPrev[s], true);
+  r[s].shPrev = true;
+  floatText(s, `ชิลด์ +${r[s].shieldGain}`, 'shield');
+}
 /* ───────── โล่ + ไฟจากคลิป AE (ตี้ 2026-10-28 · เดโม artifact TmvSzwtJabbT2Tk6oaDX4g) ─────────
    · โล่การ์ด: Defence เจอ Attack = กันได้ (card_block) · เจอ Ultimate = โล่แตก (card_break) · การ์ดตีพุ่งตามจังหวะคลิป (ชนที่ 1.4 วิ)
    · ไฟ: ติดเองเมื่อการ์ดพุ่งเร็ว (พุ่งหากัน / พุ่งเข้าเกจ) สีตามการ์ด · อยู่ใต้การ์ด หัวไฟนำหน้าขอบการ์ดนิดเดียว
@@ -3456,6 +3467,8 @@ const fxImg = (name, h, extra = '') => `<span class="fxw" style="--h:${h}px;--im
 // ป้ายข้อความขยับ (ตี้ 2026-10-29): round1–10 · fight · action1–3 · ko · dko → assets/title/*.mp4 · คืนเมื่อคลิปจบ (ROUND/FIGHT/ACTION ~0.9 วิ · K.O. ~1.5 วิ)
 // เล่นไม่ได้ (โหลดไม่ทัน/ปิดเสียงอัตโนมัติไม่ผ่าน) = คืนทันที แล้วใช้รูปคำแบบเดิมแทน
 const TITLE_MS = { ko: 1520, dko: 1520 };
+// ตี้ 2026-10-30: ป้ายทั้งหมด (ROUND · FIGHT · ACTION · K.O.) ดูเร็วไป → เล่นช้าลง 0.7 เท่า (คลิป 60 fps → ~42 fps ยังลื่น) · ป้ายปกติ ~0.9 → ~1.3 วิ · โหมดเร่งความเร็วคูณ 1.5 ทับอีกที
+const TITLE_RATE = 0.7;
 function titleFx(name) {
   const box = $('#titleFx');
   let v = box.querySelector(`video[data-t="${name}"]`);
@@ -3470,7 +3483,7 @@ function titleFx(name) {
     const end = ok => { if (done) return; done = true; v.classList.remove('on'); v.onended = null; res(ok); };
     v.pause();
     try { v.currentTime = 0; } catch (e) {}
-    const rate = ui.fast ? 1.5 : 1; // โหมดเร่งความเร็ว
+    const rate = (ui.fast ? 1.5 : 1) * TITLE_RATE; // โหมดเร่งความเร็ว
     v.playbackRate = rate;
     v.onended = () => end(true);
     v.play().then(() => v.classList.add('on'), () => end(false));
@@ -3669,6 +3682,7 @@ async function vcFinale(g, r, acts, hit, stop) {
     await sleep(VC_FLY);
     if (stop()) return;
     d.classList.add('gone');
+    if (a.fx === 'shield') shieldPreview(g, r, s);
     hit(a);
     let fx = a.fx;
     if (fx === 'hit') { const o = r[to]; fx = o.evaded ? 'miss' : o.hpLoss > 0 ? 'hit' : o.absorbed > 0 ? 'block' : 'miss'; }
@@ -4384,10 +4398,11 @@ function floatText(s, text, kind, delay = 0, html = '') {
   }, delay);
 }
 function floatHp(s, o) {
-  if (o.shieldGain) floatText(s, `ชิลด์ +${o.shieldGain}`, 'shield');
-  if (o.hpLoss > 0) floatText(s, `−${o.hpLoss} HP`, 'dmg', o.shieldGain ? 250 : 0);
+  const gain = o.shieldGain && !o.shPrev; // ขึ้น "ชิลด์ +x" ไปแล้วตอนโล่ก่อตัว (shieldPreview) = ไม่ขึ้นซ้ำ
+  if (gain) floatText(s, `ชิลด์ +${o.shieldGain}`, 'shield');
+  if (o.hpLoss > 0) floatText(s, `−${o.hpLoss} HP`, 'dmg', gain ? 250 : 0);
   else if (o.evaded) floatText(s, 'หลบ!', 'ok fximg', 0, fxImg('dodge', 72, ';--g:80,220,140'));
-  else if (o.absorbed > 0) floatText(s, 'ชิลด์รับไว้หมด', 'shield', o.shieldGain ? 250 : 0);
+  else if (o.absorbed > 0) floatText(s, 'ชิลด์รับไว้หมด', 'shield', gain ? 250 : 0);
   if (o.absorbed > 0 && o.hpLoss > 0) floatText(s, `ชิลด์ −${o.absorbed}`, 'shield', 450);
   if (o.healed > 0) floatText(s, `+${o.healed} HP`, 'heal', ui.fast ? 150 : 400);
 }
@@ -4601,6 +4616,7 @@ async function runFight() {
     // sides = ฝั่งที่หักรอบนี้ (VDO ตีกันทั้งคู่หักทีละฝั่ง) · final = ครั้งสุดท้ายของช่อง → เปิดผลในแผง
     const showResult = (sides = SIDES, final = true) => {
       applyDamage(g, r, sides);
+      ui.shPrev = null; // โล่ที่โชว์ล่วงหน้า (shieldPreview) → ค่าจริงหลังหักดาเมจ
       Object.assign(ui, { shown: i, detail: i });
       if (final) {
         ui.results[i] = r;
@@ -4698,7 +4714,7 @@ async function koFx(v) {
   sfx.play('voKO'); ui.koVoAt = performance.now(); // ตี้ 2026-10-30: เสียงพากย์ K.O. (DOUBLE K.O. ก็ใช้คำเดียวกัน)
   flashStage(side);
   quake(true);
-  await wait(1600);
+  await wait(Math.round(1600 / TITLE_RATE)); // ป้าย K.O. ช้าลง (TITLE_RATE) → ข้อความ HP หมดค้างจนคลิปจบเหมือนเดิม
   el.hidden = true;
 }
 async function nextRound() {
@@ -4991,7 +5007,7 @@ function renderHud(s) {
     ui.boDot[s] = w;
   } else dots.forEach((d, k) => { d.hidden = false; d.style.translate = ''; d.className = `dot ${lc} g k${k}${k < gN ? ' on' : ''}${gN >= GAUGE_MAX ? ' full' : ''}${k < gN && k >= gPrev ? ' new' : ''}`; });
   ui.gDot[s] = gN;
-  renderShield(s, inGame ? ui.g.p[s].shield : 0, inGame && !ui.intro);
+  renderShield(s, inGame ? (ui.shPrev && ui.shPrev[s] != null ? ui.shPrev[s] : ui.g.p[s].shield) : 0, inGame && !ui.intro);
   renderGauge(s);
 }
 // ชิลด์เหนือแถบ HP (ตี้ 2026-10-22) · เปลี่ยนเมื่อไหร่หลอดกะพริบ
