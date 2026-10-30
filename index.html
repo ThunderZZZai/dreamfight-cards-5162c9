@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793358389">
+<meta name="df-build" content="1793361522">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -3226,7 +3226,8 @@ function vcActs(g, r) {
     else if (c.type === 'DODGE') Object.assign(a, st.steal ? { fx: 'steal', to: f, n: st.steal, rank: 2 } : { fx: 'draw', to: s, rank: 2 });
     else {
       // ตี้ 2026-10-29: การ์ดตีพุ่งชนหลอดเลือดทุกใบ (โล่กันหมด/HP หมดก่อนก็พุ่ง) — มีแค่ Dodge ที่ไม่พุ่งเข้าเลือด
-      Object.assign(a, { fx: 'hit', to: f, rank: 1, noHp: false });
+      // ตี้ 2026-10-30: Ultimate เจอ Dodge แล้วหลบพ้น = ไม่พุ่งใส่หลอดเลือด สลายตรงกลางจอ (MISS ขึ้นตอนชนกลางจอแล้ว)
+      Object.assign(a, { fx: 'hit', to: f, rank: 1, noHp: !!r[f].evaded });
       const h = vcHp(g, r, f);
       if (!r[f].evaded && h.hpLoss <= 0 && h.absorbed > 0) a.blk = true; // ตี้ 2026-10-30: โล่รับไว้หมด = พุ่งชนหลอดโล่ ไม่ใช่หลอดเลือด
       const brk = (st.brk || 0) + (isCounter(c, r[f].card) ? st.brkVs || 0 : 0) + (r[s].atkBrk ? r[s].atkBrk.hit : 0);
