@@ -416,6 +416,16 @@
    "author": "freesound_community",
    "page": "https://pixabay.com/sound-effects/film-special-effects-sword-schwing-40520/",
    "note": "ตี้ 2026-10-30: ใช้เกจพร 1–3 เกจ (เดิม levelup/levelup3) · ลด 5 ครึ่งเสียง + เบส +8 dB (ตี้ขอทุ้ม) · audio-src/build_epic.py"
+  },
+  "clash": {
+   "file": "assets/audio/sfx-clash.mp3?v=20261030",
+   "gain": 1.0,
+   "dur": 2.4,
+   "source": 393845,
+   "title": "Sword Slice 2",
+   "author": "DRAGON-STUDIO",
+   "page": "https://pixabay.com/sound-effects/film-special-effects-sword-slice-2-393845/",
+   "note": "ตี้ 2026-10-30: การ์ดชนกันกลางจอ (เดิม ctrATK) · เสียงเดิมแบบทุ้มหนักแน่น Ver 2: ลด 5 ครึ่งเสียง + ตุ้บเบส · audio-src/build_epic.py"
   }
  },
  "bgm": {
