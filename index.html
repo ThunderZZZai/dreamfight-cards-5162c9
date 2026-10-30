@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793379647">
+<meta name="df-build" content="1793380253">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -946,7 +946,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 #world.lay-player #gSet{right:232px;bottom:37px} #world.lay-player.me-blue #gSet{right:auto;left:232px} /* ขอบล่างตรงกรอบเกจ (1043) */
 #world.lay-spec .gauge.red{left:35px;right:auto;top:811px} #world.lay-spec .gauge.blue{left:auto;right:35px;top:811px}
 #world.vdo-fight .gauge{opacity:0}
-.gfr{position:relative;flex:none;width:35px;height:250px}
+.gfr{position:relative;flex:none;width:32px;height:250px} /* ตี้ 2026-10-31: กรอบใหม่แคบลงนิด (เดิม 35) */
 /* ปุ่มใช้เกจตามขั้น (ตี้ 2026-10-29) ข้างบาร์ตรงกลางแต่ละช่อง · RED ปุ่มอยู่ขวาบาร์ · BLUE อยู่ซ้าย */
 .gstepwrap{position:relative;flex:none;display:flex} /* .gfr เป็น span ต้องอยู่ใน flex ถึงจะมีความกว้าง */
 .gsteps{position:absolute;inset:0;pointer-events:none}
@@ -956,17 +956,18 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 .gstep::before,.gstep::after{content:"";position:absolute;z-index:-1;--c:9px;clip-path:polygon(var(--c) 0,calc(100% - var(--c)) 0,100% var(--c),100% calc(100% - var(--c)),calc(100% - var(--c)) 100%,var(--c) 100%,0 calc(100% - var(--c)),0 var(--c))}
 .gstep::before{inset:0;background:linear-gradient(135deg,#ff4d6d,#ffe14d,#4dff88,#4dc3ff,#8a5cff)}
 .gstep::after{inset:2px;--c:8px;background:#16171b}
-.gstep.k0{top:198.5px} .gstep.k1{top:124.5px} .gstep.k2{top:50.6px}
+.gstep.k0{top:198.6px} .gstep.k1{top:125.9px} .gstep.k2{top:51.8px} /* กลางช่องของกรอบใหม่ */
 .gstep:hover:not(:disabled)::after{background:#2a2c34}
 .gstep:focus-visible{outline:2px solid #fff;outline-offset:2px}
 .gstep:disabled{cursor:default;color:#555b66}
 .gstep:disabled::before{background:#3a3e47}
 .gfr > img{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-/* ตี้ 2026-10-28: ช่องเกจเต็มหน้าต่างของกรอบจริง ปลายบน/ล่างแหลมตามกรอบ — กรอบใหม่ (ตี้ส่งรูปใหม่ แทนอันเก่าที่ปลายดูขาด) 140×1001 → 35×250:
-   หน้าต่าง x 34–105 · y 60–344 / 352–643 / 649–938 · ขอบเฉียง 14.5% ของความสูงช่อง (BLUE ปลายแหลมขวาบน/ซ้ายล่าง · RED กลับด้าน) */
-.gcell,.gg{position:absolute;left:8.5px;width:18px;background:rgba(8,10,16,.78);clip-path:polygon(0 0,100% 14.5%,100% 100%,0 85.5%)}
-.gauge.blue .gcell,.gauge.blue .gg{left:8.5px;clip-path:polygon(100% 0,0 14.5%,0 100%,100% 85.5%)}
-.gcell.k0,.gg.k0{top:162.25px;height:72.5px} .gcell.k1,.gg.k1{top:88px;height:73px} .gcell.k2,.gg.k2{top:15px;height:71.25px}
+/* ตี้ 2026-10-31: กรอบเกจใหม่ (ตี้ส่งรูป · เงินขอบนีออนแดง/ฟ้า กระจกดำ 3 ช่อง) gauge-frame-{red,blue}.webp 128×1000 → 32×250 · ทำด้วย exports/build_gauge_frame.py
+   ช่องเกจเต็มกระจกด้านในเส้นนีออน (เส้นนีออนยังเห็นรอบสีรุ้ง) · ช่องว่าง = โปร่งใส เห็นกระจกของกรอบ
+   ปลายบน/ล่างเฉียงตามหน้าต่างจริง --s = ขอบขวาบน · --b = ขอบซ้ายล่าง (RED ปลายแหลมซ้ายบน · BLUE กลับด้าน) */
+.gcell,.gg{position:absolute;left:5.2px;width:21.4px;background:transparent;clip-path:polygon(0 0,100% var(--s),100% 100%,0 var(--b))}
+.gauge.blue .gcell,.gauge.blue .gg{clip-path:polygon(100% 0,0 var(--s),0 100%,100% var(--b))}
+.gcell.k0,.gg.k0{top:161.05px;height:75px;--s:18.2%;--b:81.8%} .gcell.k1,.gg.k1{top:87.35px;height:77.15px;--s:17.2%;--b:82.1%} .gcell.k2,.gg.k2{top:13.1px;height:77.45px;--s:16.7%;--b:82.5%}
 /* เรืองรุ้งตามขั้น: เงาเรืองเฉพาะช่องที่เติมแล้ว (สำเนาช่องอยู่ใต้กรอบ ให้แสงฟุ้งออกนอกกรอบ) · เต็ม 3 = กรอบทั้งอันเรืองด้วย */
 .gglow{position:absolute;inset:0;pointer-events:none;animation:gFrGlow 2s linear infinite}
 .gg{background:#fff}
@@ -988,7 +989,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 .gcell.new{animation:gCellIn calc(.7s*var(--spd)) ease-out}
 .gcell.spent{animation:gCellOut calc(.6s*var(--spd)) ease-out}
 @keyframes gCellIn{0%{filter:brightness(3.2)}100%{filter:none}}
-@keyframes gCellOut{0%{background:#fff}100%{background:rgba(8,10,16,.78)}}
+@keyframes gCellOut{0%{background:#fff}100%{background:transparent}}
 .gfr > img{z-index:1} .gcell{z-index:2}
 .gauge.full .gfr > img{animation:gFrGlow 2s linear infinite} /* เต็ม 3 ขั้น = กรอบเงินเรืองทั้งอัน — สีของแต่ละขั้นต้องคงที่ */
 @keyframes gFrGlow{from{filter:drop-shadow(0 0 4px #ff4d6d) drop-shadow(0 0 9px #ffe14d) drop-shadow(0 0 14px #4dc3ff) hue-rotate(0deg)}to{filter:drop-shadow(0 0 4px #ff4d6d) drop-shadow(0 0 9px #ffe14d) drop-shadow(0 0 14px #4dc3ff) hue-rotate(360deg)}}
@@ -5038,8 +5039,8 @@ function renderGauge(s) {
   const nogain = unlimitedNow(g, s) && ui.phase !== 'action' && !!P.lanes; // ระหว่างสู้รอบที่ใช้ 3 เกจ: สะสมไม่ได้
   el.className = `gauge ${s.toLowerCase()}${usable ? ' usable' : ''}${unl ? ' unl' : ''}${n ? ' has' : ''}${n >= GAUGE_MAX ? ' full' : ''}`;
   $('#world').classList.toggle(`unl-${s.toLowerCase()}`, unlimitedNow(g, s) && ui.phase === 'action'); // พลังเต็ม: การ์ดบนมือ + ช่องวางเรืองรุ้ง
-  // เกจพร (ตี้ 2026-10-27): กรอบเงิน 3 ช่อง เติมสีรุ้งทีละขั้นจากล่างขึ้นบน (RED ใช้กรอบกลับด้าน)
-  const orbs = `<span class="gfr" role="img" aria-label="เกจ ${s} ${n}/${GAUGE_MAX}"><span class="gglow">${[0, 1, 2].filter(k => k < n).map(k => `<i class="gg k${k}"></i>`).join('')}</span><img src="assets/gauge-frame${s === 'RED' ? '-l' : ''}.webp?v=2" alt="" draggable="false">${[0, 1, 2].map(k => `<i class="gcell k${k}${k < n ? ' on' : ''}${k < n && k >= prev ? ' new' : ''}${k >= n && k < prev ? ' spent' : ''}"></i>`).join('')}</span>`;
+  // เกจพร (ตี้ 2026-10-27): กรอบเงิน 3 ช่อง เติมสีรุ้งทีละขั้นจากล่างขึ้นบน · ตี้ 2026-10-31: กรอบนีออนแดง (RED) / ฟ้า (BLUE กลับด้าน)
+  const orbs = `<span class="gfr" role="img" aria-label="เกจ ${s} ${n}/${GAUGE_MAX}"><span class="gglow">${[0, 1, 2].filter(k => k < n).map(k => `<i class="gg k${k}"></i>`).join('')}</span><img src="assets/gauge-frame-${s === 'RED' ? 'red' : 'blue'}.webp?v=1" alt="" draggable="false">${[0, 1, 2].map(k => `<i class="gcell k${k}${k < n ? ' on' : ''}${k < n && k >= prev ? ' new' : ''}${k >= n && k < prev ? ' spent' : ''}"></i>`).join('')}</span>`;
   const label = `<span class="glabel">เกจ ${n}/${GAUGE_MAX}</span>`;
   const meta = `<span class="gmeta"><span title="การ์ดตั้งรับที่วาง รวมเลเวลครบ ${GAUGE_STACK} = 1 เกจ">${icon('DEF')}${P.gStack}/${GAUGE_STACK}</span><span title="ดาเมจจากการ์ดจู่โจม ครบ ${GAUGE_DMG} = 1 เกจ">${icon('ATK')}${P.gDmg}/${GAUGE_DMG}</span></span>`;
   // ตี้ 2026-10-29: กดใช้ตามขั้นได้เลย ปุ่ม 1 · 2 · 3 ข้างบาร์ตรงแต่ละช่อง (1 = จั่ว 1 ใบ · 2 = เปลี่ยนการ์ด · 3 = พลังเต็ม) ไม่ต้องเปิดเมนู

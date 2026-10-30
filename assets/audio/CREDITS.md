@@ -54,6 +54,7 @@ Layered sounds list every source they use.
 |  |  | Cinematic Impact Boom 05 (352465) | Universfield | https://pixabay.com/sound-effects/film-special-effects-cinematic-impact-boom-05-352465/ |
 | shieldHit | `sfx-shieldHit.mp3` | shield guard (6963) | freesound_community | https://pixabay.com/sound-effects/film-special-effects-shield-guard-6963/ |
 | clash | `sfx-clash.mp3` | Sword Slice 2 (393845) แบบทุ้ม | DRAGON-STUDIO | https://pixabay.com/sound-effects/film-special-effects-sword-slice-2-393845/ |
+| title | `sfx-title.mp3` | Whoosh Cinematic (376875) | DRAGON-STUDIO | https://pixabay.com/sound-effects/film-special-effects-whoosh-cinematic-376875/ |
 | ctrDEF | `sfx-ctrDEF.mp3` | Sword Clash (241729) | u_fe12rqkbth | https://pixabay.com/sound-effects/film-special-effects-sword-clash-241729/ |
 |  |  | Cinematic Impact Boom 03 (294435) | Universfield | https://pixabay.com/sound-effects/film-special-effects-cinematic-impact-boom-03-294435/ |
 |  |  | Magic Spell 02 (250240) | Universfield | https://pixabay.com/sound-effects/film-special-effects-magic-spell-02-250240/ |
@@ -100,3 +101,5 @@ Alex_Kizenkov, AlexGrohl, AudioPapkin, DavidDumaisAudio, DRAGON-STUDIO, florapho
 
 2026-10-30 (ต่อ): เสียงพากย์ผู้ประกาศ — ตี้ขอโทนผู้ชายเข้มดุทัน ทำ 4 แบบด้วย Seed Audio 1.0 (Seed Audio 1.5 ล้ม error 500 ทุกงาน) ตี้เลือก Ver 1 Arcade → หั่นเป็น 7 ไฟล์ `vo-*.mp3` (max momentary −14.5 LUFS ดังกว่า SFX อื่นนิดหน่อยให้ลอยเหนือเพลง) · ทำซ้ำด้วย `python3 audio-src/build_announcer.py`
 2026-10-30 (ต่อ 2): ตี้ขอ Round 4–10 → เจนด้วยเสียงต้นแบบ aud_v1_arcade.wav (@Audio1) ได้ `vo-round4..10.mp3` เสียงคนเดิม · เกมพากย์ ROUND ครบ 1–10
+
+2026-10-30 (ค่ำ): `title` = Whoosh Cinematic แทนเสียงติ๊กนาฬิกา (`tickHi`) ตอนป้าย ROUND / FIGHT / ACTION ขึ้น · ตี้เลือก A จากหน้าฟัง sfx-title.html · ตัด 0.64–1.47 วิ · max momentary −17 LUFS · ทำซ้ำด้วย `python3 audio-src/build_epic.py title`
