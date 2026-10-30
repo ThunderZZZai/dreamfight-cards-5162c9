@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793380253">
+<meta name="df-build" content="1793380946">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -880,6 +880,14 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 #world.me-blue #gSet{right:auto;left:16px}
 #world.lay-spec #gSet{right:auto;left:50%;bottom:12px;transform:translateX(-50%)} /* ผู้ชม: ⚙ กลางล่าง */
 #world.vdo-fight #gSet{opacity:0;pointer-events:none}
+/* ตี้ 2026-10-31: BOT VS BOT ปุ่มหยุดบอท ซ้ายของ ⚙ กลางล่าง · หยุดเฉพาะการตัดสินใจของบอท (เลือก · วาง · เปิดปะทะ · รอบถัดไป) ไม่หยุดวิดีโอ · ระหว่างวิดีโอซ่อนเหมือน ⚙ (กด P ได้) */
+.bvb-pause{position:absolute;left:calc(50% - 43px);bottom:12px;transform:translateX(-100%);z-index:30;display:inline-flex;align-items:center;gap:10px;height:62px;padding:0 22px;border-radius:16px;border:1px solid rgba(255,255,255,.28);background:rgba(8,10,16,.55);backdrop-filter:blur(6px);color:#e8edf5;font-family:var(--font-disp);font-weight:700;font-size:22px;letter-spacing:.04em;white-space:nowrap;cursor:pointer}
+.bvb-pause[hidden]{display:none}
+.bvb-pause:hover{background:rgba(40,44,56,.7)} .bvb-pause:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.bvb-pause.on{border-color:#ffc83d;background:#ffc83d;color:#1a1300;box-shadow:0 0 18px rgba(255,200,61,.55);animation:bvbPulse 1.6s ease-in-out infinite}
+@keyframes bvbPulse{50%{box-shadow:0 0 30px rgba(255,200,61,.85)}}
+@media (prefers-reduced-motion:reduce){.bvb-pause.on{animation:none}}
+#world.vdo-fight .bvb-pause{opacity:0;pointer-events:none}
 #gSet .st-gear{width:62px;height:62px;border-radius:16px}
 #gSet .st-gear svg{width:30px;height:30px}
 #gSet .st-set{text-transform:none;bottom:calc(100% + 14px)}
@@ -1306,6 +1314,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
         <button type="button" class="pill" id="quit" data-act="quit" hidden>ออกจากเกม</button>
       </div>
       <div id="gSet"><button type="button" class="st-gear" id="gGear" aria-label="ตั้งค่า (เสียง · เพลง · VDO · ความเร็ว · ออกจากเกม)" aria-expanded="false" aria-controls="stSet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/></svg></button></div>
+      <button type="button" class="bvb-pause" id="bvbPause" data-act="bvbPause" aria-pressed="false" title="หยุด/เล่นต่อ การกระทำของบอท (ปุ่ม P)" hidden></button>
       <button type="button" class="fs-btn" id="fsBtn" data-act="fullscreen" aria-label="เต็มจอ" title="เต็มจอ"></button>
       <div id="toast" class="toast" role="status" hidden></div>
       <div class="tools right">
@@ -5382,6 +5391,7 @@ function render() {
   // เลย์เอาต์ผู้เล่น / ผู้ชม (ตี้ 2026-10-27) — ตำแหน่งทั้งหมดอยู่ใน CSS .lay-player / .lay-spec
   $('#world').classList.toggle('lay-player', inGame && ui.mode !== 'spec');
   $('#world').classList.toggle('lay-spec', inGame && ui.mode === 'spec');
+  renderBvbPause();
   $('#world').classList.toggle('me-blue', ME === 'BLUE');
   $('#world').dataset.phase = inGame ? ui.phase || '' : '';
   // VDO: ชั้นวิดีโอโผล่เมื่ออยู่ในเกม (หลังฉากเปิด) · Idle วนเป็นพื้นหลังเมื่อไม่ได้เล่น VDO ปะทะ
@@ -5479,6 +5489,7 @@ document.addEventListener('click', e => {
     case 'bvb': bvbPick(); break; // ตี้ 2026-10-30: เลือกเกมเดียว / Bo 3 ก่อน
     case 'bvbClose': $('#bvbModal').hidden = true; break;
     case 'bvbNext': bvbNext(); break;
+    case 'bvbPause': bvbPauseSet(!ui.bvbPause); break;
     case 'pvpLobby': pvpOpen(); break;
     case 'seat': pvpSeat(t.dataset.i); break;
     case 'toLobby': toStart('lobby'); break;
@@ -5550,6 +5561,7 @@ renderFs();
 const VDO_GATED = new Set(['start', 'arcade', 'pvpLobby', 'seat', 'watch', 'bvb']);
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && ui.vdo) { ui.vdo.skip = true; return; }
+  if (e.code === 'KeyP' && !e.ctrlKey && !e.metaKey && !e.altKey && bvbLive() && !(e.target.closest && e.target.closest('input,textarea,select'))) { e.preventDefault(); bvbPauseSet(!ui.bvbPause); return; } // ตี้ 2026-10-31: BOT VS BOT หยุด/เล่นต่อ
   if (e.key === 'Escape' && ui.drawer) { ui.drawer = null; renderDrawer(); }
   if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z' && canUndo()) { e.preventDefault(); undo(); }
 });
@@ -6475,6 +6487,7 @@ const BVB_WAIT = { pick: 1800, action: 1600, end: 3200 }; // เว้นจั�
 function bvbStart() {
   ui.gid++;
   const persona = () => PERSONAS[Math.floor(Math.random() * PERSONAS.length)];
+  ui.bvbPause = false; // ตี้ 2026-10-31: เริ่มเกมใหม่ = ปลด Pause
   Object.assign(ui, { mode: 'spec', pvp: null, spec: { bot: true, mid: null, peers: {}, nick: { RED: '', BLUE: '' }, cache: { RED: {}, BLUE: {} }, gone: 0, lockAt: 0, status: '', at: 0, byOver: null } });
   setSides('RED');
   setRand(null);
@@ -6520,11 +6533,34 @@ function bvbNext() {
   if (B && (B.w.RED >= B.n || B.w.BLUE >= B.n)) Object.assign(B, { w: { RED: 0, BLUE: 0 }, games: 0, pe: null, gid: null });
   bvbStart();
 }
+// ตี้ 2026-10-31: ปุ่ม Pause การกระทำของบอท — หยุดก่อนบอทเลือกการ์ด / วางการ์ด / เปิดปะทะ / ไปรอบถัดไป · วิดีโอที่เล่นอยู่เล่นต่อจนจบ (ไม่หยุดวิดีโอ)
+function bvbLive() { return ui.screen === 'game' && ui.mode === 'spec' && !!ui.spec && !!ui.spec.bot && !ui.winner; }
+function bvbPauseSet(on) {
+  if (!bvbLive()) return;
+  ui.bvbPause = on;
+  if (ui.spec) ui.spec.at = 0;
+  sfx.play('pick');
+  toast(on ? (ui.vdo || ui.phase === 'fight' ? 'หยุดบอทไว้ — วิดีโอที่เล่นอยู่เล่นต่อจนจบ แล้วหยุดก่อนรอบถัดไป' : 'หยุดบอทไว้แล้ว') : 'บอทเล่นต่อแล้ว');
+  render();
+}
+function renderBvbPause() {
+  const b = $('#bvbPause');
+  if (!b) return;
+  const show = bvbLive();
+  if (!show && ui.bvbPause && !(ui.mode === 'spec' && ui.spec && ui.spec.bot)) ui.bvbPause = false; // ออกจาก BOT VS BOT = ปลด Pause
+  b.hidden = !show;
+  const on = !!ui.bvbPause;
+  b.classList.toggle('on', on);
+  b.setAttribute('aria-pressed', String(on));
+  const txt = on ? '▶ เล่นต่อ' : '⏸ PAUSE';
+  if (b.textContent !== txt) b.textContent = txt;
+}
 function bvbNextLabel() { const b = boScore(); return b ? (b.done ? `ดู ${boLabel(b.n)} ใหม่` : 'ดูเกมต่อไป →') : 'ดูอีกเกม'; }
 function bvbTag() { const B = ui.bvbBo; return B ? `BOT VS BOT · ${boLabel(B.n)} เกมที่ ${B.games + 1}` : 'BOT VS BOT'; }
 // เดินเกมแทนผู้เล่นทั้งสองฝั่ง: เก็บการ์ด → ใช้เกจ + วางการ์ด → (runFight) → รอบถัดไป
 function bvbTick() {
   const S = ui.spec, g = ui.g, now = Date.now();
+  if (ui.bvbPause) { S.at = 0; return; } // ตี้ 2026-10-31: Pause = บอทไม่เลือก/วาง/ไปรอบถัดไป · กดเล่นต่อแล้วรอจังหวะเฟสใหม่ (BVB_WAIT) ก่อนเดินต่อ
   const wait = ui.phase === 'pick' && !ui.pickShown ? BVB_WAIT.pick : ui.phase === 'action' && !g.p.RED.lanes ? BVB_WAIT.action : ui.phase === 'end' ? BVB_WAIT.end : null;
   if (ui.winner || ui.busy || wait == null) { S.at = 0; return; }
   if (!S.at) { S.at = now; return; }
@@ -6540,12 +6576,14 @@ function bvbTick() {
     sfx.play('place');
     render();
     const gid = ui.gid;
-    setTimeout(() => { if (gid === ui.gid && ui.phase === 'action') runFight(); }, 1200 * (ui.fast ? 0.4 : 1)); // ให้เห็นการ์ดลงแผงก่อนเปิดปะทะ
+    // ให้เห็นการ์ดลงแผงก่อนเปิดปะทะ · Pause ค้างไว้ตรงนี้ได้ (ยังไม่เริ่มวิดีโอ) — เริ่มวิดีโอแล้วไม่หยุด
+    setTimeout(async () => { await until(() => !ui.bvbPause || gid !== ui.gid); if (gid === ui.gid && ui.phase === 'action') runFight(); }, 1200 * (ui.fast ? 0.4 : 1));
   } else nextRound();
 }
 function specStatus() {
   const g = ui.g, r = g.round, S = ui.spec, who = s => `${tagOf(s)} ${esc(S.nick[s])}`;
   if (ui.winner) return `จบการแข่ง · ${ui.winner === 'DRAW' ? 'เสมอ / ไม่มีผล' : `${tagOf(ui.winner)} WIN`}`;
+  if (S.bot && ui.bvbPause) return `${bvbTag()} · ⏸ หยุดบอทไว้ — กด เล่นต่อ (P)`;
   if (S.bot) return ui.phase === 'pick' && !ui.pickShown ? `${bvbTag()} · บอทกำลังเลือกการ์ด…` : ui.phase === 'action' ? `${bvbTag()} · บอทกำลังวางการ์ด…`
     : ui.phase === 'fight' ? `กำลังเปิดช่อง ${Math.max(1, ui.shown + 1)} …` : ui.phase === 'end' ? `จบรอบ ${r} · ไปรอบถัดไปอัตโนมัติ` : 'กำลังจั่วการ์ด…';
   if (ui.phase === 'pick' && !ui.pickShown) return SIDES.map(s => `${who(s)} ${specIn(s, `${r}p`) !== undefined ? '✓ PICK UP' : 'กำลังเลือก…'}`).join(' · ');
