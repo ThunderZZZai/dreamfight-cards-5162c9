@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793295293">
+<meta name="df-build" content="1793340161">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -88,13 +88,14 @@ body:not(.portrait) #rotateHint{display:none}
 @media (prefers-reduced-motion:reduce){.fxw,.fx-shine{animation:none}}
 
 /* Overlay ด้านบน: แถบ HP (เอียงตามกรอบ) · ป้ายตัวเลข HP · ชื่อ · จุด ●●● · หกเหลี่ยมรอบ */
-.ov-top{position:absolute;left:0;top:0;width:1920px;height:200px;pointer-events:none;user-select:none}
+.ov-top{position:absolute;left:0;top:0;width:1920px;height:216px;pointer-events:none;user-select:none}
 .hpbar{position:absolute;top:95px;height:18px;overflow:hidden;background:rgba(255,255,255,.05)}
-.hpbar.red{left:318px;width:522px;transform:skewX(39.4deg)}
-.hpbar.blue{left:1081px;width:524px;transform:skewX(-39.4deg)}
+.hpbar.red{left:316px;width:518px;transform:skewX(39.4deg)} /* กรอบ v2 (ตี้ 2026-10-30) ช่องสั้นกว่าเดิม ~4px */
+.hpbar.blue{left:1084px;width:522px;transform:skewX(-39.4deg)}
+/* ตี้ 2026-10-30: HP ยึดฝั่งกลางจอ ลดจากขอบนอกเข้าหากลาง (RED หดซ้าย→ขวา · BLUE หดขวา→ซ้าย) */
 .hp-fill{position:absolute;top:0;bottom:0;transition:width calc(.6s*var(--spd)) cubic-bezier(.2,.8,.2,1)}
-.hpbar.red .hp-fill{left:0;background:linear-gradient(180deg,#ff8a90 0%,#ff2d36 45%,#a90e18 100%);box-shadow:0 0 12px rgba(255,61,69,.8)}
-.hpbar.blue .hp-fill{right:0;background:linear-gradient(180deg,#8ab8ff 0%,#2f74ff 45%,#0e3aa8 100%);box-shadow:0 0 12px rgba(59,130,255,.8)}
+.hpbar.red .hp-fill{right:0;background:linear-gradient(180deg,#ff8a90 0%,#ff2d36 45%,#a90e18 100%);box-shadow:0 0 12px rgba(255,61,69,.8)}
+.hpbar.blue .hp-fill{left:0;background:linear-gradient(180deg,#8ab8ff 0%,#2f74ff 45%,#0e3aa8 100%);box-shadow:0 0 12px rgba(59,130,255,.8)}
 .hp-trail{position:absolute;top:0;bottom:0;pointer-events:none;animation:trail calc(1.2s*var(--spd)) ease-out forwards}
 .hp-trail.loss{background:#fff1bf} .hp-trail.gain{background:var(--heal)}
 @keyframes trail{0%,55%{opacity:1}100%{opacity:0}}
@@ -121,7 +122,7 @@ body:not(.portrait) #rotateHint{display:none}
 .tab{position:absolute;top:49px;height:32px;display:flex;align-items:center;gap:8px;font-family:var(--font-disp);font-weight:700;font-size:22px;letter-spacing:.1em;color:#fff;pointer-events:none;white-space:nowrap;text-shadow:0 1px 0 rgba(0,0,0,.6)}
 .tab.red{left:296px} .tab.blue{right:296px;flex-direction:row-reverse}
 .tab small{font-family:var(--font-body);font-weight:600;font-size:16px;letter-spacing:0;opacity:.85}
-.dot{position:absolute;top:146px;width:14px;height:14px;border-radius:50%;transition:background .2s,box-shadow .2s}
+.dot{position:absolute;top:142px;width:14px;height:14px;border-radius:50%;transition:background .2s,box-shadow .2s}
 .dot.red.on{background:#ff4d55;box-shadow:0 0 10px #ff4d55}
 .dot.blue.on{background:#5a97ff;box-shadow:0 0 10px #5a97ff}
 /* เกจพรในจุด ●●● (ตี้ 2026-10-28): ว่าง = วงมืดขอบเงิน · มี = สีรุ้งตามขั้น (คงที่ต่อขั้น) · ครบ 3 = เรืองรุ้งวน */
@@ -1161,7 +1162,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
         <video id="vdoFight" playsinline preload="auto" disablepictureinpicture></video>
       </div>
       <div id="hud">
-      <img class="ov-top" src="assets/overlay-top.webp" alt="" draggable="false">
+      <img class="ov-top" src="assets/overlay-top-v2.webp" alt="" draggable="false">
       <div class="tab red">RED <small>คุณ</small></div>
       <div class="tab blue">BLUE <small>บอท</small></div>
       <div class="hpbar red" id="barRed" role="img" aria-label="HP ของ RED"><div class="hp-fill"></div></div>
@@ -1173,8 +1174,8 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
       <div class="plate blue"><b id="hpBlue">150</b></div>
       <div class="hp-anchor red" id="anchorRed"></div>
       <div class="hp-anchor blue" id="anchorBlue"></div>
-      <span class="dot red" style="left:788px"></span><span class="dot red" style="left:811px"></span><span class="dot red" style="left:835px"></span>
-      <span class="dot blue" style="left:1076px"></span><span class="dot blue" style="left:1100px"></span><span class="dot blue" style="left:1124px"></span>
+      <span class="dot red" style="left:794px"></span><span class="dot red" style="left:817px"></span><span class="dot red" style="left:841px"></span>
+      <span class="dot blue" style="left:1066px"></span><span class="dot blue" style="left:1090px"></span><span class="dot blue" style="left:1114px"></span>
       <div class="hex" aria-live="polite"><small id="hexLabel"></small><b id="hexNum">VS</b></div>
       <div class="gauge red" id="gaugeRED" hidden></div>
       <div class="gauge blue" id="gaugeBLUE" hidden></div>
@@ -5094,13 +5095,13 @@ function gaugeGainFx(got) {
   for (const s of SIDES) if (got[s]) gaugeFloat(s, `+${got[s]} เกจ`);
   sfx.play('levelup', 120);
 }
-// แถบ HP: ส่วนที่หาย = แถบสว่าง ส่วนที่ได้คืน = แถบเขียว ค่อย ๆ จางไป (RED นับจากซ้าย · BLUE นับจากขวา)
+// แถบ HP: ส่วนที่หาย = แถบสว่าง ส่วนที่ได้คืน = แถบเขียว ค่อย ๆ จางไป (นับจากฝั่งกลางจอ: RED จากขวา · BLUE จากซ้าย)
 function hpTrail(bar, s, from, to) {
   const a = hpPct(Math.min(from, to)), b = hpPct(Math.max(from, to));
   if (b <= a) return;
   const seg = document.createElement('span');
   seg.className = `hp-trail ${to < from ? 'loss' : 'gain'}`;
-  seg.style[s === 'RED' ? 'left' : 'right'] = `${a}%`;
+  seg.style[s === 'RED' ? 'right' : 'left'] = `${a}%`;
   seg.style.width = `${b - a}%`;
   bar.appendChild(seg);
   setTimeout(() => seg.remove(), 1400);
