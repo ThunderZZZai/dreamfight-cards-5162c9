@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793350200">
+<meta name="df-build" content="1793350913">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -1062,7 +1062,9 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
   -webkit-mask-image:var(--amt),var(--tube);mask-image:var(--amt),var(--tube);-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-composite:source-in;mask-composite:intersect}
 .vfx-coat.blue{left:1005.6px;top:-29.0px;--sx:0.4964;--sy:0.8286;--ga:143.89deg;--ux:0.5893;--k0:73.12px;--tube:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='1110' height='240'><filter id='f' x='-5%' y='-50%' width='110%' height='200%'><feGaussianBlur stdDeviation='1.6 0.9'/></filter><polygon points='349.3,73.0 864.0,73.0 808.6,108.0 302.0,108.0 306.0,105.0 310.1,100.2 317.1,95.3 323.2,90.5 332.2,85.7 337.3,83.3 342.3,80.8 346.3,76.0' fill='white' filter='url(%23f)'/></svg>")}
 .vfx-coat.red{left:911.9px;top:-29.0px;--sx:0.4813;--sy:0.8286;--mx:-1;--ga:144.73deg;--ux:0.5774;--k0:73.89px;--tube:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='1110' height='240'><filter id='f' x='-5%' y='-50%' width='110%' height='200%'><feGaussianBlur stdDeviation='1.6 0.9'/></filter><polygon points='864.0,73.0 347.7,73.0 344.6,80.8 337.3,85.7 328.0,90.5 322.8,95.3 312.4,100.2 305.1,105.0 302.0,108.0 813.1,108.0' fill='white' filter='url(%23f)'/></svg>")}
-.vfx-coat video{filter:saturate(2.6) brightness(2.3) contrast(1.15)} .vfx-coat img{filter:brightness(1.15)} /* ตี้ 2026-10-29: โล่บนเกจเห็นชัดขึ้น (เดิม saturate 3 · brightness 1.5) */
+.vfx-coat video{filter:saturate(2.6) brightness(2.3) contrast(1.15)} .vfx-coat img{filter:brightness(1.15)}
+/* ตี้ 2026-10-30: คลิปก่อตัวชุดใหม่ (text-fx/make_notch_form.py) ทำจากลายโล่จริง หกเหลี่ยมเด้งจนเต็ม · เฟรมท้าย = โล่นิ่ง → ใช้ฟิลเตอร์เดียวกับรูปโล่ จบคลิปสลับเป็นรูปได้เนียน */
+.vfx-coat.part video{filter:brightness(1.15)} /* ตี้ 2026-10-29: โล่บนเกจเห็นชัดขึ้น (เดิม saturate 3 · brightness 1.5) */
 /* แถบสีฟ้าอ่อนรองใต้ลายหกเหลี่ยม = บอกความยาวโล่ให้เห็นชัด (ตัดด้วยมาสก์เดียวกับลาย) */
 .vfx-coat.still::before{content:"";position:absolute;left:296px;top:72px;width:580px;height:38px;z-index:1;mix-blend-mode:screen;background:linear-gradient(180deg,rgba(170,225,255,.25),rgba(120,200,255,.62) 45%,rgba(200,240,255,.7) 55%,rgba(170,225,255,.25));filter:blur(1.5px)}
 /* ลายหกเหลี่ยมชั้นที่ 2 เลื่อนครึ่งช่อง ให้ลายในหลอดแน่นขึ้น */
@@ -3401,7 +3403,7 @@ const COAT_L = (s, sh) => { const [a, b] = COAT_C[s]; return sh > 0 ? a + (b - a
 function coatShow(s, sh, show) {
   if (!vfx.coat[s]) {
     const lc = s.toLowerCase();
-    vfx.coat[s] = { still: vfxEl(`vfx-coat still cut ${lc}`, 'notch_coat2.webp'), form: vfxEl(`vfx-coat part off ${lc}`, 'bar_form.mp4'), brk: vfxEl(`vfx-coat loose tube off ${lc}`, 'bar_break.mp4'), sh: 0, tok: 0 };
+    vfx.coat[s] = { still: vfxEl(`vfx-coat still cut ${lc}`, 'notch_coat2.webp'), form: vfxEl(`vfx-coat part off ${lc}`, 'bar_form2.mp4'), brk: vfxEl(`vfx-coat loose tube off ${lc}`, 'bar_break.mp4'), sh: 0, tok: 0 };
     vfx.coat[s].still.style.setProperty('--L', `${COAT_L(s, 0)}px`);
   }
   const c = vfx.coat[s], prev = c.sh, setL = (el, v) => el.style.setProperty('--L', `${v}px`);
@@ -3415,8 +3417,9 @@ function coatShow(s, sh, show) {
     c.form.style.setProperty('--A', `${prev > 0 ? COAT_L(s, prev) : 0}px`);
     setL(c.form, COAT_L(s, sh));
     const v = vfxPlay(c.form);
+    // คลิปจบ (ภาพเต็มช่วงใหม่แล้ว) → สลับเป็นโล่นิ่งในเฟรมเดียวกัน · กันวิดีโอค้าง/โหลดช้า: 3.2 วิไปต่อเอง
     const done = () => { if (tok !== c.tok) return; cut(COAT_L(s, c.sh)); c.form.classList.add('off'); };
-    v.onended = done; setTimeout(done, 2300);
+    v.onended = done; setTimeout(done, 3200);
   } else if (sh === 0) {
     c.form.classList.add('off');
     setL(c.brk, COAT_L(s, prev));
