@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793362254">
+<meta name="df-build" content="1793362671">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -1259,9 +1259,10 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
         <div class="modes">
           <button type="button" class="mode arcade" data-act="arcade"><b>ARCADE</b><span>คุณ (RED) ปะทะบอท BLUE</span><small>บอทสุ่มนิสัย 6 แบบ · เปลี่ยนแผนกลางเกมได้</small></button>
           <button type="button" class="mode pvp" data-act="pvpLobby"><b>PVP</b><span>ผู้เล่นปะทะผู้เล่น · ออนไลน์</span><small>สร้างห้อง/เข้าห้อง · ไม่จับเวลา</small></button>
-          <button type="button" class="mode bvb" data-act="bvb"><b>BOT VS BOT</b><span>บอทปะทะบอท · ดูแบบผู้ชม</span><small>บอทสุ่มนิสัยทั้งสองฝั่ง · เล่นเองจนจบ</small></button>
+          <button type="button" class="mode bvb" data-act="bvb"><b>BOT VS BOT</b><span>บอทปะทะบอท · ดูแบบผู้ชม</span><small>บอทสุ่มนิสัยทั้งสองฝั่ง · เกมเดียว หรือ Bo 3</small></button>
         </div>
         <button type="button" class="btn ghost" data-act="toStart">← หน้าแรก</button>
+        <div class="room-modal" id="bvbModal" hidden></div>
       </section>
 
       <section id="pvp" class="start pvp-room" hidden aria-label="ห้อง PVP ออนไลน์">
@@ -5249,7 +5250,7 @@ function renderControls() {
     // ตี้ 2026-10-29: ระหว่างชมไม่ต้องมีแถบ OBSERVE + ปุ่มออกจากการชม (ออกได้ที่ ⚙ → ออกจากเกม) · จบเกมยังมีปุ่มดูอีกเกม/กลับห้อง
     if (!ui.winner) { $('#controls').innerHTML = ''; return; }
     $('#controls').innerHTML = `<div class="hint"><span class="spec-badge">OBSERVE</span>${specStatus()}</div>
-      <div class="btns-main">${ui.winner ? (ui.spec.bot ? '<button type="button" class="btn primary cta" data-act="bvb">ดูอีกเกม</button>' : `<button type="button" class="btn primary cta" data-act="toPvp">${boNextOpen() ? 'ดูเกมต่อไป →' : 'กลับห้อง PVP'}</button>`) : ''}</div>
+      <div class="btns-main">${ui.winner ? (ui.spec.bot ? `<button type="button" class="btn primary cta" data-act="bvbNext">${bvbNextLabel()}</button>` : `<button type="button" class="btn primary cta" data-act="toPvp">${boNextOpen() ? 'ดูเกมต่อไป →' : 'กลับห้อง PVP'}</button>`) : ''}</div>
       <div class="btns">${ui.winner ? '<button type="button" class="btn ghost" data-act="unpeek">ดูผลแพ้ชนะ</button>' : `<button type="button" class="btn ghost" data-act="${ui.spec.bot ? 'toLobby' : 'toPvp'}">ออกจากการชม</button>`}</div>`;
     return;
   }
@@ -5325,7 +5326,7 @@ function renderWinner() {
     ${boWinHTML()}
     ${clockSummaryHTML()}
     ${ui.mode === 'arcade' && g.persona ? `<p class="win-bot">${esc(botStyleText(g, OPP))}</p>` : ''}
-    <div class="win-btns">${ui.mode === 'spec' && ui.spec && ui.spec.bot ? '<button type="button" class="btn primary big" data-act="bvb">ดูอีกเกม</button><button type="button" class="btn ghost" data-act="toLobby">กลับ LOBBY</button>' : ui.mode === 'pvp' || ui.mode === 'spec' ? boWinBtns() : '<button type="button" class="btn primary big" data-act="toLobby">กลับ LOBBY</button>'}<button type="button" class="btn ghost" data-act="peek">ดูกระดานรอบสุดท้าย</button></div>
+    <div class="win-btns">${ui.mode === 'spec' && ui.spec && ui.spec.bot ? `<button type="button" class="btn primary big" data-act="bvbNext">${bvbNextLabel()}</button><button type="button" class="btn ghost" data-act="toLobby">กลับ LOBBY</button>` : ui.mode === 'pvp' || ui.mode === 'spec' ? boWinBtns() : '<button type="button" class="btn primary big" data-act="toLobby">กลับ LOBBY</button>'}<button type="button" class="btn ghost" data-act="peek">ดูกระดานรอบสุดท้าย</button></div>
   </div>`;
 }
 function renderDrawer() {
@@ -5442,7 +5443,9 @@ document.addEventListener('click', e => {
       break;
     }
     case 'arcade': startGame({ mode: 'arcade' }); break;
-    case 'bvb': bvbStart(); break;
+    case 'bvb': bvbPick(); break; // ตี้ 2026-10-30: เลือกเกมเดียว / Bo 3 ก่อน
+    case 'bvbClose': $('#bvbModal').hidden = true; break;
+    case 'bvbNext': bvbNext(); break;
     case 'pvpLobby': pvpOpen(); break;
     case 'seat': pvpSeat(t.dataset.i); break;
     case 'toLobby': toStart('lobby'); break;
@@ -5779,7 +5782,9 @@ const roomReady = () => net.state === 'on' && (!!roomMeta() || (net.onAt && Date
 const BO_WINS = 2; // ตี้ 2026-10-30: ชนะ 2 ใน 3 เกม
 const boLabel = n => `Bo ${n * 2 - 1}`; // จำนวนเกมที่ต้องชนะ → ชื่อแบบ (2 = Bo 3)
 function roomBo() { const m = !ON_CLAUDE && !LIST_MODE ? roomMeta() : null; return m && m.bo > 1 ? m.bo : 1; }
-function boLive() { return ui.mode === 'pvp' ? !!ui.pvp : ui.mode === 'spec' && !!ui.spec && !ui.spec.bot; }
+function boLive() { return ui.mode === 'pvp' ? !!ui.pvp : ui.mode === 'spec' && !!ui.spec && (!ui.spec.bot || !!bvbBo()); }
+// BOT VS BOT แบบ Bo (ตี้ 2026-10-30): ซีรีส์นับในเครื่อง ไม่ผ่านห้อง · ใช้เฉพาะตอนอยู่ในเกม (หน้าห้อง PVP ยังอ่านซีรีส์ของห้อง)
+function bvbBo() { return ui.mode === 'spec' && ui.spec && ui.spec.bot && ui.screen === 'game' ? ui.bvbBo || null : null; }
 function boSer() {
   const all = [net.mine.ser, ...net.peers.map(p => p.presence && p.presence.ser)].filter(Boolean);
   if (!all.length) return null;
@@ -5790,6 +5795,8 @@ function boSer() {
 }
 // สกอร์ซีรีส์ของห้องนี้ (null = ห้องนี้ไม่ใช่ Bo) · done = ฝั่งที่ชนะซีรีส์แล้ว
 function boScore() {
+  const B = bvbBo();
+  if (B) return { n: B.n, w: { ...B.w }, done: B.w.RED >= B.n ? 'RED' : B.w.BLUE >= B.n ? 'BLUE' : null, s: 'bvb', games: B.games };
   const n = roomBo();
   if (n < 2) return null;
   const S = boSer(), w = { RED: 0, BLUE: 0 };
@@ -5809,6 +5816,11 @@ function boStart(mid) {
 }
 // จบเกมที่มีผู้ชนะ → บันทึกลงซีรีส์ (รหัสเกมจาก mid กันนับซ้ำ · ซีรีส์จบแล้วไม่นับเพิ่ม)
 function boRecord(mid, winner) {
+  const B = bvbBo();
+  if (B) { // BOT VS BOT: นับครั้งเดียวต่อเกม (ui.gid) · เสมอไม่นับ · ซีรีส์จบแล้วไม่นับเพิ่ม
+    if (B.gid !== ui.gid && B.w.RED < B.n && B.w.BLUE < B.n && (winner === 'RED' || winner === 'BLUE')) { B.w[winner]++; B.games++; B.gid = ui.gid; }
+    return;
+  }
   const b = boScore(), S = boSer();
   if (!b || b.done || !S || !mid || (winner !== 'RED' && winner !== 'BLUE')) return;
   const id = hashStr(`g|${mid}`).toString(36);
@@ -6434,18 +6446,49 @@ function bvbStart() {
   setSides('RED');
   setRand(null);
   ui.g = newGame(addLog);
-  for (const s of SIDES) { const pe = persona(); ui.g.persona[s] = ui.g.style[s] = pe; ui.spec.nick[s] = `บอท${BOT_STYLES[pe].th}`; }
+  const B = ui.bvbBo, pes = B && B.pe ? B.pe : { RED: persona(), BLUE: persona() }; // Bo: บอทคู่เดิมทุกเกมในซีรีส์
+  if (B) B.pe = pes;
+  for (const s of SIDES) { const pe = pes[s]; ui.g.persona[s] = ui.g.style[s] = pe; ui.spec.nick[s] = `บอท${BOT_STYLES[pe].th}`; }
   clockStart();
   Object.assign(ui, { screen: 'game', intro: false, phase: null, winner: null, busy: true, peek: false, drawer: null, results: [], shown: -1, detail: null, pending: null, ko: null,
     picks: [], place: [], undo: [], pickShown: false, oppHidden: 0, hpShown: { RED: HP_MAX, BLUE: HP_MAX }, hpStart: { RED: HP_MAX, BLUE: HP_MAX }, gShown: {} });
   $('#log').innerHTML = '';
   $('#ko').hidden = true;
   $('#world').classList.remove('intro');
-  addLog(`BOT VS BOT · ${tagOf('RED')} ${esc(ui.spec.nick.RED)} ปะทะ ${tagOf('BLUE')} ${esc(ui.spec.nick.BLUE)}`, 'sys');
+  addLog(`${bvbTag()} · ${tagOf('RED')} ${esc(ui.spec.nick.RED)} ปะทะ ${tagOf('BLUE')} ${esc(ui.spec.nick.BLUE)}${B ? ` · RED ${B.w.RED} – ${B.w.BLUE} BLUE` : ''}`, 'sys');
   render();
   sfx.play('intro');
   beginRound(ui.gid);
 }
+// ตี้ 2026-10-30: กด BOT VS BOT → เลือกชนะเกมเดียว หรือ Bo 3 (ชนะ 2 ใน 3) · จำแบบที่เลือกล่าสุดไว้ในเครื่อง
+// ui.bvbBo = { n: เกมที่ต้องชนะ, w: { RED, BLUE }, games, pe: บอทคู่เดิม, gid: เกมล่าสุดที่นับแล้ว } · null = ชนะเกมเดียว
+function bvbPick() {
+  let bo = 1;
+  try { bo = localStorage.getItem('df-bvb-bo') === String(BO_WINS) ? BO_WINS : 1; } catch (e) { /* ข้ามได้ */ }
+  const box = $('#bvbModal');
+  box.innerHTML = `<form class="rm-box" id="bvbForm" style="width:600px"><small class="eb">BOT VS BOT</small><h3>รูปแบบการแข่ง</h3>
+    <div class="rm-sides"><label><input type="radio" name="bvbBo" value="1"${bo > 1 ? '' : ' checked'}>ชนะเกมเดียว</label><label><input type="radio" name="bvbBo" value="${BO_WINS}"${bo > 1 ? ' checked' : ''}>${boLabel(BO_WINS)} · ชนะ ${BO_WINS} ใน ${BO_WINS * 2 - 1} เกม</label></div>
+    <span class="hint">${boLabel(BO_WINS)} = บอทคู่เดิมแข่งกันสูงสุด ${BO_WINS * 2 - 1} เกม ใครชนะครบ ${BO_WINS} เกมก่อนชนะซีรีส์ · จุดเหลืองใต้แถบ HP นับเกมที่ชนะ</span>
+    <div class="rm-acts"><button type="button" class="btn ghost" data-act="bvbClose">ยกเลิก</button><button type="submit" class="btn gold">เริ่มดู →</button></div></form>`;
+  box.hidden = false;
+  $('#bvbForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const n = Number((box.querySelector('input[name=bvbBo]:checked') || {}).value) > 1 ? BO_WINS : 1;
+    try { localStorage.setItem('df-bvb-bo', String(n)); } catch (err) { /* ข้ามได้ */ }
+    box.hidden = true;
+    ui.bvbBo = n > 1 ? { n, w: { RED: 0, BLUE: 0 }, games: 0, pe: null, gid: null } : null;
+    bvbStart();
+  });
+  box.querySelector('input:checked').focus();
+}
+// จบเกม → ซีรีส์ยังไม่จบ = เกมต่อไป (บอทคู่เดิม) · จบแล้ว = เริ่มซีรีส์ใหม่ (สุ่มบอทใหม่) · เกมเดียว = ดูอีกเกม
+function bvbNext() {
+  const B = ui.bvbBo;
+  if (B && (B.w.RED >= B.n || B.w.BLUE >= B.n)) Object.assign(B, { w: { RED: 0, BLUE: 0 }, games: 0, pe: null, gid: null });
+  bvbStart();
+}
+function bvbNextLabel() { const b = boScore(); return b ? (b.done ? `ดู ${boLabel(b.n)} ใหม่` : 'ดูเกมต่อไป →') : 'ดูอีกเกม'; }
+function bvbTag() { const B = ui.bvbBo; return B ? `BOT VS BOT · ${boLabel(B.n)} เกมที่ ${B.games + 1}` : 'BOT VS BOT'; }
 // เดินเกมแทนผู้เล่นทั้งสองฝั่ง: เก็บการ์ด → ใช้เกจ + วางการ์ด → (runFight) → รอบถัดไป
 function bvbTick() {
   const S = ui.spec, g = ui.g, now = Date.now();
@@ -6470,7 +6513,7 @@ function bvbTick() {
 function specStatus() {
   const g = ui.g, r = g.round, S = ui.spec, who = s => `${tagOf(s)} ${esc(S.nick[s])}`;
   if (ui.winner) return `จบการแข่ง · ${ui.winner === 'DRAW' ? 'เสมอ / ไม่มีผล' : `${tagOf(ui.winner)} WIN`}`;
-  if (S.bot) return ui.phase === 'pick' && !ui.pickShown ? 'BOT VS BOT · บอทกำลังเลือกการ์ด…' : ui.phase === 'action' ? 'BOT VS BOT · บอทกำลังวางการ์ด…'
+  if (S.bot) return ui.phase === 'pick' && !ui.pickShown ? `${bvbTag()} · บอทกำลังเลือกการ์ด…` : ui.phase === 'action' ? `${bvbTag()} · บอทกำลังวางการ์ด…`
     : ui.phase === 'fight' ? `กำลังเปิดช่อง ${Math.max(1, ui.shown + 1)} …` : ui.phase === 'end' ? `จบรอบ ${r} · ไปรอบถัดไปอัตโนมัติ` : 'กำลังจั่วการ์ด…';
   if (ui.phase === 'pick' && !ui.pickShown) return SIDES.map(s => `${who(s)} ${specIn(s, `${r}p`) !== undefined ? '✓ PICK UP' : 'กำลังเลือก…'}`).join(' · ');
   if (ui.phase === 'action') return SIDES.map(s => `${who(s)} ${specIn(s, `${r}a`) !== undefined ? '✓ FIGHT!' : 'กำลังวาง…'}`).join(' · ');
