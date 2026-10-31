@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793470980">
+<meta name="df-build" content="1793471123">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -894,7 +894,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 #world.lay-spec[data-phase="pick"] #main{left:640px;top:772px;width:640px;height:250px}
 #world.lay-spec .mk{width:81px} #world.lay-spec .mk .card{--cw:81px} #world.lay-spec .mk .cap{display:none} #world.lay-spec .market{gap:6px} /* ตี้ 2026-10-28: กองกลางฝั่งผู้ชมชิดกัน */
 /* ตี้ 2026-11-01: กองกลางหน้าผู้ชมนอนเอนไปทางวิดีโอ 12° (ขอบล่างอยู่ที่เดิม) · ทั้งแถวใช้จุดรวมสายตาเดียวที่กลางจอ (x 960 · y ~450) ใบริมเฉียงเข้ากลางเอง · หน้าผู้เล่นคงเดิม */
-#world.lay-spec .market{perspective:480px;perspective-origin:50% -322px} #world.lay-spec .mk{transform-style:preserve-3d}
+#world.lay-spec .market{perspective:480px;perspective-origin:50% 40px} #world.lay-spec .mk{transform-style:preserve-3d} /* ตี้ 2026-11-01 "ดูยืด": จุดรวมสายตาเดิมสูงเหนือแถว (y −322) ทำให้การ์ดดูสูงขึ้น → ย้ายมาระดับการ์ด (ขอบบนการ์ด ~6 · กลาง ~70) การ์ดนอนแล้วเตี้ยลงนิดหน่อยตามจริง */
 #world.lay-spec .mk > .card,#world.lay-spec .mk > .flip3d{transform-origin:50% 100%;transform:rotateX(12deg)} /* เฉียงที่ชั้นนอกสุด ไม่ทับการหมุนหลังการ์ดตอนพลิก (.flip3d .card.back) */
 #world.lay-spec #hand{left:0;top:700px;width:1920px;height:380px}
 #world.lay-spec .spec-hands{position:relative;display:block;height:100%}
@@ -1217,7 +1217,9 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 .vc-lose{position:absolute;top:720px;width:120px;height:190px;z-index:4}
 /* ผู้ชม (ตี้ 2026-10-29): มือของฝั่งที่เสียการ์ด = การ์ดเทาเท่าจำนวนบนมือ แล้วใบที่โดนทำลายสลาย / ใบที่โดนขโมยลอยไปฝั่งตรงข้าม */
 .vc-hand{position:absolute;top:790px;z-index:4;display:flex;pointer-events:none;animation:vcHandIn .25s ease-out backwards}
-.vc-hand.blue{flex-direction:row-reverse}
+.vc-hand .ghs{display:flex} .vc-hand.blue .ghs{flex-direction:row-reverse}
+/* ตี้ 2026-11-01: มือเทาตอนเสียการ์ด (หน้าผู้ชม) เฉียงเข้ากลางจอ 15° เหมือนมือการ์ดมุมล่าง */
+.vc-hand.red .ghs{transform-origin:50% 70%;transform:perspective(900px) rotateY(15deg)} .vc-hand.blue .ghs{transform-origin:50% 70%;transform:perspective(900px) rotateY(-15deg)}
 .vc-hand .gh{position:relative;flex:none;width:157px;height:249px;margin-right:-79px;border-radius:14px;border:3px solid #8b929e;background:#2b3038 url(assets/logo-df-mini.webp) center/62% no-repeat; /* ตี้ 2026-10-29: เท่าการ์ดในมือฝั่งผู้ชม (157px) */filter:grayscale(1) brightness(.85);box-shadow:0 6px 14px rgba(0,0,0,.6);transform:rotate(calc((var(--i) - var(--m)) * 4deg));transform-origin:50% 120%}
 .vc-hand.blue .gh{margin-right:0;margin-left:-79px}
 .vc-hand .gh.crush{animation:ghCrush .7s ease-in forwards;animation-delay:calc(.45s + var(--o) * .12s)}
@@ -3597,7 +3599,8 @@ function vcHand(victim, total, lost, how = 'crush') {
   if (!total) return;
   const m = (total - 1) / 2;
   const cards = Array.from({ length: total }, (_, i) => { const gone = i >= total - lost; return `<i class="gh${gone ? ` ${how}` : ''}" style="--i:${i};--m:${m};--o:${gone ? i - (total - lost) : 0}"></i>`; }).join('');
-  const d = vcAdd(`vc-hand ${victim.toLowerCase()}`, cards, victim === 'RED' ? 'left:240px' : 'right:240px');
+  // ตี้ 2026-11-01: ห่อการ์ดไว้ใน .ghs เพื่อให้ทั้งมือเฉียงเข้ากลางจอเหมือนมือการ์ด (ตัว .vc-hand มีแอนิเมชันเข้า/ออกที่ใช้ transform อยู่แล้ว)
+  const d = vcAdd(`vc-hand ${victim.toLowerCase()}`, `<div class="ghs">${cards}</div>`, victim === 'RED' ? 'left:240px' : 'right:240px');
   setTimeout(() => d.classList.add('out'), 2100);
 }
 function vcLose(victim, n, text) {
