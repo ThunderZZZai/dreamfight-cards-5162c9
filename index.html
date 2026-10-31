@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793458491">
+<meta name="df-build" content="1793461642">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -5246,7 +5246,7 @@ function gaugeGainFx(got) {
   if (!bits.length) return;
   addLog(`ได้เกจ · ${bits.join(' · ')}`);
   for (const s of SIDES) if (got[s]) gaugeFloat(s, `+${got[s]} เกจ`);
-  sfx.play('levelup', 120);
+  // ตี้ 2026-10-31: ได้เกจพรไม่มีเสียง (เดิม levelup · ฟังตัวเลือก 20 เสียงแล้วเลือกไม่ใส่) · การ์ดเลเวลอัปยังใช้ levelup เหมือนเดิม
 }
 // แถบ HP: ส่วนที่หาย = แถบสว่าง ส่วนที่ได้คืน = แถบเขียว ค่อย ๆ จางไป (นับจากฝั่งกลางจอ: RED จากขวา · BLUE จากซ้าย)
 function hpTrail(bar, s, from, to) {
