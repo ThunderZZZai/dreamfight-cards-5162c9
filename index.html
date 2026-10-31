@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793470200">
+<meta name="df-build" content="1793470980">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -845,10 +845,9 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 #world.lay-spec .order.red{perspective-origin:7px 293px} #world.lay-spec .order.blue{perspective-origin:143px 293px}
 #world.lay-player .order.red .oslot,#world.lay-spec .order.red .oslot{transform-origin:-5px 50%;transform:rotateY(20deg) scaleX(var(--osx))}
 #world.lay-player .order.blue .oslot,#world.lay-spec .order.blue .oslot{transform-origin:calc(100% + 5px) 50%;transform:rotateY(-20deg) scaleX(var(--osx))}
-/* ป้าย ACTION ORDER เฉียงทรงเดียวกับช่อง (ด้านซ้าย-ขวาตั้งตรง ด้านที่หันเข้ากลางจอสั้นลงเท่ากันบน-ล่าง)
-   ใช้ matrix3d ที่มีแต่ค่าย่อตามแนวนอน (w = 1 + k·x) ไม่มีความลึก → มุมมองของแผง (.order perspective) ไม่ไปดึงป้ายให้ลาดลง · ยึดขอบนอก */
-#world.lay-player .order.red::before{left:15px;transform-origin:0 50%;transform:matrix3d(1,0,0,.0018,0,1,0,0,0,0,1,0,0,0,0,1)}
-#world.lay-player .order.blue::before{left:auto;right:15px;transform-origin:100% 50%;transform:matrix3d(1,0,0,-.0018,0,1,0,0,0,0,1,0,0,0,0,1)}
+/* ป้าย ACTION ORDER เหมือนใน artifact (ตี้ 2026-11-01): อยู่บนแผ่นเดียวกับช่อง หมุน 20° รอบเส้นขอบนอกเดียวกัน (มุมมองร่วมของ .order) */
+#world.lay-player .order.red::before{left:15px;transform-origin:4px 50%;transform:rotateY(20deg)}
+#world.lay-player .order.blue::before{left:auto;right:15px;transform-origin:calc(100% - 4px) 50%;transform:rotateY(-20deg)}
 .slot-empty .se-plus{display:block;font-family:var(--font-disp);font-weight:400;font-size:52px;line-height:.8;color:#8b919c}
 .slot-empty .se-txt{font-size:16px;color:#8b919c}
 .slot-empty.next .se-plus,.slot-empty.next .se-txt{color:#fff}
@@ -935,7 +934,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 #world.lay-spec #gSet .st-set{right:auto;left:50%;transform:translateX(-50%)}
 #start .st-set .g-only{display:none}
 .srow .btn{grid-column:1/-1;justify-self:stretch}
-#world.lay-spec .order.red::before{left:0;transform-origin:0 50%;transform:matrix3d(1,0,0,.0018,0,1,0,0,0,0,1,0,0,0,0,1)} #world.lay-spec .order.blue::before{left:auto;right:0;transform-origin:100% 50%;transform:matrix3d(1,0,0,-.0018,0,1,0,0,0,0,1,0,0,0,0,1)} /* ตี้ 2026-11-01: ป้ายเฉียงทรงเดียวกับช่อง (ดูหมายเหตุที่ป้ายหน้าผู้เล่น) */
+#world.lay-spec .order.red::before{left:-5px;transform-origin:12px 50%;transform:rotateY(20deg)} #world.lay-spec .order.blue::before{left:auto;right:-5px;transform-origin:calc(100% - 12px) 50%;transform:rotateY(-20deg)} /* ตี้ 2026-11-01: เหมือนใน artifact — แผ่นเดียวกับช่อง หมุนรอบเส้นขอบนอก x 7 / 143 */
 /* ปุ่มในแถบควบคุมหน้าผู้เล่น: กรอบมุมตัดแบบช่อง ACTION ORDER (ตี้ 2026-10-28) */
 #world.lay-player #controls .btn{position:relative;isolation:isolate;border:0;border-radius:0;background:none;box-shadow:none;animation:none;--k2:var(--red)}
 #world.lay-player.me-blue #controls .btn{--k2:var(--blue)}
