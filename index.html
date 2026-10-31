@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793431769">
+<meta name="df-build" content="1793432139">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -5030,20 +5030,17 @@ function renderHud(s) {
   if (prev !== hp) { if (!ui.intro) hpTrail(bar, s, prev, hp); tweenNum(val, prev, hp, ui.intro ? 1400 : 550); } else if (!val._tw) val.textContent = hp;
   ui.hpShown[s] = hp;
   if (ui.hit[s]) { bar.classList.remove('hit', 'healed'); void bar.offsetWidth; bar.classList.add('hit'); }
-  // ตี้ 2026-10-28: จุด ●●● ใต้แถบ HP = เกจพร (เดิมบอกจำนวนช่องที่วาง) · เติมจากด้านนอกเข้าหากลาง สีตามขั้นเหมือนกรอบเกจ · ครบ 3 = เรืองรุ้ง
-  const gN = inGame ? ui.g.p[s].gauge : 0, lc = s.toLowerCase();
-  ui.gDot = ui.gDot || {};
-  const gPrev = ui.gDot[s] != null ? ui.gDot[s] : gN, dots = [...document.querySelectorAll(`.dot.${lc}`)];
+  // ตี้ 2026-10-28: จุด ●●● ใต้แถบ HP เคยเป็นเกจพร → ตี้ 2026-10-31: เป็นตัวนับ Bo 3 (สีเหลือง) ทุกเกมทุกโหมด ต่อให้ไม่ได้เล่น Bo 3
+  //   ห้อง Bo / BOT VS BOT Bo 3 = เกมที่ชนะในซีรีส์ · เกมเดียว (ARCADE / BOT VS BOT / PVP ธรรมดา) = แบบ Bo 3 ว่าง ๆ จบเกมแล้วติดดวงแรกให้ฝั่งที่ชนะ
+  //   เกจพรดูที่เกจของตัวเอง (กรอบตั้งด้านล่าง · หน้าผู้ชม = เกจ ULT บนแถบ HP)
+  const lc = s.toLowerCase(), dots = [...document.querySelectorAll(`.dot.${lc}`)];
   if (s === 'BLUE') dots.reverse();
-  const bo = inGame && boLive() ? boScore() : null; // ตี้ 2026-10-30: ห้อง Bo → จุด = เกมที่ชนะในซีรีส์ (สีเหลือง)
-  if (bo) {
-    ui.boDot = ui.boDot || {};
-    const w = bo.w[s], wPrev = ui.boDot[s] != null ? ui.boDot[s] : w;
-    const dx = ((dots.length - bo.n) * 23.5 / 2) * (s === 'RED' ? 1 : -1); // ดวงห่างกัน ~23.5 px · ใช้ n ดวงจากด้านนอก แล้วเลื่อนเข้ากลางแผ่น
-    dots.forEach((d, k) => { d.className = `dot ${lc} bo${k < w ? ' on' : ''}${k < w && k >= wPrev ? ' new' : ''}`; d.hidden = k >= bo.n; d.style.translate = dx ? `${dx}px 0` : ''; });
-    ui.boDot[s] = w;
-  } else dots.forEach((d, k) => { d.hidden = false; d.style.translate = ''; d.className = `dot ${lc} g k${k}${k < gN ? ' on' : ''}${gN >= GAUGE_MAX ? ' full' : ''}${k < gN && k >= gPrev ? ' new' : ''}`; });
-  ui.gDot[s] = gN;
+  const bo = (inGame && boLive() && boScore()) || { n: BO_WINS, w: { RED: inGame && ui.winner === 'RED' ? 1 : 0, BLUE: inGame && ui.winner === 'BLUE' ? 1 : 0 } };
+  ui.boDot = ui.boDot || {};
+  const w = bo.w[s], wPrev = ui.boDot[s] != null ? ui.boDot[s] : w;
+  const dx = ((dots.length - bo.n) * 23.5 / 2) * (s === 'RED' ? 1 : -1); // ดวงห่างกัน ~23.5 px · ใช้ n ดวงจากด้านนอก แล้วเลื่อนเข้ากลางแผ่น
+  dots.forEach((d, k) => { d.className = `dot ${lc} bo${k < w ? ' on' : ''}${k < w && k >= wPrev ? ' new' : ''}`; d.hidden = k >= bo.n; d.style.translate = dx ? `${dx}px 0` : ''; });
+  ui.boDot[s] = w;
   renderShield(s, inGame ? (ui.shPrev && ui.shPrev[s] != null ? ui.shPrev[s] : ui.g.p[s].shield) : 0, inGame && !ui.intro);
   renderGauge(s);
 }
