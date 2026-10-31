@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793454154">
+<meta name="df-build" content="1793455130">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -1125,8 +1125,8 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 .vc-verdict.win{background:linear-gradient(180deg,#ffe58a,#ffc83d 55%,#e09a12);color:#1a1204;box-shadow:0 0 0 2px #fff4c2 inset,0 0 26px rgba(255,200,61,.9)}
 .vc-verdict.lose{background:rgba(16,18,26,.88);color:#aeb7c6;border:2px solid #5d6573;font-size:34px}
 .vc-win{position:absolute;left:960px;top:850px;z-index:6;transform:translate(-50%,-50%);line-height:0;pointer-events:none}
-/* ตี้ 2026-10-31: ป้าย WINNER (คลิป 1280×502 · ตัวคำ+ใบลอเรลกว้าง ~64% ของคลิป) */
-.vc-win video{display:block;width:1100px;height:auto;visibility:hidden}
+/* ตี้ 2026-10-31: ป้าย WINNER (คลิป 1280×502 จากต้นฉบับ 1920) / LOSE (คลิป 832×320 ขนาดต้นฉบับ) · ย่อเท่ากันที่ 0.573 ของต้นฉบับ ตัวหนังสือสองแบบสูงพอ ๆ กัน */
+.vc-win video{display:block;height:auto;visibility:hidden} .vc-win video.winner{width:1100px} .vc-win video.lose{width:477px}
 .vc-win video.on{visibility:visible} .vc-win video.scr{mix-blend-mode:screen}
 .vc-verdict.fx{padding:0;background:none;border:0;box-shadow:none;top:608px;line-height:0;animation:vcVerdictSoft 1.6s ease forwards}
 @keyframes vcVerdictSoft{0%{opacity:0;transform:translateX(-50%) translateY(10px)}14%{opacity:1;transform:translateX(-50%)}86%{opacity:1;transform:translateX(-50%)}100%{opacity:0;transform:translateX(-50%) translateY(-4px)}}
@@ -3878,6 +3878,7 @@ function winVo(side) {
   if (gap > 0) setTimeout(say, gap); else say();
 }
 // ท่าชนะ (ตี้ 2026-10-28 · Drive "07. Winner"): หลัง K.O. เล่น VDO ของฝั่งที่ชนะเต็มจอ แล้วค่อยเข้าหน้าผล · SKIP ข้ามได้
+const endKind = w => (ui.mode !== 'spec' && w !== 'DRAW' && w !== ME ? 'lose' : 'winner'); // ป้ายจบเกมตามมุมมอง: ผู้เล่นที่แพ้เห็น LOSE
 const WIN_POSE = { RED: 16.5, BLUE: 15.25 }; // วินาทีในคลิป winner-red/blue ที่ตัดเข้าท่าชนะสุดท้าย (ก่อนตัวหนังสือ WINNER ในคลิปขึ้น ~0.3 วิ)
 async function winVdo(side, gid) {
   const name = `winner-${side.toLowerCase()}`, W = $('#world'), el = $('#vdoFight'), lv = { skip: false, failed: false, clips: [name] }, v0 = Date.now();
@@ -3892,8 +3893,10 @@ async function winVdo(side, gid) {
   $('#vdoBar').hidden = false;
   // ตี้ 2026-10-31: ป้าย WINNER (ใบลอเรลทอง จาก AE) แทนคำ RED WIN / BLUE WIN · ขึ้นตอนตัวละครเข้าท่าชนะช่วงท้ายคลิป (WIN_POSE) พร้อมเสียงพากย์
   // โหลดคลิปรอไว้ตั้งแต่เริ่ม · จับเวลาจากเวลาในคลิปจริง (คลิปสะดุด/โหลดช้า ป้ายก็ยังตรงท่า) · กดข้ามก่อนถึงท่า = ไม่ขึ้น
-  const wf = vcAdd('vc-win', '<video muted playsinline preload="auto"></video>').firstChild, at = WIN_POSE[side];
-  titleSrc(wf, 'winner');
+  // ตี้ 2026-10-31 (ต่อ): มุมมองคนแพ้ (โหมดผู้เล่น ฝั่งเราแพ้) = ป้าย LOSE แทน · ผู้ชม/ฝั่งที่ชนะ = WINNER
+  const kind = endKind(side), wf = vcAdd('vc-win', '<video muted playsinline preload="auto"></video>').firstChild, at = WIN_POSE[side];
+  wf.classList.add(kind);
+  titleSrc(wf, kind);
   const pose = setInterval(() => {
     if (ui.vdo !== lv) { clearInterval(pose); return; }
     if (el.currentTime < at) return;
@@ -5413,7 +5416,7 @@ function renderWinner() {
     : `${w === ME ? 'คุณชนะ! ' : w === OPP ? `${ui.mode === 'pvp' ? esc((ui.pvp && ui.pvp.oppNick) || OPP) : `บอท ${OPP}`} ชนะ — ` : ''}${ui.winReason}`;
   el.innerHTML = `<div class="win-card w-${w.toLowerCase()}" role="dialog" aria-modal="true" aria-labelledby="winTitle">
     <div class="win-eyebrow">WINNER PHASE</div>
-    <div class="win-title" id="winTitle" aria-label="${w === 'DRAW' ? 'DRAW' : `${w} WIN`}">${w === 'DRAW' ? '<span class="fxt">DRAW</span>' : fxImg(w === 'RED' ? 'red-win' : 'blue-win', 150, w === 'RED' ? ';--g:255,80,80' : ';--g:90,150,255')}</div>
+    <div class="win-title" id="winTitle" aria-label="${w === 'DRAW' ? 'DRAW' : endKind(w) === 'lose' ? `LOSE · ${w} WIN` : `WINNER · ${w}`}">${w === 'DRAW' ? '<span class="fxt">DRAW</span>' : endKind(w) === 'lose' ? fxImg('lose', 142, ';--g:150,140,200') : fxImg('winner', 200, w === 'RED' ? ';--g:255,80,80' : ';--g:90,150,255')}</div>
     <p>${line}</p>
     <div class="win-stats"><span class="t-red">RED ${g.p.RED.hp} HP</span><span class="t-blue">BLUE ${g.p.BLUE.hp} HP</span><span>${g.round} รอบ</span></div>
     ${boWinHTML()}
