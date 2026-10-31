@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793461642">
+<meta name="df-build" content="1793463494">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -4095,7 +4095,11 @@ async function startGame(opt = { mode: 'arcade' }) {
   setRand(pvp ? seededRand(opt.seed) : null); // PVP: ตัวสุ่มชุดเดียวกันทั้งสองเครื่อง ต้องตั้งก่อนสร้างเกม
   ui.pvp = pvp ? { mid: opt.mid, oppPeer: opt.oppPeer, oppNick: opt.oppNick || 'ผู้เล่น', phaseKey: null } : null;
   ui.g = newGame(addLog);
-  if (!pvp) { const pe = PERSONAS[Math.floor(Math.random() * PERSONAS.length)]; ui.g.persona[OPP] = ui.g.style[OPP] = pe; } // ARCADE: บอทสุ่มนิสัยทุกเกม (เฉลยตอนจบ)
+  if (!pvp) { // ARCADE: บอทสุ่มนิสัยทุกเกม (เฉลยตอนจบ) · Bo 3 = บอทนิสัยเดิมทั้งซีรีส์
+    const A = ui.arcBo, pe = A && A.pe ? A.pe : PERSONAS[Math.floor(Math.random() * PERSONAS.length)];
+    if (A) A.pe = pe;
+    ui.g.persona[OPP] = ui.g.style[OPP] = pe;
+  }
   clockStart();
   if (pvp) presence({ t0: clock.t0 }); // ผู้ชมที่เข้ากลางเกมนับเวลาจากจุดเดียวกับผู้เล่น
   // เปิดเกม: Overlay + แผง CARD ORDER เลื่อนเข้า แถบ HP ชาร์จ 0 → 100 แล้วค่อยเริ่มจั่ว
@@ -4104,7 +4108,7 @@ async function startGame(opt = { mode: 'arcade' }) {
   $('#log').innerHTML = '';
   addLog(pvp
     ? `เริ่มเกม PVP · ${tagOf(ME)} (คุณ) ปะทะ ${tagOf(OPP)} (${esc(ui.pvp.oppNick)}) · HP คนละ ${HP_MAX} · มือสูงสุด ${HAND_MAX} ใบ · ${PVP_TIMER ? `เฟสละ ${PVP_SEC} วินาที` : 'ไม่จับเวลา'}`
-    : `เริ่มเกม · ${tagOf('RED')} (คุณ) ปะทะ ${tagOf('BLUE')} (บอท) · HP คนละ ${HP_MAX} · มือสูงสุด ${HAND_MAX} ใบ`, 'sys');
+    : `เริ่มเกม${ui.arcBo ? ` · ${boLabel(ui.arcBo.n)} เกมที่ ${ui.arcBo.games + 1} (RED ${ui.arcBo.w.RED} – ${ui.arcBo.w.BLUE} BLUE)` : ''} · ${tagOf('RED')} (คุณ) ปะทะ ${tagOf('BLUE')} (บอท) · HP คนละ ${HP_MAX} · มือสูงสุด ${HAND_MAX} ใบ`, 'sys');
   $('#world').classList.add('intro');
   render();
   sfx.play('intro');
@@ -4759,7 +4763,7 @@ async function runFight() {
   if (gid !== ui.gid) return;
   Object.assign(ui, { phase: 'end', busy: false, winner: verdict.winner, winReason: verdict.reason, oppHidden: 0 });
   if (ui.pvp) ui.pvp.endAt = Date.now();
-  if (ui.winner && boLive()) boRecord(ui.pvp ? ui.pvp.mid : ui.spec.mid, ui.winner); // ห้อง Bo: นับเกมที่ชนะ
+  if (ui.winner && boLive()) boRecord(ui.pvp ? ui.pvp.mid : ui.spec ? ui.spec.mid : null, ui.winner); // ห้อง Bo: นับเกมที่ชนะ (ARCADE ไม่มี mid)
   if (net.mine.vdo) presence({ vdo: null });
   if (ui.pvp && ui.winner) presence({ seat: null, at: null, inp: {} }); // จบแมตช์ = ปล่อยที่นั่งให้คนอื่น (mid ยังอยู่จนกว่าจะออก)
   addLog(`End Phase · HP ${tagOf('RED')} ${hpDelta(ui.hpStart.RED, g.p.RED.hp)} · ${tagOf('BLUE')} ${hpDelta(ui.hpStart.BLUE, g.p.BLUE.hp)}`);
@@ -5432,7 +5436,7 @@ function renderWinner() {
     ${boWinHTML()}
     ${clockSummaryHTML()}
     ${ui.mode === 'arcade' && g.persona ? `<p class="win-bot">${esc(botStyleText(g, OPP))}</p>` : ''}
-    <div class="win-btns">${ui.mode === 'spec' && ui.spec && ui.spec.bot ? `<button type="button" class="btn primary big" data-act="bvbNext">${bvbNextLabel()}</button><button type="button" class="btn ghost" data-act="toLobby">กลับ LOBBY</button>` : ui.mode === 'pvp' || ui.mode === 'spec' ? boWinBtns() : '<button type="button" class="btn primary big" data-act="toLobby">กลับ LOBBY</button>'}<button type="button" class="btn ghost" data-act="peek">ดูกระดานรอบสุดท้าย</button></div>
+    <div class="win-btns">${ui.mode === 'spec' && ui.spec && ui.spec.bot ? `<button type="button" class="btn primary big" data-act="bvbNext">${bvbNextLabel()}</button><button type="button" class="btn ghost" data-act="toLobby">กลับ LOBBY</button>` : ui.mode === 'pvp' || ui.mode === 'spec' ? boWinBtns() : arcWinBtns()}<button type="button" class="btn ghost" data-act="peek">ดูกระดานรอบสุดท้าย</button></div>
   </div>`;
 }
 function renderDrawer() {
@@ -5549,7 +5553,8 @@ document.addEventListener('click', e => {
         .then(() => toast('คัดลอกลิงก์ห้องแล้ว — ส่งให้เพื่อนได้เลย'), () => toast('คัดลอกไม่ได้ — กดค้างที่ลิงก์เพื่อคัดลอกเอง'));
       break;
     }
-    case 'arcade': startGame({ mode: 'arcade' }); break;
+    case 'arcade': arcPick(); break; // ตี้ 2026-10-31: เลือกเกมเดียว / Bo 3 ก่อน
+    case 'arcNext': arcNext(); break;
     case 'bvb': bvbPick(); break; // ตี้ 2026-10-30: เลือกเกมเดียว / Bo 3 ก่อน
     case 'bvbClose': $('#bvbModal').hidden = true; break;
     case 'bvbNext': bvbNext(); break;
@@ -5891,9 +5896,14 @@ const roomReady = () => net.state === 'on' && (!!roomMeta() || (net.onAt && Date
 const BO_WINS = 2; // ตี้ 2026-10-30: ชนะ 2 ใน 3 เกม
 const boLabel = n => `Bo ${n * 2 - 1}`; // จำนวนเกมที่ต้องชนะ → ชื่อแบบ (2 = Bo 3)
 function roomBo() { const m = !ON_CLAUDE && !LIST_MODE ? roomMeta() : null; return m && m.bo > 1 ? m.bo : 1; }
-function boLive() { return ui.mode === 'pvp' ? !!ui.pvp : ui.mode === 'spec' && !!ui.spec && (!ui.spec.bot || !!bvbBo()); }
+function boLive() { return ui.mode === 'pvp' ? !!ui.pvp : ui.mode === 'arcade' ? !!bvbBo() : ui.mode === 'spec' && !!ui.spec && (!ui.spec.bot || !!bvbBo()); }
 // BOT VS BOT แบบ Bo (ตี้ 2026-10-30): ซีรีส์นับในเครื่อง ไม่ผ่านห้อง · ใช้เฉพาะตอนอยู่ในเกม (หน้าห้อง PVP ยังอ่านซีรีส์ของห้อง)
-function bvbBo() { return ui.mode === 'spec' && ui.spec && ui.spec.bot && ui.screen === 'game' ? ui.bvbBo || null : null; }
+// ตี้ 2026-10-31: ARCADE เล่น Bo 3 กับบอทได้ด้วย (ui.arcBo · โครงเดียวกับ ui.bvbBo) — ซีรีส์ในเครื่องทั้งคู่
+function bvbBo() {
+  if (ui.screen !== 'game') return null;
+  if (ui.mode === 'arcade') return ui.arcBo || null;
+  return ui.mode === 'spec' && ui.spec && ui.spec.bot ? ui.bvbBo || null : null;
+}
 function boSer() {
   const all = [net.mine.ser, ...net.peers.map(p => p.presence && p.presence.ser)].filter(Boolean);
   if (!all.length) return null;
@@ -5926,7 +5936,7 @@ function boStart(mid) {
 // จบเกมที่มีผู้ชนะ → บันทึกลงซีรีส์ (รหัสเกมจาก mid กันนับซ้ำ · ซีรีส์จบแล้วไม่นับเพิ่ม)
 function boRecord(mid, winner) {
   const B = bvbBo();
-  if (B) { // BOT VS BOT: นับครั้งเดียวต่อเกม (ui.gid) · เสมอไม่นับ · ซีรีส์จบแล้วไม่นับเพิ่ม
+  if (B) { // BOT VS BOT / ARCADE: นับครั้งเดียวต่อเกม (ui.gid) · เสมอไม่นับ · ซีรีส์จบแล้วไม่นับเพิ่ม
     if (B.gid !== ui.gid && B.w.RED < B.n && B.w.BLUE < B.n && (winner === 'RED' || winner === 'BLUE')) { B.w[winner]++; B.games++; B.gid = ui.gid; }
     return;
   }
@@ -6596,6 +6606,39 @@ function bvbNext() {
   const B = ui.bvbBo;
   if (B && (B.w.RED >= B.n || B.w.BLUE >= B.n)) Object.assign(B, { w: { RED: 0, BLUE: 0 }, games: 0, pe: null, gid: null });
   bvbStart();
+}
+// ตี้ 2026-10-31: ARCADE เลือกได้ว่าเล่นเกมเดียว หรือ Bo 3 กับบอท (บอทนิสัยเดิมทั้งซีรีส์) · จำแบบที่เลือกล่าสุดไว้ในเครื่อง (df-arc-bo)
+// ui.arcBo = { n, w: { RED, BLUE }, games, pe: นิสัยบอท, gid } · null = เกมเดียว
+function arcPick() {
+  let bo = 1;
+  try { bo = localStorage.getItem('df-arc-bo') === String(BO_WINS) ? BO_WINS : 1; } catch (e) { /* ข้ามได้ */ }
+  const box = $('#bvbModal');
+  box.innerHTML = `<form class="rm-box" id="arcForm" style="width:600px"><small class="eb">ARCADE · คุณ (RED) ปะทะบอท</small><h3>รูปแบบการแข่ง</h3>
+    <div class="rm-sides"><label><input type="radio" name="arcBo" value="1"${bo > 1 ? '' : ' checked'}>ชนะเกมเดียว</label><label><input type="radio" name="arcBo" value="${BO_WINS}"${bo > 1 ? ' checked' : ''}>${boLabel(BO_WINS)} · ชนะ ${BO_WINS} ใน ${BO_WINS * 2 - 1} เกม</label></div>
+    <span class="hint">${boLabel(BO_WINS)} = แข่งกับบอทตัวเดิมสูงสุด ${BO_WINS * 2 - 1} เกม ใครชนะครบ ${BO_WINS} เกมก่อนชนะซีรีส์ · จุดเหลืองใต้แถบ HP นับเกมที่ชนะ</span>
+    <div class="rm-acts"><button type="button" class="btn ghost" data-act="bvbClose">ยกเลิก</button><button type="submit" class="btn gold">เริ่มเล่น →</button></div></form>`;
+  box.hidden = false;
+  $('#arcForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const n = Number((box.querySelector('input[name=arcBo]:checked') || {}).value) > 1 ? BO_WINS : 1;
+    try { localStorage.setItem('df-arc-bo', String(n)); } catch (err) { /* ข้ามได้ */ }
+    box.hidden = true;
+    ui.arcBo = n > 1 ? { n, w: { RED: 0, BLUE: 0 }, games: 0, pe: null, gid: null } : null;
+    startGame({ mode: 'arcade' });
+  });
+  box.querySelector('input:checked').focus();
+}
+// จบเกม ARCADE แบบ Bo: ซีรีส์ยังไม่จบ = เกมต่อไป (บอทตัวเดิม) · จบแล้ว = เริ่มซีรีส์ใหม่ (สุ่มบอทใหม่)
+function arcNext() {
+  const A = ui.arcBo;
+  if (A && (A.w.RED >= A.n || A.w.BLUE >= A.n)) Object.assign(A, { w: { RED: 0, BLUE: 0 }, games: 0, pe: null, gid: null });
+  startGame({ mode: 'arcade' });
+}
+function arcWinBtns() {
+  const lobby = '<button type="button" class="btn primary big" data-act="toLobby">กลับ LOBBY</button>';
+  const b = ui.arcBo ? boScore() : null;
+  if (!b) return lobby;
+  return `<button type="button" class="btn primary big" data-act="arcNext">${b.done ? `เล่น ${boLabel(b.n)} ใหม่` : 'เกมต่อไป →'}</button>${lobby.replace('btn primary big', 'btn ghost')}`;
 }
 // ตี้ 2026-10-31: ปุ่ม Pause การกระทำของบอท — หยุดก่อนบอทเลือกการ์ด / วางการ์ด / เปิดปะทะ / ไปรอบถัดไป · วิดีโอที่เล่นอยู่เล่นต่อจนจบ (ไม่หยุดวิดีโอ)
 function bvbLive() { return ui.screen === 'game' && ui.mode === 'spec' && !!ui.spec && !!ui.spec.bot && !ui.winner; }
