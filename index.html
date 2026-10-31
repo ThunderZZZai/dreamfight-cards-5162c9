@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793380946">
+<meta name="df-build" content="1793431769">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -125,6 +125,28 @@ body:not(.portrait) #rotateHint{display:none}
 .tab.red{left:296px} .tab.blue{right:296px;flex-direction:row-reverse}
 .tab small{font-family:var(--font-body);font-weight:600;font-size:16px;letter-spacing:0;opacity:.85}
 .dot{position:absolute;top:142px;width:14px;height:14px;border-radius:50%;transition:background .2s,box-shadow .2s}
+/* ตี้ 2026-10-31: เกจ ULT (เกจพร) บนแถบ HP ด้านบน ตามภาพที่ตี้ทำมา — หน้าผู้ชม (BOT VS BOT / ดู PVP) แทนกรอบตั้งด้านล่าง
+   3 ช่องเฉียงตามกรอบ HP (skew 39.4°) บนขอบล่างของกรอบ ระหว่างเลข HP กับจุด ●●● · ป้าย ULT n/3 ฝั่งกลางจอ · เติมจากด้านนอกเข้ากลาง (k0 = นอกสุด) */
+.ult{position:absolute;top:134px;height:18px;pointer-events:none}
+.ult[hidden]{display:none}
+.ult.red{left:408px} .ult.blue{left:1304px}
+.useg{position:absolute;top:0;width:66px;height:18px;box-sizing:border-box;transform-origin:0 0;border:2px solid rgba(255,226,230,.9);background:rgba(8,10,16,.82);box-shadow:inset 0 0 6px rgba(0,0,0,.8);overflow:hidden}
+.ult.red .useg{transform:skewX(39.4deg)} .ult.blue .useg{transform:skewX(-39.4deg);border-color:rgba(214,236,255,.9)}
+.ult.red .useg.k0,.ult.blue .useg.k2{left:0} .useg.k1{left:70px} .ult.red .useg.k2,.ult.blue .useg.k0{left:140px}
+.ulab{position:absolute;top:50%;transform:translateY(-50%);font-family:var(--font-disp);font-weight:700;font-size:22px;letter-spacing:.02em;color:#fff;white-space:nowrap;text-shadow:0 0 6px #000,0 1px 0 #000}
+.ult.red .ulab{left:237px} .ult.blue .ulab{right:calc(100% + 27px)}
+.useg.on{background-size:144px 100%;background-repeat:repeat-x;animation:uFlow 2.6s linear infinite;box-shadow:none}
+.useg.on.k0{background-image:linear-gradient(90deg,#ff3b3b,#ff9a3b,#ffe14d,#ff6ad5,#ff3b3b)}
+.useg.on.k1{background-image:linear-gradient(90deg,#ffe14d,#4dff88,#4dd8ff,#b8ff4d,#ffe14d);animation-delay:-.85s}
+.useg.on.k2{background-image:linear-gradient(90deg,#4dd8ff,#4d7dff,#a35cff,#ff6ad5,#4dd8ff);animation-delay:-1.7s}
+.useg.on.new{animation:gCellIn calc(.7s*var(--spd)) ease-out,uFlow 2.6s linear infinite}
+.useg.spent{animation:uOut calc(.6s*var(--spd)) ease-out}
+.ult.full{animation:gFrGlow 2s linear infinite} .ult.full .ulab{color:#ffe14d}
+@keyframes uFlow{from{background-position:0 0}to{background-position:144px 0}}
+@keyframes uOut{0%{background:#fff}100%{background:rgba(8,10,16,.82)}}
+@media (prefers-reduced-motion:reduce){.useg.on,.ult.full{animation:none}}
+.ult .meta-float{right:auto;left:0;bottom:auto;top:100%;margin:6px 0 0} .ult.blue .meta-float{left:auto;right:0}
+#world.lay-spec .gauge{display:none} /* ผู้ชม: เกจอยู่บนแถบ HP แล้ว */
 .dot.red.on{background:#ff4d55;box-shadow:0 0 10px #ff4d55}
 .dot.blue.on{background:#5a97ff;box-shadow:0 0 10px #5a97ff}
 /* เกจพรในจุด ●●● (ตี้ 2026-10-28): ว่าง = วงมืดขอบเงิน · มี = สีรุ้งตามขั้น (คงที่ต่อขั้น) · ครบ 3 = เรืองรุ้งวน */
@@ -1207,6 +1229,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
       <div class="hex" aria-live="polite"><small id="hexLabel"></small><b id="hexNum">VS</b></div>
       <div class="gauge red" id="gaugeRED" hidden></div>
       <div class="gauge blue" id="gaugeBLUE" hidden></div>
+      <div class="ult red" id="ultRED" role="img" hidden></div><div class="ult blue" id="ultBLUE" role="img" hidden></div>
       </div>
       <div id="splash" hidden><small>DREAMFIGHT · CARD BATTLE</small><b id="splashText" class="fxrow" aria-label="ROUND 1"><span class="fxw" style="--h:150px;--img:url(assets/fx/round.webp)"><img src="assets/fx/round.webp" alt="" draggable="false"><i class="fx-shine"></i></span><span class="fxw" style="--h:154px;--img:url(assets/fx/d1.webp);--fd:.08s;margin-left:-18px"><img src="assets/fx/d1.webp" alt="" draggable="false"><i class="fx-shine"></i></span></b></div>
       <div id="laneCall" aria-live="polite"></div>
@@ -5040,9 +5063,10 @@ const gaugeUsable = () => { const g = ui.g; return !!g && ui.screen === 'game' &
 function renderGauge(s) {
   const el = $(`#gauge${s}`), g = ui.g, show = ui.screen === 'game' && !!g && !ui.intro;
   el.hidden = !show;
-  if (!show) { ui.gShown[s] = null; $('#world').classList.remove(`unl-${s.toLowerCase()}`); return; }
+  if (!show) { ui.gShown[s] = null; $('#world').classList.remove(`unl-${s.toLowerCase()}`); renderUlt(s, false); return; }
   if (!el.firstElementChild) el.innerHTML = '<div class="gin"></div>';
   const P = g.p[s], n = P.gauge, prev = ui.gShown[s] == null ? n : ui.gShown[s];
+  renderUlt(s, ui.mode === 'spec', n, prev); // ตี้ 2026-10-31: หน้าผู้ชม เกจ ULT อยู่บนแถบ HP ด้านบน
   const usable = s === ME && gaugeUsable();
   const unl = unlimitedNow(g, s) && ui.phase === 'action' && (s === ME || ui.mode === 'spec' || !!P.lanes);
   const nogain = unlimitedNow(g, s) && ui.phase !== 'action' && !!P.lanes; // ระหว่างสู้รอบที่ใช้ 3 เกจ: สะสมไม่ได้
@@ -5065,10 +5089,20 @@ function renderGauge(s) {
     : `${orbs}<span class="ginfo">${label}${unl ? '<span class="gunl">วางกี่ใบก็ได้</span>' : nogain ? '<span class="gunl">รอบนี้สะสมเกจไม่ได้</span>' : meta}</span>`;
   ui.gShown[s] = n;
 }
-// ป้ายลอยข้างเกจ (+1 เกจ / ใช้เกจ)
+// เกจ ULT บนแถบ HP (หน้าผู้ชม · ตี้ 2026-10-31) — ช่องที่ได้เพิ่มวาบขาว · ใช้ไป = ขาวจางหาย · เต็ม 3 = เรืองรุ้งทั้งแถบ
+function renderUlt(s, show, n = 0, prev = n) {
+  const el = $(`#ult${s}`);
+  if (!el) return;
+  el.hidden = !show;
+  if (!show) return;
+  el.className = `ult ${s.toLowerCase()}${n >= GAUGE_MAX ? ' full' : ''}`;
+  el.setAttribute('aria-label', `เกจ ULT ของ ${s} ${n}/${GAUGE_MAX}`);
+  el.innerHTML = [0, 1, 2].map(k => `<i class="useg k${k}${k < n ? ' on' : ''}${k < n && k >= prev ? ' new' : ''}${k >= n && k < prev ? ' spent' : ''}"></i>`).join('') + `<b class="ulab">ULT ${n}/${GAUGE_MAX}</b>`;
+}
+// ป้ายลอยข้างเกจ (+1 เกจ / ใช้เกจ) · หน้าผู้ชมลอยใต้เกจ ULT บนแถบ HP
 function gaugeFloat(s, text, delay = 0, html = '') {
   setTimeout(() => {
-    const el = $(`#gauge${s}`);
+    const u = $(`#ult${s}`), el = u && !u.hidden ? u : $(`#gauge${s}`);
     if (!el || el.hidden) return;
     const f = document.createElement('span');
     f.className = `meta-float up${html ? ' fximg' : ''}`;
@@ -5166,7 +5200,7 @@ function gaugeFx(s, res, delay = 0) {
 }
 // ใช้พร: คลื่นวงแหวนสีรุ้งพุ่งออกจากกรอบเกจ + แสงรุ้งวาบทั้งจอ (เฉพาะกรอบที่มองเห็นอยู่)
 function gaugeBurst(s) {
-  const fr = $(`#gauge${s} .gfr`);
+  const fr = [$(`#ult${s}`), $(`#gauge${s} .gfr`)].find(e => e && !e.hidden && e.offsetParent); // หน้าผู้ชม = เกจ ULT บนแถบ HP
   if (!fr || !fr.offsetParent) return;
   const L = toLocal(rectOf(fr)), x = L.left + L.width / 2, y = L.top + L.height / 2, W = $('#world');
   const wash = document.createElement('div'), ring = document.createElement('div');
