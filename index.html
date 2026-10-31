@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793457978">
+<meta name="df-build" content="1793458491">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -5276,7 +5276,7 @@ function renderOppHand() {
   const el = $('#oppHand .opp-hand'), n = Math.max(0, ui.g.p[OPP].hand.length - (ui.oppHidden || 0)); // PVP: วางไม่ครบ → โชว์เหมือนวางครบ จนจบรอบ
   if (ui.mode === 'spec') { // ผู้ชม: มือ BLUE เปิดหงายอยู่ในพื้นที่มือด้านล่างแล้ว
     el.innerHTML = '';
-    $('#oppMeta .meta-txt').textContent = `มือ ${OPP} ${n}/${HAND_MAX}`;
+    $('#oppMeta .meta-txt').textContent = `${n}/${HAND_MAX}`; // ตี้ 2026-10-31: เหลือแค่ตัวเลข
     $('#oppStatus').textContent = '';
     return;
   }
@@ -5288,7 +5288,7 @@ function renderOppHand() {
   for (let k = 0; k < ui.oppDying; k++) html += '<span class="mini-back leaving"></span>';
   el.innerHTML = html || '<span class="opp-empty">มือว่าง</span>';
   el.setAttribute('aria-label', `การ์ดบนมือ ${OPP} ${n} ใบ (คว่ำ)`);
-  $('#oppMeta .meta-txt').textContent = `มือ ${OPP} ${n}/${HAND_MAX}`;
+  $('#oppMeta .meta-txt').textContent = `${n}/${HAND_MAX}`; // ตี้ 2026-10-31: เหลือแค่ตัวเลข
   const os = $('#oppStatus');
   if (os && ui.mode !== 'pvp') os.textContent = '';
 }
@@ -5311,7 +5311,8 @@ function renderOrders() {
 function specHandHTML(s) {
   const g = ui.g, dying = s === ME ? ui.dying : ui.dyingOpp || [], dyingIds = new Set(dying.map(c => c.id));
   const cards = g.p[s].hand.concat(dying).sort((a, b) => (a.got || 0) - (b.got || 0) || a.id - b.id);
-  return `<div class="spec-hand side-${s.toLowerCase()}"><div class="hand-head"><b class="t-${s.toLowerCase()}">มือ ${s} · ${esc(ui.spec.nick[s])}</b><span class="hud-meta" id="specMeta${s}"><span class="meta-txt">${g.p[s].hand.length}/${HAND_MAX} ใบ</span></span></div>
+  // ตี้ 2026-10-31: ป้ายหัวมือเหลือแค่ตัวเลข n/6 (ตัด "มือ RED · ชื่อ" และคำว่า "ใบ" ออก · ชื่ออยู่บนแถบ HP แล้ว)
+  return `<div class="spec-hand side-${s.toLowerCase()}"><div class="hand-head" aria-label="มือ ${s} · ${esc(ui.spec.nick[s])} ${g.p[s].hand.length}/${HAND_MAX} ใบ"><span class="hud-meta" id="specMeta${s}"><span class="meta-txt">${g.p[s].hand.length}/${HAND_MAX}</span></span></div>
     <div class="hand-cards">${cards.length ? cards.map((c, k) => {
       const gone = dyingIds.has(c.id), up = ui.lvups.get(c.id), arr = ui.arrive.get(c.id);
       const land = up != null ? landAt(up) : arr != null ? landAt(arr) : null;
