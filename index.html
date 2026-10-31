@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793447703">
+<meta name="df-build" content="1793454154">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -1125,6 +1125,9 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 .vc-verdict.win{background:linear-gradient(180deg,#ffe58a,#ffc83d 55%,#e09a12);color:#1a1204;box-shadow:0 0 0 2px #fff4c2 inset,0 0 26px rgba(255,200,61,.9)}
 .vc-verdict.lose{background:rgba(16,18,26,.88);color:#aeb7c6;border:2px solid #5d6573;font-size:34px}
 .vc-win{position:absolute;left:960px;top:850px;z-index:6;transform:translate(-50%,-50%);line-height:0;pointer-events:none}
+/* ตี้ 2026-10-31: ป้าย WINNER (คลิป 1280×502 · ตัวคำ+ใบลอเรลกว้าง ~64% ของคลิป) */
+.vc-win video{display:block;width:1100px;height:auto;visibility:hidden}
+.vc-win video.on{visibility:visible} .vc-win video.scr{mix-blend-mode:screen}
 .vc-verdict.fx{padding:0;background:none;border:0;box-shadow:none;top:608px;line-height:0;animation:vcVerdictSoft 1.6s ease forwards}
 @keyframes vcVerdictSoft{0%{opacity:0;transform:translateX(-50%) translateY(10px)}14%{opacity:1;transform:translateX(-50%)}86%{opacity:1;transform:translateX(-50%)}100%{opacity:0;transform:translateX(-50%) translateY(-4px)}}
 @keyframes vcVerdict{0%{opacity:0;transform:translateX(-50%) scale(2)}14%{opacity:1;transform:translateX(-50%) scale(.94)}22%{transform:translateX(-50%) scale(1)}86%{opacity:1;transform:translateX(-50%) scale(1)}100%{opacity:0;transform:translateX(-50%) scale(1.04)}}
@@ -3866,7 +3869,7 @@ async function laneVdo(i, plan, gid, r, keep = false) {
     duckMusic(false);
   }
 }
-// ตี้ 2026-10-30: เสียงพากย์ BLUE WIN / RED WIN ครั้งเดียวต่อเกม — ขึ้นพร้อมคำ WIN ในท่าชนะ · ไม่มี VDO หรือกดข้ามก่อนคำขึ้น = ขึ้นตอนเข้าหน้าผลแทน
+// ตี้ 2026-10-30: เสียงพากย์ BLUE WIN / RED WIN ครั้งเดียวต่อเกม — ขึ้นพร้อมป้าย WINNER ตอนเข้าท่าชนะ (31 ต.ค.) · ไม่มี VDO หรือกดข้ามก่อนคำขึ้น = ขึ้นตอนเข้าหน้าผลแทน
 // คำ K.O. ยาว ~1.7 วิ: ถ้ายังพูดไม่จบ (ปิด VDO + เร่งความเร็ว หน้าผลขึ้นหลัง K.O. แค่ ~0.6 วิ) รอให้จบก่อนค่อยพูด WIN
 function winVo(side) {
   if (ui.winVo === ui.gid) return;
@@ -3875,6 +3878,7 @@ function winVo(side) {
   if (gap > 0) setTimeout(say, gap); else say();
 }
 // ท่าชนะ (ตี้ 2026-10-28 · Drive "07. Winner"): หลัง K.O. เล่น VDO ของฝั่งที่ชนะเต็มจอ แล้วค่อยเข้าหน้าผล · SKIP ข้ามได้
+const WIN_POSE = { RED: 16.5, BLUE: 15.25 }; // วินาทีในคลิป winner-red/blue ที่ตัดเข้าท่าชนะสุดท้าย (ก่อนตัวหนังสือ WINNER ในคลิปขึ้น ~0.3 วิ)
 async function winVdo(side, gid) {
   const name = `winner-${side.toLowerCase()}`, W = $('#world'), el = $('#vdoFight'), lv = { skip: false, failed: false, clips: [name] }, v0 = Date.now();
   if (!vdo.url(name)) return;
@@ -3886,7 +3890,17 @@ async function winVdo(side, gid) {
   W.classList.add('vdo-fight', 'vdo-full');
   $('#vdoLane').textContent = `${side} WIN`;
   $('#vdoBar').hidden = false;
-  setTimeout(() => { if (ui.vdo === lv) { vcAdd('vc-win', fxImg(side === 'RED' ? 'red-win' : 'blue-win', 170, side === 'RED' ? ';--g:255,80,80' : ';--g:90,150,255')); winVo(side); } }, 1200); // คำ WIN กลางล่าง (ไม่บังหน้าตัวละคร) + เสียงพากย์
+  // ตี้ 2026-10-31: ป้าย WINNER (ใบลอเรลทอง จาก AE) แทนคำ RED WIN / BLUE WIN · ขึ้นตอนตัวละครเข้าท่าชนะช่วงท้ายคลิป (WIN_POSE) พร้อมเสียงพากย์
+  // โหลดคลิปรอไว้ตั้งแต่เริ่ม · จับเวลาจากเวลาในคลิปจริง (คลิปสะดุด/โหลดช้า ป้ายก็ยังตรงท่า) · กดข้ามก่อนถึงท่า = ไม่ขึ้น
+  const wf = vcAdd('vc-win', '<video muted playsinline preload="auto"></video>').firstChild, at = WIN_POSE[side];
+  titleSrc(wf, 'winner');
+  const pose = setInterval(() => {
+    if (ui.vdo !== lv) { clearInterval(pose); return; }
+    if (el.currentTime < at) return;
+    clearInterval(pose);
+    wf.play().then(() => wf.classList.add('on'), () => {});
+    winVo(side);
+  }, 30);
   el.src = vdo.url(name);
   el.volume = sfx.vol;
   el.muted = !sfx.on;
