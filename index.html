@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793456962">
+<meta name="df-build" content="1793457978">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -1057,14 +1057,19 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 .vc-pop .card{box-shadow:0 0 0 3px var(--k),0 0 30px var(--k),0 16px 40px rgba(0,0,0,.7);border-radius:14px}
 .vc-pop.on .card{animation:vcGlow 1s ease-out}
 @keyframes vcGlow{0%{filter:brightness(2.2)}35%{filter:brightness(1.3)}100%{filter:none}}
-.vc-who{position:absolute;left:50%;top:-44px;transform:translateX(-50%);white-space:nowrap;padding:3px 16px;border-radius:999px;background:var(--k);color:#fff;font-family:var(--font-disp);font-weight:700;font-size:20px;box-shadow:0 0 14px var(--k)}
+/* ตี้ 2026-10-31 "ใส่กรอบดีๆ": ป้ายชื่อเป็นแผ่นเฉียงแบบกรอบ HP (แดงเอียงตามแถบ HP แดง · ฟ้ากลับด้าน) ขอบสีฝั่ง + พื้นเข้ม + ไฮไลต์ขอบบน + เรืองรอบ */
+.vc-who{position:absolute;left:50%;top:-50px;transform:translateX(-50%);white-space:nowrap;padding:5px 24px 6px;isolation:isolate;font-family:var(--font-disp);font-weight:700;font-size:19px;line-height:1.2;letter-spacing:.03em;color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.7),0 0 10px var(--k);filter:drop-shadow(0 0 8px color-mix(in srgb,var(--k) 75%,transparent))}
+.vc-who::before{content:"";position:absolute;inset:0;z-index:-1;transform:skewX(20deg);border-radius:4px;border:2px solid var(--k);background:linear-gradient(180deg,color-mix(in srgb,var(--k) 55%,#0a0d14) 0%,#0b0f18 72%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),inset 0 1px 0 rgba(255,255,255,.55),inset 0 -8px 12px color-mix(in srgb,var(--k) 30%,transparent)}
+.vc-who::after{content:"";position:absolute;left:16%;right:16%;top:-1px;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,#fff,transparent)}
+.vc-pop.blue .vc-who::before{transform:skewX(-20deg)}
+.vc-who span{display:block;max-width:260px;overflow:hidden;text-overflow:ellipsis}
 .vc-pop.fly{z-index:3;transition:transform .38s cubic-bezier(.55,0,.9,.55),opacity .1s ease .33s}
 .vc-pop.fly .vc-who{display:none}
 .vc-pop.gone{opacity:0}
 /* ช่องว่าง (ฝั่งนั้นไม่ได้ลงการ์ด) = กรอบการ์ดใส ๆ + "ว่างเปล่า" */
 .vc-empty{display:grid;place-items:center;width:100%;aspect-ratio:820/1302;border-radius:14px;border:3px dashed rgba(255,255,255,.6);background:rgba(255,255,255,.07);box-shadow:0 0 0 2px var(--k) inset,0 0 24px rgba(0,0,0,.35);backdrop-filter:blur(3px)}
 .vc-empty b{font-family:var(--font-disp);font-weight:700;font-size:26px;color:rgba(255,255,255,.9);text-shadow:0 2px 8px rgba(0,0,0,.8)}
-.vc-pop .vc-who{display:none} /* ตี้ 2026-10-29: เอาป้ายชื่อฝั่ง/การ์ดเหนือการ์ดบน VDO ออกทั้งหมด */
+/* ตี้ 2026-10-29 เอาป้ายเหนือการ์ดออก → ตี้ 2026-10-31: ใส่กลับเป็นชื่อผู้เล่น (ชื่อยาวเกิน 260px ตัด …) */
 /* โล่ + ไฟจากคลิป AE (ตี้ 2026-10-28 · เดโม artifact TmvSzwtJabbT2Tk6oaDX4g)
    คลิปพื้นดำซ้อนแบบ screen · #vcFx ห้ามมี z-index/transform/opacity ไม่งั้นลูก ๆ ผสมกับ VDO/เกจข้างใต้ไม่ได้ (ขึ้นกล่องดำ) */
 @property --L{syntax:'<length>';inherits:false;initial-value:0px}
@@ -1121,14 +1126,14 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 /* หลอดชิลด์ขาวเดิมเลิกใช้ — แทนด้วยโล่หกเหลี่ยม (ตัวเลขชิลด์ยังอยู่) · ตี้ 2026-10-30 เหลือแค่หลอดเปล่าในช่องเว้า */
 .shbar .sh-fill{visibility:hidden}
 /* ปะทะกลางจอ (ตี้ 2026-10-28): การ์ดชนกันกลางล่าง (y 850) · ข้อความผลปะทะเหนือการ์ด · โล่บาเรีย */
-.vc-verdict{position:absolute;top:618px;z-index:6;transform:translateX(-50%);white-space:nowrap;padding:4px 24px;border-radius:999px;font-family:var(--font-disp);font-weight:700;font-size:40px;line-height:1.2;pointer-events:none;animation:vcVerdict 1.6s cubic-bezier(.2,.9,.3,1.2) forwards}
+.vc-verdict{position:absolute;top:572px;z-index:6;transform:translateX(-50%);white-space:nowrap;padding:4px 24px;border-radius:999px;font-family:var(--font-disp);font-weight:700;font-size:40px;line-height:1.2;pointer-events:none;animation:vcVerdict 1.6s cubic-bezier(.2,.9,.3,1.2) forwards}
 .vc-verdict.win{background:linear-gradient(180deg,#ffe58a,#ffc83d 55%,#e09a12);color:#1a1204;box-shadow:0 0 0 2px #fff4c2 inset,0 0 26px rgba(255,200,61,.9)}
 .vc-verdict.lose{background:rgba(16,18,26,.88);color:#aeb7c6;border:2px solid #5d6573;font-size:34px}
 .vc-win{position:absolute;left:960px;top:850px;z-index:6;transform:translate(-50%,-50%);line-height:0;pointer-events:none}
 /* ตี้ 2026-10-31: ป้าย WINNER (คลิป 1280×502 จากต้นฉบับ 1920 · ย่อ 0.573 ของต้นฉบับ) */
 .vc-win video{display:block;width:1100px;height:auto;visibility:hidden}
 .vc-win video.on{visibility:visible} .vc-win video.scr{mix-blend-mode:screen}
-.vc-verdict.fx{padding:0;background:none;border:0;box-shadow:none;top:608px;line-height:0;animation:vcVerdictSoft 1.6s ease forwards}
+.vc-verdict.fx{padding:0;background:none;border:0;box-shadow:none;top:592px;line-height:0;animation:vcVerdictSoft 1.6s ease forwards}
 @keyframes vcVerdictSoft{0%{opacity:0;transform:translateX(-50%) translateY(10px)}14%{opacity:1;transform:translateX(-50%)}86%{opacity:1;transform:translateX(-50%)}100%{opacity:0;transform:translateX(-50%) translateY(-4px)}}
 @keyframes vcVerdict{0%{opacity:0;transform:translateX(-50%) scale(2)}14%{opacity:1;transform:translateX(-50%) scale(.94)}22%{transform:translateX(-50%) scale(1)}86%{opacity:1;transform:translateX(-50%) scale(1)}100%{opacity:0;transform:translateX(-50%) scale(1.04)}}
 .vc-call{position:absolute;left:960px;top:470px;z-index:6;text-align:center;pointer-events:none;--k:var(--gold);transform:translateX(-50%);animation:vcCall 1.6s cubic-bezier(.2,.9,.3,1.2) forwards}
@@ -3298,11 +3303,15 @@ function vcAdd(cls, html, style) {
   $('#vdoCards').appendChild(d);
   return d;
 }
+// ชื่อผู้เล่นของฝั่ง s (ป้ายบนแถบ HP + ป้ายเหนือการ์ดบน VDO): ผู้ชม = ชื่อเล่นแต่ละฝั่ง · ผู้เล่น = คุณ / ชื่ออีกฝั่ง (PVP) / บอท
+const sideName = s => (ui.mode === 'spec' ? ui.spec.nick[s] : s === ME ? 'คุณ' : ui.mode === 'pvp' ? (ui.pvp && ui.pvp.oppNick) || 'ผู้เล่น' : 'บอท');
 function vcPop(s, c) {
   if (vc.pops[s]) return;
   // ตี้ 2026-10-28: ฝั่งที่ไม่ได้ลงการ์ด = กรอบใส "ว่างเปล่า"
-  const d = c ? vcAdd(`vc-pop ${s.toLowerCase()}`, `${cardHTML({ type: c.type, lv: c.lv })}<b class="vc-who">${s} · ${INFO[c.type].name} Lv${c.lv}</b>`)
-    : vcAdd(`vc-pop empty ${s.toLowerCase()}`, `<div class="vc-empty"><b>ว่างเปล่า</b></div><b class="vc-who">${s} · ว่างเปล่า</b>`);
+  // ตี้ 2026-10-31: ชื่อผู้เล่น (เหมือนบนแถบ HP) เหนือการ์ด · ซ่อนตอนการ์ดพุ่งเข้าแถบ (.fly)
+  const who = `<b class="vc-who"><span>${esc(sideName(s))}</span></b>`;
+  const d = c ? vcAdd(`vc-pop ${s.toLowerCase()}`, `${cardHTML({ type: c.type, lv: c.lv })}${who}`)
+    : vcAdd(`vc-pop empty ${s.toLowerCase()}`, `<div class="vc-empty"><b>ว่างเปล่า</b></div>${who}`);
   vc.pops[s] = d;
   vc.at[s] = VC_POP[s];
   void d.offsetWidth;
@@ -3744,7 +3753,8 @@ async function vcFinale(g, r, acts, hit, stop) {
         if (ui.mode === 'spec') vcHand(to, g.p[to].hand.length, n, 'stolen'); // ตี้ 2026-10-29: ผู้ชมเห็นมือเทาของฝั่งที่โดนขโมย ใบที่โดนขโมยลอยออก
         // การ์ดที่ขโมยม้วนตีลังกาเป็นโค้งกลับมาฝั่งเรา
         vcAdd('vc-steal', backHTML(), `--x0:${x1 - 48}px;--y0:${y1 - 76}px;--x1:${xp - 48}px;--y1:${yp - 76}px;--xm:${(x1 + xp) / 2 - 48}px;--ym:${y1 - 330}px;--r2:${s === 'RED' ? -1080 : 1080}deg`);
-        setTimeout(() => { vcAdd(`vc-tag ${s.toLowerCase()}`, `STEAL +${n}`, `left:${xp}px;top:${yp - 150}px`); sfx.play('swap'); }, 1000);
+        // ตี้ 2026-10-31: เดิมขึ้นเหนือการ์ดมุมล่าง (ทับป้ายชื่อผู้เล่น) → ข้างการ์ดฝั่งกลางจอ ระดับครึ่งบนของการ์ด
+        setTimeout(() => { vcAdd(`vc-tag ${s.toLowerCase()}`, `STEAL +${n}`, `left:${s === 'RED' ? xp + 180 : xp - 180}px;top:${yp - 90}px`); sfx.play('swap'); }, 1000);
       } else vcAdd('vc-tag miss', '+1 CARD', `left:${x1}px;top:${y1 + 90}px`);
     }
     if (a.brk || a.brkMiss) {
@@ -5437,7 +5447,7 @@ function render() {
   $('#lobby').hidden = ui.screen !== 'lobby';
   $('#pvp').hidden = ui.screen !== 'pvp';
   if (ui.screen === 'pvp') renderPvp();
-  const who = s => (ui.mode === 'spec' ? ui.spec.nick[s] : s === ME ? 'คุณ' : ui.mode === 'pvp' ? (ui.pvp && ui.pvp.oppNick) || 'ผู้เล่น' : 'บอท');
+  const who = sideName;
   $('.tab.red small').textContent = inGame ? who('RED') : 'คุณ';
   $('.tab.blue small').textContent = inGame ? who('BLUE') : 'บอท';
   $('#world').classList.toggle('is-game', inGame);
