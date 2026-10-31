@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793432139">
+<meta name="df-build" content="1793432241">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -973,7 +973,9 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 /* ตี้ 2026-10-28: กรอบเกจชิดขอบนอกช่องการ์ด (RED ขอบซ้าย 40 · BLUE ขอบขวา 1880) */
 #world.lay-player .gauge.red{left:40px;right:auto;top:793px} #world.lay-player .gauge.blue{left:auto;right:40px;top:793px}
 /* ตี้ 2026-10-30: เกจพรของฝั่งตรงข้ามแสดงด้วย (ดูอย่างเดียว · กดไม่ได้) มุมล่างฝั่งตรงข้ามระดับเดียวกับของเรา (เดิมซ่อน) · ⚙ ย้ายไปข้างเกจแทน (ฝั่งในจอ) */
-#world.lay-player #gSet{right:232px;bottom:37px} #world.lay-player.me-blue #gSet{right:auto;left:232px} /* ขอบล่างตรงกรอบเกจ (1043) */
+/* ตี้ 2026-10-31: เกจฝั่งตรงข้ามย้ายขึ้นแถบเลือดด้านบนแล้ว (.gauge.opp ซ่อน) → ⚙ กลับเข้ามุมล่างฝั่งตรงข้าม ระดับเดียวกับกรอบเกจของเรา */
+#world.lay-player .gauge.opp{display:none}
+#world.lay-player #gSet{right:40px;bottom:37px} #world.lay-player.me-blue #gSet{right:auto;left:40px} /* ขอบล่างตรงกรอบเกจ (1043) */
 #world.lay-spec .gauge.red{left:35px;right:auto;top:811px} #world.lay-spec .gauge.blue{left:auto;right:35px;top:811px}
 #world.vdo-fight .gauge{opacity:0}
 .gfr{position:relative;flex:none;width:32px;height:250px} /* ตี้ 2026-10-31: กรอบใหม่แคบลงนิด (เดิม 35) */
@@ -5063,11 +5065,12 @@ function renderGauge(s) {
   if (!show) { ui.gShown[s] = null; $('#world').classList.remove(`unl-${s.toLowerCase()}`); renderUlt(s, false); return; }
   if (!el.firstElementChild) el.innerHTML = '<div class="gin"></div>';
   const P = g.p[s], n = P.gauge, prev = ui.gShown[s] == null ? n : ui.gShown[s];
-  renderUlt(s, ui.mode === 'spec', n, prev); // ตี้ 2026-10-31: หน้าผู้ชม เกจ ULT อยู่บนแถบ HP ด้านบน
+  // ตี้ 2026-10-31: เกจ ULT บนแถบ HP — หน้าผู้ชม = ทั้งสองฝั่ง · โหมดผู้เล่น = เฉพาะฝั่งตรงข้าม (บนแถบเลือดของเขา) เกจของเราอยู่กรอบตั้งล่างที่เดิม
+  renderUlt(s, ui.mode === 'spec' || s !== ME, n, prev);
   const usable = s === ME && gaugeUsable();
   const unl = unlimitedNow(g, s) && ui.phase === 'action' && (s === ME || ui.mode === 'spec' || !!P.lanes);
   const nogain = unlimitedNow(g, s) && ui.phase !== 'action' && !!P.lanes; // ระหว่างสู้รอบที่ใช้ 3 เกจ: สะสมไม่ได้
-  el.className = `gauge ${s.toLowerCase()}${usable ? ' usable' : ''}${unl ? ' unl' : ''}${n ? ' has' : ''}${n >= GAUGE_MAX ? ' full' : ''}`;
+  el.className = `gauge ${s.toLowerCase()}${s !== ME ? ' opp' : ''}${usable ? ' usable' : ''}${unl ? ' unl' : ''}${n ? ' has' : ''}${n >= GAUGE_MAX ? ' full' : ''}`;
   $('#world').classList.toggle(`unl-${s.toLowerCase()}`, unlimitedNow(g, s) && ui.phase === 'action'); // พลังเต็ม: การ์ดบนมือ + ช่องวางเรืองรุ้ง
   // เกจพร (ตี้ 2026-10-27): กรอบเงิน 3 ช่อง เติมสีรุ้งทีละขั้นจากล่างขึ้นบน · ตี้ 2026-10-31: กรอบนีออนแดง (RED) / ฟ้า (BLUE กลับด้าน)
   const orbs = `<span class="gfr" role="img" aria-label="เกจ ${s} ${n}/${GAUGE_MAX}"><span class="gglow">${[0, 1, 2].filter(k => k < n).map(k => `<i class="gg k${k}"></i>`).join('')}</span><img src="assets/gauge-frame-${s === 'RED' ? 'red' : 'blue'}.webp?v=1" alt="" draggable="false">${[0, 1, 2].map(k => `<i class="gcell k${k}${k < n ? ' on' : ''}${k < n && k >= prev ? ' new' : ''}${k >= n && k < prev ? ' spent' : ''}"></i>`).join('')}</span>`;
