@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793551833">
+<meta name="df-build" content="1793553108">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -4033,7 +4033,7 @@ async function winVdo(side, gid) {
   duckMusic(true);
   W.classList.remove('vdo-hp');
   W.classList.add('vdo-fight', 'vdo-full');
-  $('#vdoLane').textContent = `${side} WIN`;
+  $('#vdoLane').textContent = 'WINNER'; // ตี้ 2026-11-02: ใช้ WINNER แทน RED WIN / BLUE WIN
   $('#vdoBar').hidden = false;
   // ตี้ 2026-10-31: ป้าย WINNER (ใบลอเรลทอง จาก AE) แทนคำ RED WIN / BLUE WIN · ขึ้นตอนตัวละครเข้าท่าชนะช่วงท้ายคลิป (WIN_POSE) พร้อมเสียงพากย์
   // โหลดคลิปรอไว้ตั้งแต่เริ่ม · จับเวลาจากเวลาในคลิปจริง (คลิปสะดุด/โหลดช้า ป้ายก็ยังตรงท่า) · กดข้ามก่อนถึงท่า = ไม่ขึ้น
@@ -4943,7 +4943,7 @@ async function runFight() {
   if (net.mine.vdo) presence({ vdo: null });
   if (ui.pvp && ui.winner) presence({ seat: null, at: null, inp: {} }); // จบแมตช์ = ปล่อยที่นั่งให้คนอื่น (mid ยังอยู่จนกว่าจะออก)
   addLog(`End Phase · HP ${tagOf('RED')} ${hpDelta(ui.hpStart.RED, g.p.RED.hp)} · ${tagOf('BLUE')} ${hpDelta(ui.hpStart.BLUE, g.p.BLUE.hp)}`);
-  if (ui.winner) addLog(`Winner Phase · ${ui.winner === 'DRAW' ? 'เสมอ!' : `${tagOf(ui.winner)} WIN!`} — ${ui.winReason}`, 'sys');
+  if (ui.winner) addLog(`Winner Phase · ${ui.winner === 'DRAW' ? 'เสมอ!' : `WINNER ${tagOf(ui.winner)}`} — ${ui.winReason}`, 'sys');
   if (ui.winner && ui.mode === 'arcade') addLog(`เฉลย · ${botStyleText(g, OPP)}`, 'sys');
   render();
   if (ui.winner) sfx.play(ui.winner === 'DRAW' ? 'levelup' : ui.mode === 'spec' || ui.winner === ME ? 'win' : 'lose');
@@ -5170,7 +5170,7 @@ function calcSideHTML(s, r, done) {
 function clashHTML() {
   const i = ui.detail;
   const r = i == null ? null : ui.results[i] || (ui.pending && ui.pending.i === i ? ui.pending : null);
-  if (!r) return '<div class="msg"><b>Fight Phase</b><span>เปิดการ์ดทีละช่อง 1 → 2 → 3 · ช่องเดียวกันปะทะกัน</span></div>';
+  if (!r) return ''; // ตี้ 2026-11-02: เอาข้อความสถานะเฟสกลางจอออก (เดิม Fight Phase + คำอธิบาย)
   const done = !!ui.results[i], fx = ui.fx && ui.fx.lane === i ? ui.fx : null;
   const vsCls = ['vs-col', fx && fx.impact && 'impact', fx && fx.ult && 'ult', fx && fx.resIn && 'res-in'].filter(Boolean).join(' ');
   const ctr = counterSide(r);
@@ -5219,10 +5219,10 @@ function renderMain() {
   let html;
   if (ui.phase === 'draw') {
     const n = drawCount(g.round);
-    html = `<div class="msg"><div class="deck-big" id="deckBig">${backHTML()}</div><b>Draw Phase</b><span>RED และ BLUE จั่วคนละ ${n} ใบ${g.round === 1 ? ` (เฉพาะรอบแรก · รอบต่อไปจั่ว ${DRAW_N})` : ''} · มือเต็ม ${HAND_MAX} ใบแล้ว ใบที่เกินกลายเป็นเลเวลอัป</span></div>`;
+    html = `<div class="msg"><div class="deck-big" id="deckBig">${backHTML()}</div></div>`; // ตี้ 2026-11-02: เอาข้อความ Draw Phase + คำอธิบายออก เหลือกองการ์ดที่การ์ดบินออก
   } else if (ui.phase === 'pick') html = marketHTML();
   else if (ui.phase === 'action' && ui.mode === 'spec') {
-    html = `<div class="msg"><b>Action Phase</b><span>ผู้เล่นกำลังวางการ์ดลงแผง ACTION ORDER — แผงของทั้งสองฝ่ายเปิดให้ผู้ชมเห็นเมื่อกด FIGHT! ครบทั้งคู่</span><span>${specStatus()}</span></div>`;
+    html = ''; // ตี้ 2026-11-02: ผู้ชมก็ไม่มีป้าย ACTION PHASE กลางจอแล้ว (ผู้เล่นเอาออกตั้งแต่ 29 ต.ค.)
   } else if (ui.phase === 'action') {
     html = ''; // ตี้ 2026-10-29: ฝั่งผู้เล่นเอาป้าย ACTION PHASE + คำอธิบายกลางจอออก
   } else if (ui.phase === 'fight' && vdo.ready) html = ''; // ตี้ 2026-10-27: เปิดปะทะดูที่ VDO อย่างเดียว ไม่ขึ้นแผงผลปะทะ
@@ -5565,7 +5565,7 @@ function renderControls() {
   } else if (ui.phase === 'fight') hint = `กำลังเปิดช่อง ${Math.max(1, ui.shown + 1)} …`;
   else if (ui.phase === 'end') {
     if (ui.winner) {
-      hint = `จบเกม · ${ui.winner === 'DRAW' ? 'เสมอ' : `${ui.winner} WIN`}${ui.ko ? ` · K.O. ที่ช่อง ${ui.ko.lane + 1}` : ''}`;
+      hint = `จบเกม · ${ui.winner === 'DRAW' ? 'เสมอ' : `WINNER ${ui.winner}`}${ui.ko ? ` · K.O. ที่ช่อง ${ui.ko.lane + 1}` : ''}`;
       main = ui.mode === 'pvp' ? (boNextOpen() ? '<button type="button" class="btn primary cta" data-act="boNext">เกมต่อไป →</button>' : '<button type="button" class="btn primary cta" data-act="toPvp">กลับห้อง PVP</button>') : '<button type="button" class="btn primary cta" data-act="toLobby">กลับ LOBBY</button>';
       btns = '<button type="button" class="btn ghost" data-act="unpeek">ดูผลแพ้ชนะ</button>';
     } else {
@@ -5606,7 +5606,7 @@ function renderWinner() {
     : `${w === ME ? 'คุณชนะ! ' : w === OPP ? `${ui.mode === 'pvp' ? esc((ui.pvp && ui.pvp.oppNick) || OPP) : `บอท ${OPP}`} ชนะ — ` : ''}${ui.winReason}`;
   el.innerHTML = `<div class="win-card w-${w.toLowerCase()}" role="dialog" aria-modal="true" aria-labelledby="winTitle">
     <div class="win-eyebrow">WINNER PHASE</div>
-    <div class="win-title" id="winTitle" aria-label="${w === 'DRAW' ? 'DRAW' : endKind(w) === 'lose' ? `LOSE · ${w} WIN` : `WINNER · ${w}`}">${w === 'DRAW' ? '<span class="fxt">DRAW</span>' : endKind(w) === 'lose' ? fxImg('lose', 142, ';--g:150,140,200') : fxImg('winner', 200, w === 'RED' ? ';--g:255,80,80' : ';--g:90,150,255')}</div>
+    <div class="win-title" id="winTitle" aria-label="${w === 'DRAW' ? 'DRAW' : endKind(w) === 'lose' ? `LOSE · WINNER ${w}` : `WINNER · ${w}`}">${w === 'DRAW' ? '<span class="fxt">DRAW</span>' : endKind(w) === 'lose' ? fxImg('lose', 142, ';--g:150,140,200') : fxImg('winner', 200, w === 'RED' ? ';--g:255,80,80' : ';--g:90,150,255')}</div>
     <p>${line}</p>
     <div class="win-stats"><span class="t-red">RED ${g.p.RED.hp} HP</span><span class="t-blue">BLUE ${g.p.BLUE.hp} HP</span><span>${g.round} รอบ</span></div>
     ${boWinHTML()}
@@ -6643,7 +6643,7 @@ function pvpReadyNext() {
 function pvpEnd(winner, reason, keepGid = false, extra = {}) {
   if (!keepGid) ui.gid++; // หยุดแอนิเมชันที่ค้าง
   Object.assign(ui, { phase: 'end', busy: false, winner, winReason: reason, oppHidden: 0 });
-  addLog(`Winner Phase · ${winner === 'DRAW' ? 'ไม่มีผล' : `${tagOf(winner)} WIN!`} — ${reason}`, 'sys');
+  addLog(`Winner Phase · ${winner === 'DRAW' ? 'ไม่มีผล' : `WINNER ${tagOf(winner)}`} — ${reason}`, 'sys');
   if (ui.pvp) boRecord(ui.pvp.mid, winner);
   presence({ seat: null, at: null, inp: {}, ...extra });
   render();
@@ -6893,7 +6893,7 @@ function bvbTick() {
 }
 function specStatus() {
   const g = ui.g, r = g.round, S = ui.spec, who = s => `${tagOf(s)} ${esc(S.nick[s])}`;
-  if (ui.winner) return `จบการแข่ง · ${ui.winner === 'DRAW' ? 'เสมอ / ไม่มีผล' : `${tagOf(ui.winner)} WIN`}`;
+  if (ui.winner) return `จบการแข่ง · ${ui.winner === 'DRAW' ? 'เสมอ / ไม่มีผล' : `WINNER ${tagOf(ui.winner)}`}`;
   if (S.bot) return ui.phase === 'pick' && !ui.pickShown ? `${bvbTag()} · บอทกำลังเลือกการ์ด…` : ui.phase === 'action' ? `${bvbTag()} · บอทกำลังวางการ์ด…`
     : ui.phase === 'fight' ? `กำลังเปิดช่อง ${Math.max(1, ui.shown + 1)} …` : ui.phase === 'end' ? `จบรอบ ${r} · ไปรอบถัดไปอัตโนมัติ` : 'กำลังจั่วการ์ด…';
   if (ui.phase === 'pick' && !ui.pickShown) return SIDES.map(s => `${who(s)} ${specIn(s, `${r}p`) !== undefined ? '✓ PICK UP' : 'กำลังเลือก…'}`).join(' · ');
@@ -6906,7 +6906,7 @@ function specEnd(winner, reason) {
   ui.gid++;
   Object.assign(ui, { phase: 'end', busy: false, winner, winReason: reason });
   if (ui.spec && !ui.spec.bot) boRecord(ui.spec.mid, winner);
-  addLog(`Winner Phase · ${winner === 'DRAW' ? 'ไม่มีผล' : `${tagOf(winner)} WIN!`} — ${reason}`, 'sys');
+  addLog(`Winner Phase · ${winner === 'DRAW' ? 'ไม่มีผล' : `WINNER ${tagOf(winner)}`} — ${reason}`, 'sys');
   render();
   sfx.play(winner === 'DRAW' ? 'levelup' : 'win');
 }
