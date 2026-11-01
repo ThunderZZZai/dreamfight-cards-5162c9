@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793553546">
+<meta name="df-build" content="1793556021">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -623,9 +623,9 @@ body:not(.portrait) #rotateHint{display:none}
 .pair-card .bar{position:absolute;bottom:0;height:4px;width:50%;z-index:1} .pair-card .bar.r{left:0;background:var(--red)} .pair-card .bar.b{right:0;background:var(--blue)}
 .pair-card .vs{position:absolute;z-index:2;left:50%;bottom:10px;transform:translateX(-50%) skewX(-8deg);font-family:var(--font-disp);font-weight:700;font-size:20px;line-height:1.2;color:#fff;padding:1px 8px;background:rgba(9,12,19,.82);border:1px solid var(--gold);border-radius:6px}
 .pair-card .pmeta{display:block;padding:8px 12px 10px}
-.pair-card .pmeta b{display:block;font-size:19px;color:#fff}
+.pair-card .pmeta b{display:block;font-size:17px;line-height:1.3;color:#fff;text-transform:none} /* ตี้ 2026-11-02: ชื่อคู่แสดงตามที่ตั้ง (Elizent ไม่ใช่ ELIZENT) */
 .pair-card .pmeta small{display:block;font-size:13.5px;color:#8a95a8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pair-who{font-size:16px;color:#c9d2de} .pair-who b.r{color:#ff8a8f} .pair-who b.b{color:#8fb6ff}
+.pair-who{font-size:16px;color:#c9d2de;text-transform:none} .pair-who b.r{color:#ff8a8f} .pair-who b.b{color:#8fb6ff}
 .pair-load{font-size:15px;color:var(--gold);min-height:20px}
 .room-pair{display:inline-flex;align-items:center;gap:6px} .room-pair img{width:20px;height:26px;object-fit:cover;object-position:50% 15%;border-radius:4px}
 /* หน้าต่างสร้าง/ตั้งค่าห้องมีช่องอื่นเยอะ → การ์ดคู่เตี้ยลง ซ่อนบรรทัดรอง ให้ทั้งหน้าต่างพอดีจอ (เดิมสูง 1095 จาก 1080) */
@@ -3143,8 +3143,8 @@ const VDO_PAIR_FILES = {"aun-chip":{"atk1-blue":[3085674,16.06],"atk1-red":[3450
    โหลด VDO เฉพาะคู่ที่ใช้อยู่ · ท่าไหนคู่นั้นยังไม่มีวิดีโอ = เล่น COMING SOON แทน (การ์ดยังเด้ง/พุ่งชนตามปกติ) */
 const PAIRS = [
   { id: 'og', name: 'คู่เดิม', sub: 'ชุดแรกของเกม', red: 'RED', blue: 'BLUE' },
-  { id: 'aun-chip', name: 'พี่อั๋น x พี่ชิป', sub: 'เพื่อนไม่คบ · ELIZENT', red: 'พี่อั๋น', blue: 'พี่ชิป' },
-  { id: 'night-jeng', name: 'ลุงไนท์ x พี่เจง', sub: 'GSSSPOTTED · GENGHISKHANZ', red: 'ลุงไนท์', blue: 'พี่เจง' },
+  { id: 'aun-chip', name: 'เพื่อนไม่ตบ VS Elizent', sub: 'มีซีนเปิดตัว', red: 'เพื่อนไม่ตบ', blue: 'Elizent' }, // ตี้ 2026-11-02: เปลี่ยนชื่อจากพี่อั๋น x พี่ชิป
+  { id: 'night-jeng', name: 'Gssspotted VS Genghiskhanz', sub: 'มีซีนเปิดตัว', red: 'Gssspotted', blue: 'Genghiskhanz' }, // ตี้ 2026-11-02: เปลี่ยนชื่อจากลุงไนท์ x พี่เจง
 ];
 const pairOf = id => PAIRS.find(p => p.id === id) || PAIRS[0];
 const pairFiles = id => (id === 'og' ? VDO_FILES : VDO_PAIR_FILES[id] || {});
