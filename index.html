@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793529265">
+<meta name="df-build" content="1793529748">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -981,12 +981,12 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 #titleFx video{position:absolute;--s:44%;left:calc((100% - var(--s)) / 2);top:calc(46% - var(--s) / 2);z-index:26;width:var(--s);height:var(--s);visibility:hidden}
 #titleFx video[data-t="ko"],#titleFx video[data-t="dko"]{--s:64%}
 #titleFx video.scr{mix-blend-mode:screen}
-/* ตี้ 2026-11-01: ป้าย ACTION 1–3 สว่างขึ้นนิดหน่อย (เทียบ 1.0 / 1.2 / 1.35 แล้ว 1.35 ขาวซีด) + "ให้ดูโดดเด่นตอนขึ้นมา":
+/* ตี้ 2026-11-01: ป้าย ACTION 1–3 (+ ROUND / FIGHT ตามมา · K.O. คงเดิม) สว่างขึ้นนิดหน่อย (เทียบ 1.0 / 1.2 / 1.35 แล้ว 1.35 ขาวซีด) + "ให้ดูโดดเด่นตอนขึ้นมา":
    เงาดำรองขอบ (แยกจากฉากหลัง) + แสงทองรอบตัวหนังสือ · ตอนขึ้นวาบสว่างและกระแทกขยาย 1.12 → 1 ใน 0.45 วิ */
-#titleFx video[data-t^="action"]{filter:brightness(1.2) drop-shadow(0 0 2px rgba(0,0,0,.85)) drop-shadow(0 6px 14px rgba(0,0,0,.7)) drop-shadow(0 0 22px rgba(255,205,120,.5))}
-#titleFx video[data-t^="action"].on{animation:actPop .45s cubic-bezier(.2,.9,.3,1.2)}
+#titleFx video[data-t^="action"],#titleFx video[data-t^="round"],#titleFx video[data-t="fight"]{filter:brightness(1.2) drop-shadow(0 0 2px rgba(0,0,0,.85)) drop-shadow(0 6px 14px rgba(0,0,0,.7)) drop-shadow(0 0 22px rgba(255,205,120,.5))}
+#titleFx video[data-t^="action"].on,#titleFx video[data-t^="round"].on,#titleFx video[data-t="fight"].on{animation:actPop .45s cubic-bezier(.2,.9,.3,1.2)}
 @keyframes actPop{0%{transform:scale(1.12);filter:brightness(2.1) drop-shadow(0 0 2px rgba(0,0,0,.85)) drop-shadow(0 6px 14px rgba(0,0,0,.7)) drop-shadow(0 0 40px rgba(255,225,160,.95))}100%{transform:scale(1);filter:brightness(1.2) drop-shadow(0 0 2px rgba(0,0,0,.85)) drop-shadow(0 6px 14px rgba(0,0,0,.7)) drop-shadow(0 0 22px rgba(255,205,120,.5))}}
-@media (prefers-reduced-motion:reduce){#titleFx video[data-t^="action"].on{animation:none}}
+@media (prefers-reduced-motion:reduce){#titleFx video[data-t^="action"].on,#titleFx video[data-t^="round"].on,#titleFx video[data-t="fight"].on{animation:none}}
 #titleFx video.on{visibility:visible}
 #laneCall{position:absolute;left:0;right:0;top:400px;z-index:25;text-align:center;pointer-events:none;opacity:0;line-height:0}
 #laneCall.on{animation:laneCall calc(2.2s*var(--spd)) cubic-bezier(.2,.9,.3,1) forwards} /* ตี้ 2026-10-28: ค้างนานขึ้น (เดิม 1.4 วิ) */
