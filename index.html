@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793546795">
+<meta name="df-build" content="1793551085">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -609,6 +609,29 @@ body:not(.portrait) #rotateHint{display:none}
 .rm-sides label.blue:has(input:checked){border-color:var(--blue);background:rgba(59,130,255,.18);color:#8fb6ff}
 .rm-sides label:has(input:focus-visible){outline:3px solid #fff;outline-offset:2px}
 .rm-acts{display:flex;justify-content:flex-end;gap:12px;margin-top:18px}
+/* ตี้ 2026-11-01: การ์ดเลือกคู่ต่อสู้ (ม็อกอัป artifact UGnn7DorHDDAGMG1He1GS7) · รูปละ 52% ตัดเฉียงเล็กน้อย รอยต่อทอง · VS ขอบล่าง ไม่บังหน้า */
+.pairs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.rm-box .pair-card{margin:0;display:block;border-radius:14px;border:2px solid rgba(255,255,255,.18);background:rgba(255,255,255,.04);overflow:hidden;cursor:pointer;transition:border-color .15s,transform .15s}
+.rm-box .pair-card:hover{transform:translateY(-2px)}
+.pair-card input{position:absolute;opacity:0;pointer-events:none}
+.rm-box .pair-card:has(input:checked){border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,200,61,.2)}
+.pair-card:has(input:focus-visible){outline:3px solid #fff;outline-offset:2px}
+.pair-card .duo{position:relative;display:block;aspect-ratio:3/2;overflow:hidden;background:#05070b}
+.pair-card .duo img{position:absolute;top:0;height:100%;width:52%;object-fit:cover;object-position:50% 15%}
+.pair-card .rimg{left:0;clip-path:polygon(0 0,100% 0,92.31% 100%,0 100%)} .pair-card .bimg{right:0;clip-path:polygon(7.69% 0,100% 0,100% 100%,0 100%)}
+.pair-card .seam{position:absolute;top:-2%;bottom:-2%;left:calc(50% - 1.5px);width:3px;background:linear-gradient(180deg,#ffe7a3,var(--gold) 50%,#b8860b);transform:skewX(-3.43deg);box-shadow:0 0 10px rgba(255,200,61,.55)}
+.pair-card .bar{position:absolute;bottom:0;height:4px;width:50%;z-index:1} .pair-card .bar.r{left:0;background:var(--red)} .pair-card .bar.b{right:0;background:var(--blue)}
+.pair-card .vs{position:absolute;z-index:2;left:50%;bottom:10px;transform:translateX(-50%) skewX(-8deg);font-family:var(--font-disp);font-weight:700;font-size:20px;line-height:1.2;color:#fff;padding:1px 8px;background:rgba(9,12,19,.82);border:1px solid var(--gold);border-radius:6px}
+.pair-card .pmeta{display:block;padding:8px 12px 10px}
+.pair-card .pmeta b{display:block;font-size:19px;color:#fff}
+.pair-card .pmeta small{display:block;font-size:13.5px;color:#8a95a8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pair-who{font-size:16px;color:#c9d2de} .pair-who b.r{color:#ff8a8f} .pair-who b.b{color:#8fb6ff}
+.pair-load{font-size:15px;color:var(--gold);min-height:20px}
+.room-pair{display:inline-flex;align-items:center;gap:6px} .room-pair img{width:20px;height:26px;object-fit:cover;object-position:50% 15%;border-radius:4px}
+/* หน้าต่างสร้าง/ตั้งค่าห้องมีช่องอื่นเยอะ → การ์ดคู่เตี้ยลง ซ่อนบรรทัดรอง ให้ทั้งหน้าต่างพอดีจอ (เดิมสูง 1095 จาก 1080) */
+#rmForm:has(.pairs){padding-top:24px;padding-bottom:22px} #rmForm:has(.pairs) h3{font-size:30px;margin-bottom:4px}
+#rmForm .pair-card .duo{aspect-ratio:2/1} #rmForm .pair-card .duo img{object-position:50% 12%} #rmForm .pair-card .pmeta{padding:6px 10px 8px} #rmForm .pair-card .pmeta small{display:none}
+@media (prefers-reduced-motion:reduce){.rm-box .pair-card{transition:none}.rm-box .pair-card:hover{transform:none}}
 .watchers{margin-left:14px;font-size:17px;color:var(--gold)}
 .seat-vs.count{font-size:120px;line-height:1;color:#fff;text-shadow:0 0 30px var(--gold),0 0 60px rgba(255,200,61,.5);animation:clockBeat .6s ease-out}
 .opp-status{font-size:17px;font-weight:600;color:var(--muted);white-space:nowrap}
@@ -993,6 +1016,10 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 @keyframes actPop{0%{transform:scale(1.12);filter:brightness(1.9) sepia(.3) saturate(1.3) contrast(1.6) hue-rotate(-4deg) drop-shadow(0 0 2px rgba(0,0,0,.9)) drop-shadow(0 0 44px rgba(255,225,150,.95))}100%{transform:scale(1);filter:brightness(1.25) sepia(.3) saturate(1.3) contrast(1.6) hue-rotate(-4deg) drop-shadow(0 0 2px rgba(0,0,0,.9)) drop-shadow(0 0 22px rgba(255,210,120,.55))}}
 @media (prefers-reduced-motion:reduce){#titleFx video[data-t^="action"].on,#titleFx video[data-t^="round"].on,#titleFx video[data-t="fight"].on,#titleFx video[data-t="ko"].on,#titleFx video[data-t="dko"].on{animation:none}}
 #titleFx video.on{visibility:visible}
+/* ตี้ 2026-11-01: ตอนออก ทั้งป้าย (คำ + เลข) ขยายพุ่งเข้าหากล้องและจางหายพร้อมกันจังหวะเดียว (คลิปหยุดที่เฟรมก่อนออก ดู titleOutAt) */
+#titleFx video.on.out{animation:titleOut .26s cubic-bezier(.5,0,.9,.5) forwards}
+@keyframes titleOut{0%{transform:scale(1);opacity:1}35%{opacity:1}100%{transform:scale(1.4);opacity:0}} /* ขยายให้เห็นก่อนแล้วค่อยจาง เหมือนพุ่งเข้าหากล้องของเดิม */
+@media (prefers-reduced-motion:reduce){#titleFx video.on.out{animation-duration:.01s}}
 #laneCall{position:absolute;left:0;right:0;top:400px;z-index:25;text-align:center;pointer-events:none;opacity:0;line-height:0}
 #laneCall.on{animation:laneCall calc(2.2s*var(--spd)) cubic-bezier(.2,.9,.3,1) forwards} /* ตี้ 2026-10-28: ค้างนานขึ้น (เดิม 1.4 วิ) */
 @keyframes laneCall{0%{opacity:0;transform:scale(1.05)}10%{opacity:1;transform:none}86%{opacity:1;transform:none}100%{opacity:0;transform:scale(1.02)}}
@@ -3108,13 +3135,39 @@ const bgm = (() => {
 const VDO_DIR = 'assets/vdo/', VDO_CACHE = 'df-vdo-1';
 // ชื่อ: [ไบต์, วินาที] — สร้างด้วย python3 vdo-src/build_vdo.py --js
 const VDO_FILES = {"atk1-blue":[2784391,14.38],"atk1-red":[2274480,12.31],"atk2-blue":[3841758,17.39],"atk2-red":[3624140,15.81],"atk3-blue":[4266115,17.68],"atk3-red":[4204064,18.18],"def-atk1-blue":[2642941,14.06],"def-atk1-red":[3288671,14.06],"def-atk2-blue":[3234334,16.9],"def-atk2-red":[3439380,16.9],"def-atk3-blue":[4312138,20.14],"def-atk3-red":[3663390,16.55],"def-ult1-blue":[5126350,19.05],"def-ult1-red":[4979010,19.05],"def-ult2-blue":[4131356,19.84],"def-ult2-red":[4479200,19.84],"def-ult3-blue":[4293736,18.05],"def-ult3-red":[4831034,18.05],"dod-atk1-blue":[2479584,13.46],"dod-atk1-red":[3285123,17.09],"dod-atk2-blue":[2595384,14.34],"dod-atk2-red":[2333567,14.34],"dod-atk3-blue":[3388210,16.55],"dod-atk3-red":[3360603,18.0],"dod-ult1-blue":[3842048,18.0],"dod-ult1-red":[3598827,18.0],"dod-ult2-blue":[3727149,18.0],"dod-ult2-red":[3581419,18.0],"dod-ult3-blue":[5184227,19.52],"dod-ult3-red":[4242115,19.52],"idle-blue":[1553975,15.02],"idle-red":[1582345,15.02],"taunt-blue":[2994883,18.08],"taunt-red":[2334424,18.08],"ult1-blue":[2908848,15.47],"ult1-red":[4085286,17.68],"ult2-blue":[3808362,17.39],"ult2-red":[3820167,17.51],"ult3-blue":[3859138,18.18],"ult3-red":[4740295,21.46],"winner-blue":[3161117,22.08],"winner-red":[2860585,22.04]};
+// ตี้ 2026-11-01: คู่ต่อสู้ใหม่ — คลิปต่อตัวละคร (กัน/หลบคลิปเดียวต่อตัว · มีคลิปเปิดตัว intro) อยู่ที่ assets/vdo/<คู่>/<ท่า>-<ฝั่ง>.mp4
+// + coming-soon.mp4 (เล่นแทนท่าที่คู่นั้นยังไม่มีวิดีโอ) — สร้างด้วย python3 vdo-src/build_pairs.py --js
+const VDO_PAIR_FILES = {"aun-chip":{"atk1-blue":[3085674,16.06],"atk1-red":[3450774,16.04],"atk2-blue":[3277422,16.04],"atk2-red":[4384263,16.06],"atk3-blue":[3357371,16.04],"atk3-red":[3595403,16.04],"def-blue":[3258016,16.04],"def-red":[3928426,16.04],"dod-blue":[3455292,16.04],"dod-red":[2840229,16.04],"idle-blue":[1907787,15.04],"idle-red":[1675012,15.04],"intro-blue":[1974385,14.0],"intro-red":[4452902,16.73],"ult1-blue":[2772175,18.04],"ult1-red":[3626872,18.04],"ult2-blue":[3530436,18.04],"ult2-red":[3603808,18.04],"ult3-blue":[4312094,18.04],"ult3-red":[4841446,20.0]},"night-jeng":{"atk1-blue":[3649696,18.04],"atk1-red":[3095000,17.04],"atk2-blue":[3938248,18.18],"atk2-red":[3896328,20.04],"atk3-blue":[4974753,23.47],"atk3-red":[4658521,23.04],"def-blue":[4402988,20.04],"def-red":[3746473,18.04],"dod-blue":[3647079,20.04],"dod-red":[3019185,19.04],"idle-blue":[2512379,30.04],"idle-red":[2971175,30.04],"intro-blue":[3063779,16.33],"intro-red":[3280291,20.54],"ult1-blue":[4134842,19.05],"ult1-red":[3784149,19.04],"ult2-blue":[4518289,21.04],"ult2-red":[3642416,20.04],"ult3-blue":[5139703,24.04],"ult3-red":[4933735,26.22]},"_":{"coming-soon":[215992,5.0]}};
+/* ───────── คู่ต่อสู้ (ตี้ 2026-11-01 · ม็อกอัป artifact UGnn7DorHDDAGMG1He1GS7) ─────────
+   เลือกเป็นคู่ ไม่เลือกตัวละครเดี่ยว · ทุกโหมด: ARCADE / BOT VS BOT เลือกในหน้าต่างก่อนเริ่ม · PVP เจ้าของห้องเลือกตอนสร้างห้อง (meta.pair)
+   โหลด VDO เฉพาะคู่ที่ใช้อยู่ · ท่าไหนคู่นั้นยังไม่มีวิดีโอ = เล่น COMING SOON แทน (การ์ดยังเด้ง/พุ่งชนตามปกติ) */
+const PAIRS = [
+  { id: 'og', name: 'คู่เดิม', sub: 'ชุดแรกของเกม', red: 'RED', blue: 'BLUE' },
+  { id: 'aun-chip', name: 'พี่อั๋น x พี่ชิป', sub: 'เพื่อนไม่คบ · ELIZENT', red: 'พี่อั๋น', blue: 'พี่ชิป' },
+  { id: 'night-jeng', name: 'ลุงไนท์ x พี่เจง', sub: 'GSSSPOTTED · GENGHISKHANZ', red: 'ลุงไนท์', blue: 'พี่เจง' },
+];
+const pairOf = id => PAIRS.find(p => p.id === id) || PAIRS[0];
+const pairFiles = id => (id === 'og' ? VDO_FILES : VDO_PAIR_FILES[id] || {});
+// ชื่อคลิปที่เกมเรียก → ไฟล์ของคู่ · คู่ใหม่มีคลิปกัน/หลบคลิปเดียวต่อตัว (def-atk2-red → def-red)
+const pairKey = (id, name) => (id === 'og' ? name : name.replace(/^(def|dod)-(?:atk|ult)\d-/, '$1-'));
+const VDO_CS = 'coming-soon';
 const VDO_REVEAL_MS = 0;    // เปิด VDO แล้วโชว์การ์ดสองฝั่งก่อนเก็บ UI ลง (ตี้ 2026-10-27: 0 = เข้า VDO เลย การ์ดไปเด้งบน VDO แทน)
 const VDO_HP_LEAD = 3;      // แถบ HP กลับลงมาโชว์ผลก่อน VDO จบกี่วินาที
 const VDO_DUCK = 0.15;      // ระหว่าง VDO เพลงประกอบเบาลงเหลือเท่านี้ (เสียงใน VDO นำ)
 const vdo = (() => {
-  const urls = {}, names = Object.keys(VDO_FILES), total = names.reduce((a, k) => a + VDO_FILES[k][0], 0);
-  let state = 'idle', got = 0, on = true, error = null, lastPing = 0;
+  // urls['<คู่>/<ไฟล์>'] = blob URL · st[คู่] = idle | loading | ready | failed (ทีละคู่ — เปลี่ยนคู่ = หยุดคู่เดิมแล้วโหลดคู่ใหม่)
+  const urls = {}, st = {}, err = {};
+  let pair = 'og', got = 0, on = true, lastPing = 0;
   try { on = localStorage.getItem('df-vdo') !== '0'; } catch (e) { /* ข้ามได้ */ }
+  try { pair = pairOf(localStorage.getItem('df-pair')).id; } catch (e) { /* ข้ามได้ */ }
+  const cs = () => (VDO_PAIR_FILES._ || {})[VDO_CS];
+  // ไฟล์ที่ต้องโหลดของคู่ id: { k: คีย์ใน urls, url, b: ไบต์ } · คู่ใหม่โหลด COMING SOON ด้วย
+  const list = id => {
+    const f = pairFiles(id), out = Object.keys(f).map(k => ({ k: `${id}/${k}`, url: `${VDO_DIR}${id === 'og' ? '' : id + '/'}${k}.mp4`, b: f[k][0] }));
+    if (id !== 'og' && cs()) out.push({ k: `_/${VDO_CS}`, url: `${VDO_DIR}${VDO_CS}.mp4`, b: cs()[0] });
+    return out;
+  };
+  const total = () => list(pair).reduce((a, x) => a + x.b, 0);
   const ping = (force = false) => {
     const now = Date.now();
     if (!force && now - lastPing < 150) return;
@@ -3122,8 +3175,8 @@ const vdo = (() => {
     renderVdoLoad();
     if (force) render(); // โหลดครบ → Idle เริ่มเล่นได้ทันทีถ้าอยู่ในเกม
   };
-  async function one(name, add) {
-    const url = VDO_DIR + name + '.mp4', want = VDO_FILES[name][0];
+  async function one(it, add) {
+    const { url, b: want } = it;
     let cache = null, res = null;
     try { cache = await caches.open(VDO_CACHE); res = await cache.match(url); } catch (e) { cache = null; }
     if (res) {
@@ -3131,7 +3184,7 @@ const vdo = (() => {
       if (b.size === want) { add(b.size); return b; }
     }
     res = await fetch(url, { cache: 'no-cache' }); // ถามเซิร์ฟเวอร์ทุกครั้ง — VDO ที่อัปเดตชื่อเดิมไม่ติดไฟล์เก่าใน HTTP cache (ขนาดไม่ตรง = error)
-    if (!res.ok || !res.body) throw new Error(`${name}: HTTP ${res.status}`);
+    if (!res.ok || !res.body) throw new Error(`${it.k}: HTTP ${res.status}`);
     const reader = res.body.getReader(), parts = [];
     for (;;) {
       const { done, value } = await reader.read();
@@ -3140,46 +3193,67 @@ const vdo = (() => {
       add(value.length);
     }
     const blob = new Blob(parts, { type: 'video/mp4' });
-    if (blob.size !== want) throw new Error(`${name}: ได้ ${blob.size} ไบต์ จาก ${want}`);
+    if (blob.size !== want) throw new Error(`${it.k}: ได้ ${blob.size} ไบต์ จาก ${want}`);
     if (cache) cache.put(url, new Response(blob, { headers: { 'Content-Type': 'video/mp4' } })).catch(() => {});
     return blob;
   }
   async function load() {
-    if (state === 'loading' || state === 'ready') return;
-    state = 'loading'; error = null;
-    got = names.filter(k => urls[k]).reduce((a, k) => a + VDO_FILES[k][0], 0);
-    const queue = names.filter(k => !urls[k]).sort((a, b) => b.startsWith('idle') - a.startsWith('idle')); // Idle มาก่อน
+    const id = pair;
+    if (st[id] === 'loading' || st[id] === 'ready') return;
+    st[id] = 'loading'; err[id] = null;
+    const all = list(id);
+    got = all.filter(x => urls[x.k]).reduce((a, x) => a + x.b, 0);
+    const queue = all.filter(x => !urls[x.k]).sort((a, b) => /\/idle/.test(b.k) - /\/idle/.test(a.k)); // Idle มาก่อน
     ping(true);
     const worker = async () => {
-      while (queue.length && state === 'loading') {
-        const name = queue.shift();
+      while (queue.length && st[id] === 'loading') {
+        const it = queue.shift();
         let mine = 0;
         try {
-          const b = await one(name, n => { mine += n; got += n; ping(); });
-          urls[name] = URL.createObjectURL(b);
+          const b = await one(it, n => { mine += n; if (id === pair) got += n; ping(); });
+          urls[it.k] = URL.createObjectURL(b);
         } catch (e) {
-          got -= mine;
-          if (state === 'loading') { state = 'failed'; error = e.message; }
+          if (id === pair) got -= mine;
+          if (st[id] === 'loading') { st[id] = 'failed'; err[id] = e.message; }
         }
       }
     };
     await Promise.all([worker(), worker(), worker(), worker()]);
-    if (state === 'loading') state = names.every(k => urls[k]) ? 'ready' : 'failed';
+    if (st[id] === 'loading') st[id] = all.every(x => urls[x.k]) ? 'ready' : 'failed';
     ping(true);
   }
+  // เปลี่ยนคู่ (หน้าต่างเลือกคู่ / เข้าห้อง PVP): หยุดโหลดคู่เดิม คืนหน่วยความจำของคู่อื่น (Cache Storage ยังเก็บไว้ เปิดอีกครั้งเร็ว) แล้วโหลดคู่ใหม่
+  function use(id) {
+    id = pairOf(id).id;
+    if (id === pair) { if (on && accessOk && (!st[id] || st[id] === 'idle' || st[id] === 'failed')) load(); return; }
+    const prev = pair;
+    pair = id;
+    try { localStorage.setItem('df-pair', id); } catch (e) { /* ข้ามได้ */ }
+    if (st[prev] === 'loading') st[prev] = 'idle';
+    for (const k of Object.keys(urls)) if (!k.startsWith(`${id}/`) && !k.startsWith('_/')) { URL.revokeObjectURL(urls[k]); delete urls[k]; }
+    if (st[prev] === 'ready') st[prev] = 'idle';
+    got = 0;
+    if (on && accessOk) load();
+    ping(true);
+  }
+  const key = name => pairKey(pair, name), has = name => !!pairFiles(pair)[key(name)];
   return {
-    load,
-    url: name => urls[name] || null,
-    get state() { return state; },
-    get error() { return error; },
-    get ready() { return on && state === 'ready'; },
-    get pct() { return Math.floor((got / total) * 100); },
-    get mb() { return `${Math.round(got / 1e6)} / ${Math.round(total / 1e6)} MB`; },
+    load, use,
+    get pair() { return pair; },
+    has,
+    missing: name => !has(name), // คู่นี้ยังไม่มีวิดีโอท่านี้ (เล่น COMING SOON แทน)
+    url: name => urls[`${pair}/${key(name)}`] || (pair !== 'og' && !has(name) && urls[`_/${VDO_CS}`]) || null,
+    dur: name => { const f = pairFiles(pair)[key(name)] || cs(); return f ? f[1] : 5; },
+    get state() { return st[pair] || 'idle'; },
+    get error() { return err[pair] || null; },
+    get ready() { return on && st[pair] === 'ready'; },
+    get pct() { return Math.floor((got / Math.max(1, total())) * 100); },
+    get mb() { return `${Math.round(got / 1e6)} / ${Math.round(total() / 1e6)} MB`; },
     get on() { return on; },
     set on(v) {
       on = v;
       try { localStorage.setItem('df-vdo', v ? '1' : '0'); } catch (e) { /* ข้ามได้ */ }
-      if (v && accessOk && (state === 'idle' || state === 'failed')) load();
+      if (v && accessOk && (!st[pair] || st[pair] === 'idle' || st[pair] === 'failed')) load();
     },
   };
 })();
@@ -3279,15 +3353,17 @@ const until = cond => new Promise(res => { const t = () => (cond() ? res() : set
 // วินาทีที่การ์ดเด้งขึ้นใน VDO แต่ละไฟล์ แบบเป๊ะ: 'def-atk1-red:BLUE': 3.2 (ชื่อไฟล์:ฝั่ง) · ไม่ใส่ = popAt เดาจากชนิดไฟล์
 const VDO_POP = {};
 function popAt(clip, side) {
-  const exact = VDO_POP[`${clip}:${side}`];
+  // ตี้ 2026-11-01: คลิป COMING SOON (คู่นี้ยังไม่มีวิดีโอท่านี้) → การ์ดเด้งทั้งสองฝั่งตั้งแต่ต้น · เวลาเป๊ะ (VDO_POP) ใช้กับคู่เดิมเท่านั้น
+  if (vdo.missing(clip)) return 0.8;
+  const exact = vdo.pair === 'og' ? VDO_POP[`${clip}:${side}`] : null;
   if (exact != null) return exact;
   const m = clip.match(/^(?:(def|dod)-)?(atk|ult|taunt)\d?-(red|blue)$/);
   if (!m || m[2] === 'taunt') return 1;
-  const own = m[3].toUpperCase() === side;
-  // ตี้ 2026-10-27: Ultimate เจอหลบ → อันติโผล่ก่อน ฝั่งหลบค่อยเฉลยตอนท่าอันติกำลังเข้า (60% ของคลิป) ให้ลุ้น
-  if (m[1] === 'dod' && m[2] === 'ult' && own) return +(VDO_FILES[clip][1] * 0.6).toFixed(1);
-  if (m[1]) return own ? (m[1] === 'def' ? 5.5 : 5) : 3; // VDO ฝั่งรับ: ฝั่งตีโผล่ก่อน · ฝั่งรับตอนยกโล่/หลบ
-  return own ? (m[2] === 'ult' ? 3 : 3.5) : 6;           // VDO ฝั่งตี (ไฟล์เดียว: อีกฝ่ายโผล่ตอนโดน)
+  const own = m[3].toUpperCase() === side, cap = t => Math.min(t, +(vdo.dur(clip) * 0.7).toFixed(1)); // คลิปคู่ใหม่สั้นกว่า → ไม่ให้เด้งเลยท้ายคลิป
+  // ตี้ 2026-10-27: Ultimate เจอหลบ → อันติโผล่ก่อน ฝั่งหลบค่อยเฉลยตอนท่าอันติกำลังเข้า (60% ของคลิป)
+  if (m[1] === 'dod' && m[2] === 'ult' && own) return +(vdo.dur(clip) * 0.6).toFixed(1);
+  if (m[1]) return cap(own ? (m[1] === 'def' ? 5.5 : 5) : 3); // VDO ฝั่งรับ: ฝั่งตีโผล่ก่อน · ฝั่งรับตอนยกโล่/หลบ
+  return cap(own ? (m[2] === 'ult' ? 3 : 3.5) : 6);           // VDO ฝั่งตี (ไฟล์เดียว: อีกฝ่ายโผล่ตอนโดน)
 }
 const VC_FLY = 460, VC_FIZZ = 550, VC_GAP = 950, VC_STEAL = 1650, VC_DRAW = 650, VC_LOSE = 750, VC_HUD = 450, VC_PAD = 600;
 const VC_FORM = 1000; // ตี้ 2026-10-30: รอโล่ก่อตัวบนหลอด (คลิป bar_form2 ~0.5–1.5 วิ) ก่อนการ์ดตีพุ่งตามมา
@@ -3565,6 +3641,11 @@ const TITLE_RATE = 0.7;
 // ตี้ 2026-10-30: เสียงป้าย (title · Whoosh Cinematic) แทนติ๊กนาฬิกา · ดังสุดที่ 0.25 วิ · คำในคลิปกระแทกเข้าจอที่ ~0.067 วิ (ความเร็วปกติ)
 // → เล่นเสียงก่อน แล้วเริ่มคลิปตามหลังให้คำกระแทกตรงจุดดังสุด (ปกติช้า ~0.15 วิ) · ป้ายที่ไม่มีเสียง (ACTION · K.O.) เริ่มคลิปทันที
 const TITLE_SND_HIT = 0.25, TITLE_LAND = 0.067;
+// ตี้ 2026-11-01: ตอนออกตัวอักษรหายเป็น 2 จังหวะ (ใน AE เลขตามหลังคำ 0.1 วิ + เงามืดค้าง 2–3 เฟรมที่ฟิลเตอร์ทองเหล็กทำให้เห็นเป็นกล่อง)
+// → หยุดคลิปที่เฟรมสุดท้ายก่อนเริ่มออก (วัดความกว้างตัวอักษรทีละเฟรม: ROUND/ACTION ค้างถึงเฟรม 36 · FIGHT ถึงเฟรม 40 ที่ 60 fps)
+// แล้วให้ทั้งป้ายขยายพุ่งเข้าหากล้อง + จางหายพร้อมกันจังหวะเดียวด้วย CSS (.out) · K.O. คงตอนออกแบบเดิม
+// เช็กทุกเฟรมที่แสดง แล้วหยุดก่อนถึงเฟรมสุดท้ายที่ค้าง 1 เฟรม (เผื่อหยุดช้าไป 1 เฟรมตอนเล่นจริง)
+const titleOutAt = name => (/^(round\d+|action\d)$/.test(name) ? 35 / 60 : name === 'fight' ? 39 / 60 : null);
 function titleFx(name) {
   const box = $('#titleFx');
   let v = box.querySelector(`video[data-t="${name}"]`);
@@ -3576,8 +3657,9 @@ function titleFx(name) {
   }
   return new Promise(res => {
     let done = false;
-    const end = ok => { if (done) return; done = true; v.classList.remove('on'); v.onended = null; res(ok); };
+    const end = ok => { if (done) return; done = true; v.classList.remove('on', 'out'); v.onended = null; res(ok); };
     v.pause();
+    v.classList.remove('out');
     try { v.currentTime = 0; } catch (e) {}
     const rate = (ui.fast ? 1.5 : 1) * TITLE_RATE; // โหมดเร่งความเร็ว
     v.playbackRate = rate;
@@ -3585,7 +3667,13 @@ function titleFx(name) {
     // ตี้ 2026-10-31: เสียงป้ายเฉพาะ ROUND n กับ FIGHT · ACTION 1–3 ไม่มีเสียง · K.O. มีเสียงของตัวเอง
     const snd = /^(round\d+|fight)$/.test(name), lag = snd ? Math.max(0, TITLE_SND_HIT - TITLE_LAND / rate) * 1000 : 0;
     if (snd) sfx.play('title');
-    setTimeout(() => { if (!done) v.play().then(() => v.classList.add('on'), () => end(false)); }, lag);
+    const outAt = titleOutAt(name);
+    const watch = () => {
+      if (done) return;
+      if (v.currentTime >= outAt) { v.pause(); v.classList.add('out'); v.addEventListener('animationend', () => end(true), { once: true }); setTimeout(() => end(true), 600); return; }
+      if (v.requestVideoFrameCallback) v.requestVideoFrameCallback(watch); else requestAnimationFrame(watch);
+    };
+    setTimeout(() => { if (!done) v.play().then(() => { v.classList.add('on'); if (outAt != null) watch(); }, () => end(false)); }, lag);
     setTimeout(() => end(true), lag + (TITLE_MS[name] || 920) / rate + 400);
   });
 }
@@ -3882,7 +3970,7 @@ async function laneVdo(i, plan, gid, r, keep = false) {
           // เริ่มปะทะ+พุ่งก่อน VDO จบ ให้จบพร้อม VDO พอดี — VDO เล่นต่อจนจบ ไม่หยุด ไม่ค้าง
           // ตี้ 2026-10-29: ช่องที่มีโล่ (Defence เจอการ์ดตี) ปะทะนานกว่าปกติ (รอโล่ขึ้น + ชน) ต้องเผื่อเวลาให้พอ ไม่งั้น VDO จบก่อนแล้วค้างเฟรม
           const lead = (fin[k].reduce((t, a) => t + vcMs(a), 0) + vcClashMs(r) + VC_PAD) / 1000;
-          const at = Math.max(0, VDO_FILES[clips[k]][1] - lead);
+          const at = Math.max(0, vdo.dur(clips[k]) - lead);
           await until(() => stop() || el.ended || el.currentTime >= at);
           // ถ้ายังพุ่งไม่จบแต่ VDO จบแล้ว = สลับเป็น Idle วนพื้นหลังแทนการค้างเฟรมสุดท้าย
           el.addEventListener('ended', () => { if (ui.vdo === lv && !koNow()) { el.classList.remove('on'); vdoBg.sync(true); } }, { once: true });
@@ -3890,7 +3978,7 @@ async function laneVdo(i, plan, gid, r, keep = false) {
           await runFin(k);
           if (gone()) return false;
         } else if (plan[k].hp && !twoHit) {
-          const at = VDO_FILES[clips[k]][1] - VDO_HP_LEAD;
+          const at = vdo.dur(clips[k]) - VDO_HP_LEAD;
           await until(() => stop() || el.ended || el.currentTime >= at);
           if (gone()) return false;
           await hpNow(k);
@@ -3950,7 +4038,7 @@ async function winVdo(side, gid) {
   // ตี้ 2026-10-31: ป้าย WINNER (ใบลอเรลทอง จาก AE) แทนคำ RED WIN / BLUE WIN · ขึ้นตอนตัวละครเข้าท่าชนะช่วงท้ายคลิป (WIN_POSE) พร้อมเสียงพากย์
   // โหลดคลิปรอไว้ตั้งแต่เริ่ม · จับเวลาจากเวลาในคลิปจริง (คลิปสะดุด/โหลดช้า ป้ายก็ยังตรงท่า) · กดข้ามก่อนถึงท่า = ไม่ขึ้น
   // ตี้ 2026-10-31 (ต่อ): ทุกคนเห็น WINNER ตอนท่าชนะ (คนแพ้ก็เห็นท่าจบของฝั่งที่ชนะพร้อม WINNER) · LOSE ขึ้นเฉพาะหน้าผลของคนแพ้
-  const wf = vcAdd('vc-win', '<video muted playsinline preload="auto"></video>').firstChild, at = WIN_POSE[side];
+  const wf = vcAdd('vc-win', '<video muted playsinline preload="auto"></video>').firstChild, at = vdo.missing(name) ? 1 : WIN_POSE[side]; // คู่ที่ยังไม่มีคลิปท่าชนะ = COMING SOON แล้ว WINNER ขึ้นที่ 1 วิ
   titleSrc(wf, 'winner');
   const pose = setInterval(() => {
     if (ui.vdo !== lv) { clearInterval(pose); return; }
@@ -3971,6 +4059,43 @@ async function winVdo(side, gid) {
   ui.vdo = null;
   clock.vdoMs += clockMs() - v0;
   duckMusic(false);
+}
+// ตี้ 2026-11-01: ซีนเปิดตัวแบบ Tekken — คู่ที่มีคลิปเปิดตัว: แดงแล้วฟ้า ก่อน ROUND 1 · Bo 3 เปิดตัวแค่เกมแรก (ตี้ยืนยัน) · SKIP / Esc ข้ามได้
+// PVP: บอกอีกฝ่ายว่ากำลังดู VDO (presence.vdo) เวลารอของเขาไม่เดินเหมือนตอนดูฉากปะทะ
+const introDue = () => vdo.ready && vdo.has('intro-red') && vdo.has('intro-blue') && !(boScore() || {}).games;
+async function introVdo(gid) {
+  const W = $('#world'), el = $('#vdoFight'), lv = { skip: false, failed: false, clips: ['intro-red', 'intro-blue'] }, v0 = clockMs();
+  ui.vdo = lv;
+  render(); // เปิดชั้น VDO (has-vdo) — เริ่มเกมแล้ววาดจอครั้งล่าสุดตอนยังเป็นช่วงเปิดเกม (ui.intro)
+  if (ui.pvp) presence({ vdo: 'intro' });
+  vcReset();
+  vdoBg.sync(false);
+  duckMusic(true);
+  W.classList.remove('vdo-hp');
+  W.classList.add('vdo-fight', 'vdo-full');
+  $('#vdoLane').textContent = 'INTRO';
+  $('#vdoBar').hidden = false;
+  try {
+    for (const name of lv.clips) {
+      if (lv.skip || gid !== ui.gid) break;
+      lv.failed = false;
+      el.src = vdo.url(name);
+      el.volume = sfx.vol;
+      el.muted = !sfx.on;
+      el.classList.add('on');
+      el.play().catch(() => { el.muted = true; el.play().catch(() => { lv.failed = true; }); });
+      await until(() => lv.skip || lv.failed || el.ended || gid !== ui.gid);
+    }
+  } finally {
+    el.pause();
+    vdoUncover();
+    $('#vdoBar').hidden = true;
+    vcReset();
+    ui.vdo = null;
+    clock.vdoMs += clockMs() - v0;
+    duckMusic(false);
+    if (ui.pvp && net.mine.vdo) presence({ vdo: null });
+  }
 }
 // มีฝั่งที่ HP หมดแล้ว (จบช่องนี้ = K.O.)
 const koNow = () => !!ui.g && SIDES.some(s => ui.g.p[s].hp <= 0);
@@ -4029,6 +4154,7 @@ function renderVdoLoad() {
   box.querySelector('i').style.width = `${vdo.pct}%`;
   box.querySelector('.vl-txt').textContent = failed ? `โหลด VDO ไม่สำเร็จ (${vdo.mb})` : `กำลังโหลด VDO ฉากต่อสู้ ${vdo.mb} · ต้องโหลดครบก่อนเริ่มเกม`;
   box.querySelector('[data-act="vdoRetry"]').hidden = !failed;
+  renderPairLoad();
 }
 
 /* ───────── รหัสเข้าเกม (ตี้ 2026-10-21 — ลิงก์เกมหลุดไปกลุ่มแชทอื่น) ─────────
@@ -4175,6 +4301,7 @@ async function beginRound(gid) {
   const rn = g.round + 1; // doDraw ค่อยเพิ่ม g.round
   // ตี้ 2026-10-29 (จั่วเบิ้ล 4 ใบ): ระหว่างรอป้าย ROUND ต้องตั้ง busy/phase ก่อน ไม่งั้น nextRound ถูกเรียกซ้ำ (ผู้ชม/PVP วนเช็กทุกจังหวะ) แล้วจั่วสองรอบ
   Object.assign(ui, { phase: 'draw', busy: true });
+  if (rn === 1 && introDue()) { await introVdo(gid); if (gid !== ui.gid) return; render(); } // ตี้ 2026-11-01: ซีนเปิดตัวก่อน ROUND 1
   if (rn <= 10) sfx.play(`voRound${rn}`); // ตี้ 2026-10-30: เสียงพากย์ ROUND 1–10 พร้อมป้าย (Seed Audio · Ver 1 Arcade) · เกิน 10 รอบไม่มีทั้งป้ายและเสียง
   if (rn <= 10) { await titleFx(`round${rn}`); if (gid !== ui.gid) return; }
   Object.assign(ui, { phase: 'draw', busy: true, picks: [], undo: [], pickShown: false, place: [], shown: -1, results: [], detail: null, pending: null, ko: null });
@@ -5605,7 +5732,7 @@ document.addEventListener('click', e => {
     case 'arcade': arcPick(); break; // ตี้ 2026-10-31: เลือกเกมเดียว / Bo 3 ก่อน
     case 'arcNext': arcNext(); break;
     case 'bvb': bvbPick(); break; // ตี้ 2026-10-30: เลือกเกมเดียว / Bo 3 ก่อน
-    case 'bvbClose': $('#bvbModal').hidden = true; break;
+    case 'bvbClose': $('#bvbModal').hidden = true; ui.pairGo = null; break;
     case 'bvbNext': bvbNext(); break;
     case 'pvpLobby': pvpOpen(); break;
     case 'seat': pvpSeat(t.dataset.i); break;
@@ -5675,7 +5802,7 @@ document.addEventListener('fullscreenchange', () => { renderFs(); fitStage(); })
 document.addEventListener('webkitfullscreenchange', () => { renderFs(); fitStage(); });
 renderFs();
 
-const VDO_GATED = new Set(['start', 'arcade', 'pvpLobby', 'seat', 'watch', 'bvb']);
+const VDO_GATED = new Set(['start', 'seat', 'watch']); // ตี้ 2026-11-01: ARCADE / BOT VS BOT / PVP รอโหลดในหน้าต่างเลือกคู่หรือในห้องแทน
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && ui.vdo) { ui.vdo.skip = true; return; }
   if (e.code === 'KeyP' && !e.ctrlKey && !e.metaKey && !e.altKey && bvbLive() && !(e.target.closest && e.target.closest('input,textarea,select'))) { e.preventDefault(); bvbPauseSet(!ui.bvbPause); return; } // ตี้ 2026-10-31: BOT VS BOT หยุด/เล่นต่อ
@@ -5901,7 +6028,7 @@ async function netInit() {
     ssSet(`df-new-${ROOM.id}`, '');
     try {
       const b = JSON.parse(born);
-      presence({ meta: { name: String(b.name || '').slice(0, 30), lock: b.lock || '', u: Date.now(), bo: b.bo > 1 ? BO_WINS : 1 } });
+      presence({ meta: { name: String(b.name || '').slice(0, 30), lock: b.lock || '', u: Date.now(), bo: b.bo > 1 ? BO_WINS : 1, pair: pairOf(b.pair).id } });
       ssSet(`df-key-${ROOM.id}`, b.lock || '');
       net.autoSeat = b.side;
     } catch (e) { /* ข้ามได้ */ }
@@ -5934,6 +6061,7 @@ function roomMeta() {
 const roomHost = () => net.peers.filter(p => p.presence && Number.isFinite(p.presence.j)).sort((a, b) => a.presence.j - b.presence.j || (a.peer < b.peer ? -1 : 1))[0] || null;
 const roomName = () => (roomMeta() && roomMeta().name) || (ROOM.id === 'lobby' ? 'ห้องรวม' : ROOM.label);
 const roomLock = () => (roomMeta() && roomMeta().lock) || '';
+const roomPair = () => pairOf((roomMeta() || {}).pair).id; // ตี้ 2026-11-01: คู่ต่อสู้ของห้อง (เจ้าของห้องเลือก)
 const roomAuthed = () => !roomLock() || ssGet(`df-key-${ROOM.id}`) === roomLock();
 const roomReady = () => net.state === 'on' && (!!roomMeta() || (net.onAt && Date.now() - net.onAt > 2500)); // รอเห็นชื่อ/รหัสห้องก่อน กันกด READY ห้องที่ล็อก
 /* ───────── ห้อง Bo (ตี้ 2026-10-30) ─────────
@@ -6015,7 +6143,7 @@ function dirAnnounce() {
   if (net.state === 'on' && roomReady() && roomAuthed()) {
     const h = seatHolders(), hp = roomHost();
     const live = h.RED && h.BLUE && h.RED.presence.mid && h.RED.presence.mid === h.BLUE.presence.mid ? (ui.screen === 'game' && ui.g ? ui.g.round : 1) : 0;
-    room = { id: ROOM.id, name: roomName(), lock: roomLock(), red: h.RED ? nickOf(h.RED) : null, blue: h.BLUE ? nickOf(h.BLUE) : null, host: hp ? nickOf(hp) : null, live, n: Math.max(1, net.peers.length), bo: roomBo() };
+    room = { id: ROOM.id, name: roomName(), lock: roomLock(), red: h.RED ? nickOf(h.RED) : null, blue: h.BLUE ? nickOf(h.BLUE) : null, host: hp ? nickOf(hp) : null, live, n: Math.max(1, net.peers.length), bo: roomBo(), pair: roomPair() };
   }
   const key = JSON.stringify(room);
   if (key === dirNet.last) return;
@@ -6046,7 +6174,7 @@ function renderRooms() {
     const btn = r.live ? `<button type="button" class="btn ghost" data-act="roomWatch" data-i="${esc(r.id)}">👁 ดูการแข่ง</button>`
       : `<button type="button" class="btn primary" data-act="roomJoin" data-i="${esc(r.id)}">เข้าห้อง</button>`;
     return `<div class="room-row${r.live ? ' live' : ''}"><div><div class="rn"><span>${esc(r.name || r.id)}</span>${r.lock ? '<i aria-label="มีรหัสผ่าน">🔒</i>' : ''}${r.bo > 1 ? `<span class="room-pill bo">${boLabel(r.bo)}</span>` : ''}</div>
-      <div class="rm">${r.host ? `เจ้าของห้อง ${esc(r.host)} · ` : ''}${st} · ในห้อง ${r.n} คน</div></div>
+      <div class="rm">${(q => `<span class="room-pair"><img src="assets/pair/${q.id}-red.webp" alt=""><img src="assets/pair/${q.id}-blue.webp" alt="">${q.name}</span> · `)(pairOf(r.pair))}${r.host ? `เจ้าของห้อง ${esc(r.host)} · ` : ''}${st} · ในห้อง ${r.n} คน</div></div>
       <div class="seats">${seat('RED', r.red)}${seat('BLUE', r.blue)}</div>${btn}</div>`;
   }).join('');
 }
@@ -6071,11 +6199,13 @@ function roomModal(kind, id) {
       <span class="hint">คนที่จะเข้าห้องต้องใส่รหัสนี้ · ไม่ติ๊กล็อกห้อง = ใครก็เข้าได้</span>
       <label>รูปแบบการแข่ง</label><div class="rm-sides"><label><input type="radio" name="rmBo" value="1"${bo ? '' : ' checked'}>ชนะเกมเดียว</label><label><input type="radio" name="rmBo" value="${BO_WINS}"${bo ? ' checked' : ''}>${boLabel(BO_WINS)} · ชนะ ${BO_WINS} ใน ${BO_WINS * 2 - 1} เกม</label></div>
       <span class="hint">${boLabel(BO_WINS)} = แข่งสูงสุด ${BO_WINS * 2 - 1} เกม ใครชนะครบ ${BO_WINS} เกมก่อนชนะซีรีส์ · จุดเหลืองใต้แถบ HP นับเกมที่ชนะ${edit ? ' · เปลี่ยนแบบ = เริ่มนับใหม่' : ''}</span>
+      <label>คู่ต่อสู้</label>${pairCardsHTML(edit ? roomPair() : vdo.pair, 'rmPair')}<span class="pair-who"></span>
       ${edit ? '' : `<label>ฝั่งของคุณ</label><div class="rm-sides"><label class="red"><input type="radio" name="rmSide" value="RED" checked>RED</label><label class="blue"><input type="radio" name="rmSide" value="BLUE">BLUE</label><label><input type="radio" name="rmSide" value="any">สุ่ม</label></div>`}
       <div class="err" id="rmErr" role="alert"></div>
       <div class="rm-acts"><button type="button" class="btn ghost" data-act="roomClose">ยกเลิก</button><button type="submit" class="btn gold">${edit ? 'บันทึก' : 'สร้างห้อง แล้วเข้าห้อง →'}</button></div></form>`;
   }
   box.hidden = false;
+  if (kind !== 'pw') { $('#rmForm').style.width = '780px'; pairBind($('#rmForm'), 'rmPair', 'pvp', false); }
   $('#rmForm').addEventListener('submit', e => { e.preventDefault(); roomSubmit(); });
   const first = $('#rmForm input[type=text], #rmForm input[type=password]');
   if (first) first.focus();
@@ -6098,13 +6228,14 @@ async function roomSubmit() {
   }
   const name = $('#rmName').value.trim().slice(0, 30), lockOn = $('#rmLock').checked, pw = $('#rmPw').value;
   const bo = Number((document.querySelector('input[name=rmBo]:checked') || {}).value) > 1 ? BO_WINS : 1;
+  const pair = pairOf((document.querySelector('input[name=rmPair]:checked') || {}).value).id;
   if (!name) { err.textContent = 'ใส่ชื่อห้องก่อน'; return; }
   if (M.kind === 'edit') {
     const lock = !lockOn ? '' : pw ? await roomLockHash(ROOM.id, pw) : roomLock();
     if (lockOn && !lock) { err.textContent = 'ตั้งรหัสผ่านก่อน (หรือเอาติ๊กล็อกห้องออก)'; return; }
     ssSet(`df-key-${ROOM.id}`, lock);
     if (bo !== roomBo()) presence({ ser: bo > 1 ? { s: Math.random().toString(36).slice(2, 10), u: Date.now(), g: [] } : null });
-    presence({ meta: { name, lock, u: Date.now(), bo } });
+    presence({ meta: { name, lock, u: Date.now(), bo, pair } });
     roomClose();
     toast('บันทึกห้องแล้ว');
     renderPvp();
@@ -6116,7 +6247,7 @@ async function roomSubmit() {
   do id = 'r' + Math.random().toString(36).slice(2, 8); while (taken.has(id));
   const lock = lockOn ? await roomLockHash(id, pw) : '';
   const side = (document.querySelector('input[name=rmSide]:checked') || {}).value || 'RED';
-  ssSet(`df-new-${id}`, JSON.stringify({ name, lock, side, bo }));
+  ssSet(`df-new-${id}`, JSON.stringify({ name, lock, side, bo, pair }));
   location.href = roomUrl(id);
 }
 // ห้องที่ล็อกและเรายังไม่ได้ใส่รหัส → หน้าต่างใส่รหัสค้างไว้ (ปิดไม่ได้นอกจากกลับหน้ารายการ)
@@ -6186,7 +6317,7 @@ function renderPvp() {
     $('#pvpEyebrow').textContent = 'PVP · ROOM';
     $('#pvpTitle').textContent = `${roomName()}${roomLock() ? ' 🔒' : ''}`;
     $('#roomChips').hidden = net.state !== 'on';
-    $('#roomChips').innerHTML = `${hp ? `<span>👑 เจ้าของห้อง ${isHost ? 'คุณ' : esc(nickOf(hp))}</span>` : ''}<span>ในห้อง ${net.peers.length} คน</span><span>ไม่จับเวลา</span>${boChip()}`;
+    $('#roomChips').innerHTML = `${hp ? `<span>👑 เจ้าของห้อง ${isHost ? 'คุณ' : esc(nickOf(hp))}</span>` : ''}<span>คู่ ${pairOf(roomPair()).name}</span><span>ในห้อง ${net.peers.length} คน</span><span>ไม่จับเวลา</span>${boChip()}`;
     $('#roomBtns').innerHTML = `${isHost && m ? '<button type="button" class="btn ghost" data-act="roomEdit">⚙ ตั้งค่าห้อง</button>' : ''}${isHost && boScore() && boScore().games ? '<button type="button" class="btn ghost" data-act="boReset">↺ เริ่มนับ Bo ใหม่</button>' : ''}<button type="button" class="btn ghost" data-act="copyRoom">🔗 คัดลอกลิงก์ห้อง</button><button type="button" class="btn ghost" data-act="roomLeave">← ออกจากห้อง</button>`;
     roomGate();
   } else $('#roomBtns').innerHTML = '<button type="button" class="btn ghost" data-act="toLobby">← กลับ LOBBY</button>';
@@ -6238,7 +6369,8 @@ function pvpOnPeers() {
   if (!ON_CLAUDE && !LIST_MODE && net.state === 'on') {
     const m = roomMeta(), mine = net.mine.meta;
     // ช่วยถือชื่อ/รหัสห้องไว้ (เจ้าของออกไป ห้องก็ยังอยู่) — เฉพาะคนที่เข้าห้องถูกต้อง
-    if (m && roomAuthed() && (!mine || mine.u < m.u)) presence({ meta: { name: m.name, lock: m.lock, u: m.u, bo: m.bo || 1 } });
+    if (m && roomAuthed() && (!mine || mine.u < m.u)) presence({ meta: { name: m.name, lock: m.lock, u: m.u, bo: m.bo || 1, pair: pairOf(m.pair).id } });
+    if (m && roomAuthed() && ui.screen === 'pvp' && vdo.pair !== roomPair()) vdo.use(roomPair()); // ตี้ 2026-11-01: เข้าห้อง = โหลด VDO คู่ของห้อง (READY รอจนครบ)
     boHold();
     // ผู้ชมห้อง Bo ที่ออกมาจากเกมที่จบ → ตามไปดูเกมถัดไปเองเมื่อเริ่ม
     if (ui.boFollow && ui.screen === 'pvp' && roomAuthed() && watchable() && !vdoNeed()) { ui.boFollow = false; specStart(); }
@@ -6628,24 +6760,57 @@ function bvbStart() {
   sfx.play('intro');
   beginRound(ui.gid);
 }
+// ตี้ 2026-11-01: การ์ดเลือกคู่ในหน้าต่าง ARCADE / BOT VS BOT / สร้างห้อง PVP (radio ชื่อ name) · คู่ที่เลือกล่าสุดจำไว้ (df-pair)
+function pairCardsHTML(sel, name) {
+  return `<div class="pairs" role="radiogroup" aria-label="คู่ต่อสู้">${PAIRS.map(p => `<label class="pair-card"><input type="radio" name="${name}" value="${p.id}"${p.id === sel ? ' checked' : ''}><span class="duo"><img class="rimg" src="assets/pair/${p.id}-red.webp" alt="" draggable="false"><img class="bimg" src="assets/pair/${p.id}-blue.webp" alt="" draggable="false"><i class="seam"></i><i class="bar r"></i><i class="bar b"></i><span class="vs">VS</span></span><span class="pmeta"><b>${p.name}</b><small>${p.sub}</small></span></label>`).join('')}</div>`;
+}
+const pairWho = (id, kind) => {
+  const p = pairOf(id);
+  return kind === 'arcade' ? `คุณเล่นฝั่งแดง <b class="r">${p.red}</b> · บอทเล่นฝั่งฟ้า <b class="b">${p.blue}</b>`
+    : kind === 'bvb' ? `บอทแดง <b class="r">${p.red}</b> · บอทฟ้า <b class="b">${p.blue}</b>` : `RED = <b class="r">${p.red}</b> · BLUE = <b class="b">${p.blue}</b> · ทุกคนในห้องเล่นคู่นี้`;
+};
+// เปลี่ยนคู่ในหน้าต่าง = เริ่มโหลด VDO คู่นั้นทันที (load = false: หน้าสร้างห้อง โหลดตอนเข้าห้อง) · บรรทัด .pair-who บอกใครเล่นฝั่งไหน
+function pairBind(form, name, kind, load = true) {
+  const who = form.querySelector('.pair-who');
+  const sync = () => { const id = pairOf((form.querySelector(`input[name=${name}]:checked`) || {}).value).id; if (who) who.innerHTML = pairWho(id, kind); return id; };
+  form.addEventListener('change', e => { if (e.target.name !== name) return; const id = sync(); if (load) { vdo.use(id); renderPairLoad(); } });
+  sync();
+  renderPairLoad();
+}
+// แถบสถานะใต้การ์ดคู่ (#pairLoad) · กดเริ่มตอน VDO คู่นั้นยังโหลดไม่ครบ = รอแล้วเริ่มเองเมื่อครบ (ui.pairGo)
+function renderPairLoad() {
+  const el = $('#pairLoad');
+  if (el) {
+    const need = vdoNeed(), failed = vdo.state === 'failed';
+    el.textContent = !need ? '' : failed ? 'โหลด VDO คู่นี้ไม่สำเร็จ — กดเริ่มอีกครั้งเพื่อลองใหม่' : `กำลังโหลด VDO คู่นี้ ${vdo.pct}% (${vdo.mb})${ui.pairGo ? ' · โหลดครบแล้วเริ่มเอง' : ''}`;
+  }
+  if (ui.pairGo && !vdoNeed()) { const go = ui.pairGo; ui.pairGo = null; go(); }
+}
+function pairStart(go) {
+  if (!vdoNeed()) { go(); return; }
+  if (vdo.state === 'failed') vdo.load();
+  ui.pairGo = go;
+  renderPairLoad();
+}
 // ตี้ 2026-10-30: กด BOT VS BOT → เลือกชนะเกมเดียว หรือ Bo 3 (ชนะ 2 ใน 3) · จำแบบที่เลือกล่าสุดไว้ในเครื่อง
 // ui.bvbBo = { n: เกมที่ต้องชนะ, w: { RED, BLUE }, games, pe: บอทคู่เดิม, gid: เกมล่าสุดที่นับแล้ว } · null = ชนะเกมเดียว
 function bvbPick() {
   let bo = 1;
   try { bo = localStorage.getItem('df-bvb-bo') === String(BO_WINS) ? BO_WINS : 1; } catch (e) { /* ข้ามได้ */ }
   const box = $('#bvbModal');
-  box.innerHTML = `<form class="rm-box" id="bvbForm" style="width:600px"><small class="eb">BOT VS BOT</small><h3>รูปแบบการแข่ง</h3>
-    <div class="rm-sides"><label><input type="radio" name="bvbBo" value="1"${bo > 1 ? '' : ' checked'}>ชนะเกมเดียว</label><label><input type="radio" name="bvbBo" value="${BO_WINS}"${bo > 1 ? ' checked' : ''}>${boLabel(BO_WINS)} · ชนะ ${BO_WINS} ใน ${BO_WINS * 2 - 1} เกม</label></div>
+  box.innerHTML = `<form class="rm-box" id="bvbForm" style="width:780px"><small class="eb">BOT VS BOT</small><h3>เลือกคู่ แล้วเลือกรูปแบบการแข่ง</h3>
+    <label>คู่ต่อสู้</label>${pairCardsHTML(vdo.pair, 'bvbPair')}<span class="pair-who"></span><span class="pair-load" id="pairLoad" role="status"></span>
+    <label>รูปแบบการแข่ง</label><div class="rm-sides"><label><input type="radio" name="bvbBo" value="1"${bo > 1 ? '' : ' checked'}>ชนะเกมเดียว</label><label><input type="radio" name="bvbBo" value="${BO_WINS}"${bo > 1 ? ' checked' : ''}>${boLabel(BO_WINS)} · ชนะ ${BO_WINS} ใน ${BO_WINS * 2 - 1} เกม</label></div>
     <span class="hint">${boLabel(BO_WINS)} = บอทคู่เดิมแข่งกันสูงสุด ${BO_WINS * 2 - 1} เกม ใครชนะครบ ${BO_WINS} เกมก่อนชนะซีรีส์ · จุดเหลืองใต้แถบ HP นับเกมที่ชนะ</span>
     <div class="rm-acts"><button type="button" class="btn ghost" data-act="bvbClose">ยกเลิก</button><button type="submit" class="btn gold">เริ่มดู →</button></div></form>`;
   box.hidden = false;
+  pairBind($('#bvbForm'), 'bvbPair', 'bvb');
   $('#bvbForm').addEventListener('submit', e => {
     e.preventDefault();
     const n = Number((box.querySelector('input[name=bvbBo]:checked') || {}).value) > 1 ? BO_WINS : 1;
     try { localStorage.setItem('df-bvb-bo', String(n)); } catch (err) { /* ข้ามได้ */ }
-    box.hidden = true;
     ui.bvbBo = n > 1 ? { n, w: { RED: 0, BLUE: 0 }, games: 0, pe: null, gid: null } : null;
-    bvbStart();
+    pairStart(() => { box.hidden = true; bvbStart(); });
   });
   box.querySelector('input:checked').focus();
 }
@@ -6661,18 +6826,19 @@ function arcPick() {
   let bo = 1;
   try { bo = localStorage.getItem('df-arc-bo') === String(BO_WINS) ? BO_WINS : 1; } catch (e) { /* ข้ามได้ */ }
   const box = $('#bvbModal');
-  box.innerHTML = `<form class="rm-box" id="arcForm" style="width:600px"><small class="eb">ARCADE · คุณ (RED) ปะทะบอท</small><h3>รูปแบบการแข่ง</h3>
-    <div class="rm-sides"><label><input type="radio" name="arcBo" value="1"${bo > 1 ? '' : ' checked'}>ชนะเกมเดียว</label><label><input type="radio" name="arcBo" value="${BO_WINS}"${bo > 1 ? ' checked' : ''}>${boLabel(BO_WINS)} · ชนะ ${BO_WINS} ใน ${BO_WINS * 2 - 1} เกม</label></div>
+  box.innerHTML = `<form class="rm-box" id="arcForm" style="width:780px"><small class="eb">ARCADE · คุณ (RED) ปะทะบอท</small><h3>เลือกคู่ แล้วเลือกรูปแบบการแข่ง</h3>
+    <label>คู่ต่อสู้</label>${pairCardsHTML(vdo.pair, 'arcPair')}<span class="pair-who"></span><span class="pair-load" id="pairLoad" role="status"></span>
+    <label>รูปแบบการแข่ง</label><div class="rm-sides"><label><input type="radio" name="arcBo" value="1"${bo > 1 ? '' : ' checked'}>ชนะเกมเดียว</label><label><input type="radio" name="arcBo" value="${BO_WINS}"${bo > 1 ? ' checked' : ''}>${boLabel(BO_WINS)} · ชนะ ${BO_WINS} ใน ${BO_WINS * 2 - 1} เกม</label></div>
     <span class="hint">${boLabel(BO_WINS)} = แข่งกับบอทตัวเดิมสูงสุด ${BO_WINS * 2 - 1} เกม ใครชนะครบ ${BO_WINS} เกมก่อนชนะซีรีส์ · จุดเหลืองใต้แถบ HP นับเกมที่ชนะ</span>
     <div class="rm-acts"><button type="button" class="btn ghost" data-act="bvbClose">ยกเลิก</button><button type="submit" class="btn gold">เริ่มเล่น →</button></div></form>`;
   box.hidden = false;
+  pairBind($('#arcForm'), 'arcPair', 'arcade');
   $('#arcForm').addEventListener('submit', e => {
     e.preventDefault();
     const n = Number((box.querySelector('input[name=arcBo]:checked') || {}).value) > 1 ? BO_WINS : 1;
     try { localStorage.setItem('df-arc-bo', String(n)); } catch (err) { /* ข้ามได้ */ }
-    box.hidden = true;
     ui.arcBo = n > 1 ? { n, w: { RED: 0, BLUE: 0 }, games: 0, pe: null, gid: null } : null;
-    startGame({ mode: 'arcade' });
+    pairStart(() => { box.hidden = true; startGame({ mode: 'arcade' }); });
   });
   box.querySelector('input:checked').focus();
 }
