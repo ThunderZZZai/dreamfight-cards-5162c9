@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793556275">
+<meta name="df-build" content="1793556493">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -4027,7 +4027,7 @@ function winVo(side) {
 const endKind = w => (ui.mode !== 'spec' && w !== 'DRAW' && w !== ME ? 'lose' : 'winner'); // ป้ายหน้าผลตามมุมมอง: ผู้เล่นที่แพ้เห็น LOSE
 const WIN_POSE = { RED: 16.5, BLUE: 15.25 }; // วินาทีในคลิป winner-red/blue ที่ตัดเข้าท่าชนะสุดท้าย (ก่อนตัวหนังสือ WINNER ในคลิปขึ้น ~0.3 วิ)
 async function winVdo(side, gid) {
-  const name = `winner-${side.toLowerCase()}`, W = $('#world'), el = $('#vdoFight'), lv = { skip: false, failed: false, clips: [name] }, v0 = Date.now();
+  const name = `winner-${side.toLowerCase()}`, W = $('#world'), el = $('#vdoFight'), lv = { skip: false, failed: false, clips: [name] }, v0 = clockMs(); // เวลาบนนาฬิกา (เดิม Date.now() ลบกับ clockMs() → เวลาเล่นในหน้าผลเพี้ยนเป็นแสนชั่วโมง)
   if (!vdo.url(name)) return;
   ui.vdo = lv;
   vcReset();
