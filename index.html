@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793471123">
+<meta name="df-build" content="1793529038">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -1140,6 +1140,10 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 .vfx-coat.part{--amt:linear-gradient(var(--ga),transparent 0,transparent calc(var(--A) * var(--ux) + var(--k0) - 9px),#000 calc(var(--A) * var(--ux) + var(--k0)),#000 calc(var(--L) * var(--ux) + var(--k0) - 7px),transparent calc(var(--L) * var(--ux) + var(--k0) + 7px));transition:transform calc(.75s*var(--spd)) cubic-bezier(.2,.9,.25,1.12),opacity calc(.45s*var(--spd)) ease}
 .vfx-coat.loose{--amt:linear-gradient(var(--ga),#000 0,#000 calc(var(--L) * var(--ux) + var(--k0)),transparent calc(var(--L) * var(--ux) + var(--k0) + 80px));-webkit-mask-image:var(--amt);mask-image:var(--amt);transition:transform calc(.75s*var(--spd)) cubic-bezier(.2,.9,.25,1.12),opacity calc(.45s*var(--spd)) ease}
 .vfx-coat.loose.tube{-webkit-mask-image:var(--amt),var(--tube);mask-image:var(--amt),var(--tube)}
+/* ตี้ 2026-11-01: เศษโล่ตอนแตกลอยออกด้านนอก (ฟ้า → ขวา · แดง → ซ้าย) — คลิปกระจายเศษสองข้างเท่ากัน → พอพ้นช่วงในหลอด (.tube) เลื่อนทั้งชั้นออกด้านนอก 260px ใน 0.8 วิ แบบพุ่งแล้วผ่อน (หน้ากากเลื่อนตามไปด้วย เศษไม่ถูกตัด) */
+.vfx-coat.loose.fly.blue{animation:coatShardR .8s cubic-bezier(.1,.7,.3,1) forwards} .vfx-coat.loose.fly.red{animation:coatShardL .8s cubic-bezier(.1,.7,.3,1) forwards}
+@keyframes coatShardR{to{transform:translateX(260px) translateY(calc(var(--hy) + 12px)) scale(calc(var(--sx)*var(--mx)),var(--sy))}}
+@keyframes coatShardL{to{transform:translateX(-260px) translateY(calc(var(--hy) + 12px)) scale(calc(var(--sx)*var(--mx)),var(--sy))}}
 .vfx-coat.cut{transition:transform calc(.75s*var(--spd)) cubic-bezier(.2,.9,.25,1.12),opacity calc(.45s*var(--spd)) ease}
 .vfx-coat.hit img{animation:coatHit .5s ease}
 @keyframes coatHit{25%{filter:brightness(2.6)}}
@@ -3528,10 +3532,11 @@ function coatShow(s, sh, show) {
     c.form.classList.add('off');
     setL(c.brk, COAT_L(s, prev));
     cut(COAT_L(s, 0));
+    c.brk.classList.remove('fly'); void c.brk.offsetWidth;
     c.brk.classList.add('tube');
     const v = vfxPlay(c.brk);
-    setTimeout(() => c.brk.classList.remove('tube'), 150); // เศษเริ่มแตก ปล่อยออกนอกหลอด
-    const done = () => c.brk.classList.add('off');
+    setTimeout(() => { if (tok === c.tok) c.brk.classList.remove('tube'); c.brk.classList.add('fly'); }, 150); // เศษเริ่มแตก ปล่อยออกนอกหลอด + ลอยออกด้านนอก (ตี้ 2026-11-01)
+    const done = () => c.brk.classList.add('off'); // .fly ค้างไว้ (ซ่อนอยู่) ถอดตอนแตกครั้งถัดไป — ถอดตอนนี้เศษจะกระตุกกลับที่เดิมระหว่างจาง
     v.onended = done; setTimeout(done, 1700);
   } else {
     c.form.classList.add('off');
