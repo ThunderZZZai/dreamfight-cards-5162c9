@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793533865">
+<meta name="df-build" content="1793546795">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -116,7 +116,7 @@ body:not(.portrait) #rotateHint{display:none}
 @keyframes barHit{25%{filter:brightness(2.4)}}
 .hpbar.healed{animation:barHeal calc(.7s*var(--spd)) ease}
 @keyframes barHeal{30%{filter:brightness(1.8) drop-shadow(0 0 10px var(--heal))}}
-.plate{position:absolute;top:76px;width:136px;height:78px;display:grid;place-items:center;pointer-events:none}
+.plate{position:absolute;top:70px;width:136px;height:78px;display:grid;place-items:center;pointer-events:none} /* ตี้ 2026-11-01: ยกเลข HP ขึ้น 6px ให้ขาตัวเลขลงพอดีเส้นบนของแผงล่าง (y 127–128 · เดิมขาตัวเลข 133.5) */
 .plate.red{left:176px} .plate.blue{left:1616px}
 .plate b{font-family:var(--font-disp);font-weight:700;font-size:56px;line-height:1;font-variant-numeric:tabular-nums;color:#fff}
 .plate.red b{text-shadow:0 0 16px rgba(255,61,69,.95),0 2px 0 #4d070d}
@@ -244,7 +244,7 @@ body:not(.portrait) #rotateHint{display:none}
 .oslot{position:absolute;width:120px;height:190px;display:grid;place-items:center;--cw:120px;transition:filter .2s}
 .order.red .oslot{left:32px} .order.blue .oslot{left:114px}
 .oslot[data-lane="0"]{top:74px} .oslot[data-lane="1"]{top:292px} .oslot[data-lane="2"]{top:510px}
-.oslot.active{filter:drop-shadow(0 0 16px var(--gold))}
+/* ตี้ 2026-11-01: เอาแสงเรืองทองของช่องที่กำลังเปิดออก (เดิม .oslot.active{filter:drop-shadow(0 0 16px var(--gold))}) */
 .lane-dia{position:absolute;width:84px;height:96px;padding:0;border:0;border-radius:14px;background:transparent;cursor:pointer}
 .order.red .lane-dia{left:180px} .order.blue .lane-dia{left:2px}
 .lane-dia[data-i="0"]{top:122px} .lane-dia[data-i="1"]{top:340px} .lane-dia[data-i="2"]{top:558px}
@@ -253,6 +253,10 @@ body:not(.portrait) #rotateHint{display:none}
 .res-badge{position:absolute;left:50%;bottom:-16px;transform:translateX(-50%);z-index:3;padding:1px 12px;border-radius:999px;font-family:var(--font-disp);font-weight:700;font-size:22px;line-height:1.35;white-space:nowrap;background:#0b0f16;border:2px solid var(--line-2)}
 .res-badge.new{animation:resIn calc(.3s*var(--spd)) ease}
 .res-badge.dmg{color:var(--bad);border-color:var(--bad)} .res-badge.ok{color:var(--heal);border-color:var(--heal)} .res-badge.nil{color:var(--muted)}
+/* ตี้ 2026-11-01: ป้ายผลปะทะ (−15 / +5 / หลบ!) ย้ายออกนอกกรอบช่อง ไปฝั่งกลางจอ ระดับขอบล่าง · ยังเป็นลูกของ .oslot เลยเอียงตามช่องเหมือนเดิม */
+.order.red .res-badge{left:calc(100% + 12px);transform:none} .order.blue .res-badge{left:auto;right:calc(100% + 12px);transform:none}
+.order .res-badge.new{animation-name:resInOut}
+@keyframes resInOut{from{transform:scale(.6);opacity:0}}
 
 /* การ์ด = ภาพการ์ดจริง + ป้ายเลเวล + ชื่อ */
 .card{position:relative;display:block;flex:none;width:var(--cw,150px);aspect-ratio:820/1302;padding:0;border:0;border-radius:calc(var(--cw,150px)*.075);background:none;color:#fff;font:inherit;text-align:left;filter:drop-shadow(0 6px 10px rgba(0,0,0,.55))}
@@ -918,15 +922,12 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 #world:not(.is-game) #gSet .g-quit{display:none}
 #world.me-blue #gSet{right:auto;left:16px}
 #world.lay-spec #gSet{right:auto;left:50%;bottom:12px;transform:translateX(-50%)} /* ผู้ชม: ⚙ กลางล่าง */
+/* ตี้ 2026-11-01: ผู้ชม แถบเฟส DRAW…END ย้ายจากใต้แถบ HP มากลางล่าง เหนือ ⚙ (world y 958–992 · ป้ายสีใต้การ์ดกองกลางจบ ~937 · ⚙ เริ่ม 1006) · พิกัดเทียบ #strip (left 300 top 196) · หน้าผู้เล่นกลางล่างเป็นการ์ดในมือ เลยคงไว้ด้านบน */
+#world.lay-spec #phases{position:absolute;left:623px;top:762px;transform:translateX(-50%)} /* ตี้ "บาลานซ์ให้อยู่ตรงกลาง": แถบ 468 + ห่าง 12 + ⚙ 62 = 542 → ทั้งกลุ่มเริ่ม x 689 กึ่งกลาง 960 */
+/* ตี้ 2026-11-01: ⚙ ย้ายไปข้างแถบเฟส ต่อท้าย END แถวเดียวกัน (แถบ x 726–1194 · กึ่งกลาง y 975 → ⚙ 62px ห่าง 12px) */
+#world.lay-spec #gSet{left:1169px;bottom:74px;transform:none}
 #world.vdo-fight #gSet{opacity:0;pointer-events:none}
-/* ตี้ 2026-10-31: BOT VS BOT ปุ่มหยุดบอท ซ้ายของ ⚙ กลางล่าง · หยุดเฉพาะการตัดสินใจของบอท (เลือก · วาง · เปิดปะทะ · รอบถัดไป) ไม่หยุดวิดีโอ · ระหว่างวิดีโอซ่อนเหมือน ⚙ (กด P ได้) */
-.bvb-pause{position:absolute;left:calc(50% - 43px);bottom:12px;transform:translateX(-100%);z-index:30;display:inline-flex;align-items:center;gap:10px;height:62px;padding:0 22px;border-radius:16px;border:1px solid rgba(255,255,255,.28);background:rgba(8,10,16,.55);backdrop-filter:blur(6px);color:#e8edf5;font-family:var(--font-disp);font-weight:700;font-size:22px;letter-spacing:.04em;white-space:nowrap;cursor:pointer}
-.bvb-pause[hidden]{display:none}
-.bvb-pause:hover{background:rgba(40,44,56,.7)} .bvb-pause:focus-visible{outline:2px solid #fff;outline-offset:2px}
-.bvb-pause.on{border-color:#ffc83d;background:#ffc83d;color:#1a1300;box-shadow:0 0 18px rgba(255,200,61,.55);animation:bvbPulse 1.6s ease-in-out infinite}
-@keyframes bvbPulse{50%{box-shadow:0 0 30px rgba(255,200,61,.85)}}
-@media (prefers-reduced-motion:reduce){.bvb-pause.on{animation:none}}
-#world.vdo-fight .bvb-pause{opacity:0;pointer-events:none}
+/* ตี้ 2026-11-01: เอาปุ่มหยุดบอทออก · กด P บนคีย์บอร์ดแทน ไม่มีอะไรขึ้นบนจอ (หยุดให้นักพากย์คุยกันโดยคนดูไม่รู้) · ตัวบอกว่าหยุดอยู่ = นาฬิกาแมตช์มุมซ้ายบนหยุดเดิน */
 #gSet .st-gear{width:62px;height:62px;border-radius:16px}
 #gSet .st-gear svg{width:30px;height:30px}
 #gSet .st-set{text-transform:none;bottom:calc(100% + 14px)}
@@ -1390,7 +1391,6 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
         <button type="button" class="pill" id="quit" data-act="quit" hidden>ออกจากเกม</button>
       </div>
       <div id="gSet"><button type="button" class="st-gear" id="gGear" aria-label="ตั้งค่า (เสียง · เพลง · VDO · ความเร็ว · ออกจากเกม)" aria-expanded="false" aria-controls="stSet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/></svg></button></div>
-      <button type="button" class="bvb-pause" id="bvbPause" data-act="bvbPause" aria-pressed="false" title="หยุด/เล่นต่อ การกระทำของบอท (ปุ่ม P)" hidden></button>
       <button type="button" class="fs-btn" id="fsBtn" data-act="fullscreen" aria-label="เต็มจอ" title="เต็มจอ"></button>
       <div id="toast" class="toast" role="status" hidden></div>
       <div class="tools right">
@@ -3853,7 +3853,7 @@ async function laneVdo(i, plan, gid, r, keep = false) {
     if (!gone()) for (let j = 0; j <= k; j++) apply(j);
   };
   ui.vdo = lv;
-  const v0 = Date.now();
+  const v0 = clockMs();
   $('#vdoLane').textContent = `ACTION ${i + 1}`; // ตี้ 2026-10-28: ป้ายข้าง SKIP ใช้คำเดียวกับป้ายกลางจอ
   $('#vdoBar').hidden = false;
   vdoBg.sync(false);
@@ -3921,7 +3921,7 @@ async function laneVdo(i, plan, gid, r, keep = false) {
     vcReset();
     $('#vdoBar').hidden = true;
     ui.vdo = null;
-    clock.vdoMs += Date.now() - v0;
+    clock.vdoMs += clockMs() - v0;
     duckMusic(false);
   }
 }
@@ -3969,7 +3969,7 @@ async function winVdo(side, gid) {
   $('#vdoBar').hidden = true;
   vcReset();
   ui.vdo = null;
-  clock.vdoMs += Date.now() - v0;
+  clock.vdoMs += clockMs() - v0;
   duckMusic(false);
 }
 // มีฝั่งที่ HP หมดแล้ว (จบช่องนี้ = K.O.)
@@ -4070,9 +4070,12 @@ async function tryAccess(code) {
 /* ───────── นาฬิกาแมตช์ (ตี้ 2026-10-21: "อยากรู้ว่ากว่าจะได้ผู้ชนะใช้เวลาเท่าไหร่ · สรุปเวลาตอนท้าย · ให้มีเวลาขึ้นตลอด ซ้ายล่างเล็ก ๆ") ─────────
    เวลาจริงตั้งแต่เริ่มแมตช์จนรู้ผู้ชนะ (รวมเวลาดู VDO) · เก็บเวลาเริ่มแต่ละรอบ + เวลาที่อยู่ใน VDO ไว้สรุปในหน้าผู้ชนะ
    ผู้ชมที่เข้ากลางเกม: นับจาก t0 ที่ผู้เล่นประกาศใน presence (ไม่มี = นับจากตอนเข้าดู แล้วสรุปว่า "ตั้งแต่เข้าดู") */
-const clock = { t0: 0, end: 0, vdoMs: 0, rounds: [], partial: false };
-function clockStart(t0 = Date.now(), partial = false) { Object.assign(clock, { t0, end: 0, vdoMs: 0, rounds: [], partial }); }
-const clockMs = () => (clock.t0 ? (clock.end || Date.now()) - clock.t0 : 0);
+// ตี้ 2026-11-01: กด P หยุด BOT VS BOT = นาฬิกาหยุดเดินด้วย (held = เวลาที่หยุดไว้แล้ว · holdAt = เริ่มหยุดครั้งนี้) · เวลาที่หยุดไม่นับรวม
+const clock = { t0: 0, end: 0, vdoMs: 0, rounds: [], partial: false, held: 0, holdAt: 0 };
+function clockStart(t0 = Date.now(), partial = false) { Object.assign(clock, { t0, end: 0, vdoMs: 0, rounds: [], partial, held: 0, holdAt: 0 }); }
+const clockNow = () => clock.end || Date.now();
+const clockMs = () => (clock.t0 ? clockNow() - clock.t0 - clock.held - (clock.holdAt ? clockNow() - clock.holdAt : 0) : 0);
+function clockHold(on) { if (on && !clock.holdAt) clock.holdAt = Date.now(); else if (!on && clock.holdAt) { clock.held += clockNow() - clock.holdAt; clock.holdAt = 0; } }
 const fmtDur = ms => {
   const s = Math.max(0, Math.floor(ms / 1000)), h = Math.floor(s / 3600), mm = String(Math.floor(s / 60) % 60).padStart(2, '0'), ss = String(s % 60).padStart(2, '0');
   return h ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
@@ -4098,9 +4101,9 @@ function clockSummaryHTML() {
   const bits = [`${n} รอบ`];
   if (n && !clock.partial) bits.push(`เฉลี่ย ${fmtDur(total / n)} ต่อรอบ`);
   if (clock.vdoMs) bits.push(`ดู VDO ${fmtDur(clock.vdoMs)}`, `เล่น ${fmtDur(total - clock.vdoMs)}`);
-  const R = clock.rounds, end = clock.end || Date.now();
+  const R = clock.rounds; // เวลาบนนาฬิกา (ไม่รวมช่วงที่กด P หยุด)
   const rounds = !clock.partial && R.length === n && n > 1
-    ? `<span class="wt-rounds">${R.map((t, k) => `R${k + 1} ${fmtDur((R[k + 1] || end) - t)}`).join(' · ')}</span>` : '';
+    ? `<span class="wt-rounds">${R.map((t, k) => `R${k + 1} ${fmtDur((R[k + 1] ?? total) - t)}`).join(' · ')}</span>` : '';
   return `<div class="win-time"><span class="wt-main"><small>${clock.partial ? 'ดูไป' : 'ใช้เวลา'}</small><b>${fmtDur(total)}</b></span><span class="wt-sub">${bits.join(' · ')}</span>${rounds}</div>`;
 }
 
@@ -4167,7 +4170,7 @@ async function startGame(opt = { mode: 'arcade' }) {
 }
 async function beginRound(gid) {
   const g = ui.g;
-  clock.rounds.push(Date.now());
+  clock.rounds.push(clockMs());
   // ตี้ 2026-10-29: ป้าย ROUND n (คลิป AE) ทุกต้นรอบ · เกิน 10 รอบไม่มีคลิป ข้ามไป
   const rn = g.round + 1; // doDraw ค่อยเพิ่ม g.round
   // ตี้ 2026-10-29 (จั่วเบิ้ล 4 ใบ): ระหว่างรอป้าย ROUND ต้องตั้ง busy/phase ก่อน ไม่งั้น nextRound ถูกเรียกซ้ำ (ผู้ชม/PVP วนเช็กทุกจังหวะ) แล้วจั่วสองรอบ
@@ -4982,7 +4985,7 @@ function badgeHTML(s, i) {
   if (d < 0) return `<span class="res-badge dmg${fresh}">−${-d}</span>`;
   if (d > 0) return `<span class="res-badge ok${fresh}">+${d}</span>`;
   if (o.evaded) return `<span class="res-badge ok${fresh}">หลบ!</span>`;
-  return `<span class="res-badge nil${fresh}">±0</span>`;
+  return ''; // ตี้ 2026-11-01: ไม่มีอะไรเกิดขึ้น = ไม่ต้องมีป้าย (เดิม ±0)
 }
 // แผงผลปะทะ: ดาเมจตั้งต้น → +ดาเมจปราบ → −ค่ากัน = ดาเมจเข้า · โอกาสหลบ → −ที่ Attack ลด = โอกาสจริง → ผลทอย
 function calcSideHTML(s, r, done) {
@@ -5604,7 +5607,6 @@ document.addEventListener('click', e => {
     case 'bvb': bvbPick(); break; // ตี้ 2026-10-30: เลือกเกมเดียว / Bo 3 ก่อน
     case 'bvbClose': $('#bvbModal').hidden = true; break;
     case 'bvbNext': bvbNext(); break;
-    case 'bvbPause': bvbPauseSet(!ui.bvbPause); break;
     case 'pvpLobby': pvpOpen(); break;
     case 'seat': pvpSeat(t.dataset.i); break;
     case 'toLobby': toStart('lobby'); break;
@@ -6692,21 +6694,11 @@ function bvbPauseSet(on) {
   if (!bvbLive()) return;
   ui.bvbPause = on;
   if (ui.spec) ui.spec.at = 0;
-  sfx.play('pick');
-  toast(on ? (ui.vdo || ui.phase === 'fight' ? 'หยุดบอทไว้ — วิดีโอที่เล่นอยู่เล่นต่อจนจบ แล้วหยุดก่อนรอบถัดไป' : 'หยุดบอทไว้แล้ว') : 'บอทเล่นต่อแล้ว');
-  render();
+  clockHold(on); // ตี้ 2026-11-01: ไม่มีเสียง/ข้อความ/ปุ่ม — นาฬิกาหยุดเดินอย่างเดียว
 }
+// ออกจาก BOT VS BOT = ปลด Pause และให้นาฬิกาเดินต่อ (เรียกจาก render)
 function renderBvbPause() {
-  const b = $('#bvbPause');
-  if (!b) return;
-  const show = bvbLive();
-  if (!show && ui.bvbPause && !(ui.mode === 'spec' && ui.spec && ui.spec.bot)) ui.bvbPause = false; // ออกจาก BOT VS BOT = ปลด Pause
-  b.hidden = !show;
-  const on = !!ui.bvbPause;
-  b.classList.toggle('on', on);
-  b.setAttribute('aria-pressed', String(on));
-  const txt = on ? '▶ เล่นต่อ' : '⏸ PAUSE';
-  if (b.textContent !== txt) b.textContent = txt;
+  if (ui.bvbPause && !bvbLive() && !(ui.mode === 'spec' && ui.spec && ui.spec.bot)) { ui.bvbPause = false; clockHold(false); }
 }
 function bvbNextLabel() { const b = boScore(); return b ? (b.done ? `ดู ${boLabel(b.n)} ใหม่` : 'ดูเกมต่อไป →') : 'ดูอีกเกม'; }
 function bvbTag() { const B = ui.bvbBo; return B ? `BOT VS BOT · ${boLabel(B.n)} เกมที่ ${B.games + 1}` : 'BOT VS BOT'; }
@@ -6736,7 +6728,6 @@ function bvbTick() {
 function specStatus() {
   const g = ui.g, r = g.round, S = ui.spec, who = s => `${tagOf(s)} ${esc(S.nick[s])}`;
   if (ui.winner) return `จบการแข่ง · ${ui.winner === 'DRAW' ? 'เสมอ / ไม่มีผล' : `${tagOf(ui.winner)} WIN`}`;
-  if (S.bot && ui.bvbPause) return `${bvbTag()} · ⏸ หยุดบอทไว้ — กด เล่นต่อ (P)`;
   if (S.bot) return ui.phase === 'pick' && !ui.pickShown ? `${bvbTag()} · บอทกำลังเลือกการ์ด…` : ui.phase === 'action' ? `${bvbTag()} · บอทกำลังวางการ์ด…`
     : ui.phase === 'fight' ? `กำลังเปิดช่อง ${Math.max(1, ui.shown + 1)} …` : ui.phase === 'end' ? `จบรอบ ${r} · ไปรอบถัดไปอัตโนมัติ` : 'กำลังจั่วการ์ด…';
   if (ui.phase === 'pick' && !ui.pickShown) return SIDES.map(s => `${who(s)} ${specIn(s, `${r}p`) !== undefined ? '✓ PICK UP' : 'กำลังเลือก…'}`).join(' · ');
