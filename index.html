@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793551085">
+<meta name="df-build" content="1793551833">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -3681,7 +3681,7 @@ function titleFx(name) {
 const TITLE_ALPHA = !/^((?!chrome|chromium|crios|android|edg|fxios).)*safari/i.test(navigator.userAgent) && !!document.createElement('video').canPlayType('video/webm; codecs="vp9"');
 function titleSrc(v, name) { v.src = `assets/title/${name}.${TITLE_ALPHA ? 'webm' : 'mp4'}`; v.classList.toggle('scr', !TITLE_ALPHA); }
 // โหลดคลิปป้ายรอไว้ตอนเริ่มเกม (เล็ก ~1.8 MB รวม) จะได้ไม่กระตุกตอนขึ้นครั้งแรก
-function titlePreload(round) { for (const n of [`round${Math.min(10, round)}`, 'fight', 'action1', 'action2', 'action3', 'ko']) { const b = $('#titleFx'); if (!b.querySelector(`video[data-t="${n}"]`)) { const v = document.createElement('video'); Object.assign(v, { muted: true, playsInline: true, preload: 'auto' }); v.dataset.t = n; titleSrc(v, n); b.appendChild(v); } } }
+function titlePreload(round) { for (const n of [`round${Math.min(10, round)}`, 'fight', 'action2', 'action3', 'ko']) { const b = $('#titleFx'); if (!b.querySelector(`video[data-t="${n}"]`)) { const v = document.createElement('video'); Object.assign(v, { muted: true, playsInline: true, preload: 'auto' }); v.dataset.t = n; titleSrc(v, n); b.appendChild(v); } } }
 // ป้าย ACTION 1/2/3 กลางจอตอนเริ่มเปิดช่อง i
 function laneCall(i) {
   // ตี้ 2026-10-29: ใช้คลิป ACTION n (ผิวโลหะยับ) · เล่นไม่ได้ค่อยใช้รูปคำเดิม
@@ -4847,7 +4847,7 @@ async function runFight() {
   for (let i = 0; i < SLOT_N; i++) {
     await wait(i ? 300 : 150);
     if (gid !== ui.gid) return;
-    laneCall(i);
+    if (i) laneCall(i); // ตี้ 2026-11-01: ช่องแรกต่อจาก FIGHT เลย ไม่ต้องมีป้าย ACTION 1 · ACTION 2 / 3 ยังขึ้นตามเดิม
     // 1) เปิดการ์ด + ท่าทาง
     const r = rollClash(g, i);
     const ctr = counterSide(r);
