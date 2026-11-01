@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793531507">
+<meta name="df-build" content="1793533072">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -969,6 +969,8 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 #world.lay-spec .spec-hand .hc{position:absolute;bottom:48px;width:157px;margin-left:-79px;transform-origin:50% 230%;rotate:calc((var(--i,0) - (var(--n,1) - 1) / 2) * 9deg)}
 #world.lay-spec .spec-hand.side-red .hc{left:373px} #world.lay-spec .spec-hand.side-blue .hc{left:267px}
 #world.lay-spec .spec-hand .hc .card{--cw:157px} /* ตี้ 2026-10-28: ใหญ่ขึ้น 20% */ #world.lay-spec .spec-hand .hc .cap{display:none}
+/* ตี้ 2026-11-01: มือฝั่งฟ้าใบซ้ายสุด (ฝั่งกลางจอ) อยู่บนสุด เป็นกระจกของฝั่งแดงที่ใบขวาสุดอยู่บนสุด · มือเทา .vc-hand.blue เรียงแบบนี้อยู่แล้ว */
+#world.lay-spec .spec-hand.side-blue .hc{z-index:calc(var(--n) - var(--i))}
 .q-card{width:var(--cw,120px);aspect-ratio:820/1302;border-radius:12px;display:grid;place-items:center;background:#0f1729;box-shadow:inset 0 0 0 3px var(--k,var(--gold)),0 0 16px var(--k,var(--gold));color:var(--gold);font-family:var(--font-disp);font-weight:700;font-size:calc(var(--cw,120px) * .5);line-height:1;animation:qPulse 1.6s ease-in-out infinite}
 @keyframes qPulse{0%,100%{text-shadow:0 0 8px rgba(255,200,61,.5)}50%{text-shadow:0 0 22px rgba(255,200,61,1)}}
 
