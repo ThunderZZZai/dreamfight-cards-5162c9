@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793553108">
+<meta name="df-build" content="1793553546">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -4018,7 +4018,7 @@ async function laneVdo(i, plan, gid, r, keep = false) {
 function winVo(side) {
   if (ui.winVo === ui.gid) return;
   const gid = ui.winVo = ui.gid, gap = 1650 - (performance.now() - (ui.koVoAt || -1e9));
-  const say = () => { if (gid === ui.gid) sfx.play(side === 'RED' ? 'voRedWin' : 'voBlueWin'); };
+  const say = () => { if (gid === ui.gid) sfx.play('voWinner'); }; // ตี้ 2026-11-02: พูด "Winner!" (เทค A) แทน Red Win / Blue Win ทุกฝั่ง
   if (gap > 0) setTimeout(say, gap); else say();
 }
 // ท่าชนะ (ตี้ 2026-10-28 · Drive "07. Winner"): หลัง K.O. เล่น VDO ของฝั่งที่ชนะเต็มจอ แล้วค่อยเข้าหน้าผล · SKIP ข้ามได้

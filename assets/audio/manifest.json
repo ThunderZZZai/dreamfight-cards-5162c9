@@ -562,6 +562,15 @@
    "title": "Announcer \"Red Win\"",
    "author": "BytePlus Seed Audio 1.0 (AI voice · Siamshort Studio)",
    "note": "ตี้ 2026-10-30: เสียงพากย์ผู้ประกาศ Ver 1 Arcade (ผู้ชายบาริโทนทุ้มดุ) · ต้นฉบับ audio-src/announcer/aud_v1_arcade.wav · หั่นด้วย audio-src/build_announcer.py"
+  },
+  "voWinner": {
+   "file": "assets/audio/vo-winner.mp3?v=20261102",
+   "gain": 1.0,
+   "dur": 2.73,
+   "source": "seed-audio-1.0",
+   "title": "Announcer \"Winner\"",
+   "author": "BytePlus Seed Audio 1.0 (AI voice · Siamshort Studio)",
+   "note": "ตี้ 2026-11-02: แทน Red Win / Blue Win · เทค A (ดุแบบ Red Win เดิม) จาก audio-src/announcer/aud_v1_winner.wav (แนบ aud_v1_arcade เป็นเสียงต้นแบบ) · หั่นด้วย audio-src/build_winner_vo.py"
   }
  },
  "bgm": {
