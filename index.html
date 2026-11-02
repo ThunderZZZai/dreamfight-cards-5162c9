@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793633968">
+<meta name="df-build" content="1793636095">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -154,6 +154,15 @@ body:not(.portrait) #rotateHint{display:none}
 @keyframes uOut{0%{background:#fff}100%{background:rgba(8,10,16,.82)}}
 @media (prefers-reduced-motion:reduce){.useg.on,.ult.full{animation:none}}
 .ult .meta-float{right:auto;left:0;bottom:auto;top:100%;margin:6px 0 0} .ult.blue .meta-float{left:auto;right:0}
+/* ตี้ 2026-11-02: โหมดผู้เล่นใช้เกจที่แถบ HP (กรอบตั้งล่างเอาออก) — เกจของเราแตะได้ในเฟส Action: เรืองเป็นจังหวะ + ป้ายรุ้ง "แตะเพื่อใช้เกจ" ใต้เกจ */
+.ult.use{pointer-events:auto;cursor:pointer}
+.ult.use::before{content:"";position:absolute;top:-12px;bottom:-40px;left:-16px;right:-130px} .ult.blue.use::before{left:-130px;right:-16px} /* พื้นที่แตะกว้างกว่าตัวเกจ (รวมป้าย ULT n/3 + ป้ายแตะ) */
+.ult.use:not(.full){animation:uUse calc(1.4s*var(--spd)) ease-in-out infinite}
+@keyframes uUse{50%{filter:drop-shadow(0 0 6px #fff) drop-shadow(0 0 16px rgba(170,120,255,.95))}}
+.ult.use:focus-visible{outline:3px solid #fff;outline-offset:6px}
+.utap{position:absolute;top:calc(100% + 8px);left:0;padding:2px 12px;border-radius:999px;background:linear-gradient(90deg,#ff4d6d,#ffb340,#4dff88,#4dc3ff,#8a5cff);color:#0b0f16;font-family:var(--font-disp);font-size:17px;font-weight:700;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,.5);text-transform:none}
+.ult.blue .utap{left:auto;right:0}
+@media (prefers-reduced-motion:reduce){.ult.use{animation:none}}
 #world.lay-spec .gauge{display:none} /* ผู้ชม: เกจอยู่บนแถบ HP แล้ว */
 .dot.red.on{background:#ff4d55;box-shadow:0 0 10px #ff4d55}
 .dot.blue.on{background:#5a97ff;box-shadow:0 0 10px #5a97ff}
@@ -1066,6 +1075,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 /* ตี้ 2026-10-30: เกจพรของฝั่งตรงข้ามแสดงด้วย (ดูอย่างเดียว · กดไม่ได้) มุมล่างฝั่งตรงข้ามระดับเดียวกับของเรา (เดิมซ่อน) · ⚙ ย้ายไปข้างเกจแทน (ฝั่งในจอ) */
 /* ตี้ 2026-10-31: เกจฝั่งตรงข้ามย้ายขึ้นแถบเลือดด้านบนแล้ว (.gauge.opp ซ่อน) → ⚙ กลับเข้ามุมล่างฝั่งตรงข้าม ระดับเดียวกับกรอบเกจของเรา */
 #world.lay-player .gauge.opp{display:none}
+#world.lay-player .gauge{display:none} /* ตี้ 2026-11-02 "เอาตรงนี้ออก": กรอบเกจตั้งล่างของเราออกด้วย — ใช้เกจที่แถบ HP แทน (renderUlt) */
 #world.lay-player #gSet{right:40px;bottom:37px} #world.lay-player.me-blue #gSet{right:auto;left:40px} /* ขอบล่างตรงกรอบเกจ (1043) */
 #world.lay-spec .gauge.red{left:35px;right:auto;top:811px} #world.lay-spec .gauge.blue{left:auto;right:35px;top:811px}
 #world.vdo-fight .gauge{opacity:0}
@@ -5521,14 +5531,19 @@ function renderGauge(s) {
   ui.gShown[s] = n;
 }
 // เกจ ULT บนแถบ HP (หน้าผู้ชม · ตี้ 2026-10-31) — ช่องที่ได้เพิ่มวาบขาว · ใช้ไป = ขาวจางหาย · เต็ม 3 = เรืองรุ้งทั้งแถบ
+// ตี้ 2026-11-02: เอากรอบตั้งล่างออก → โหมดผู้เล่นใช้เกจที่นี่ — เฟส Action ที่ใช้ได้ = แตะเกจของเราเปิดเมนูใช้เกจ (จั่ว / เปลี่ยนการ์ด / พลังเต็ม · พลังเต็ม = เปลี่ยนฟรี)
 function renderUlt(s, show, n = 0, prev = n) {
   const el = $(`#ult${s}`);
   if (!el) return;
   el.hidden = !show;
   if (!show) return;
-  el.className = `ult ${s.toLowerCase()}${n >= GAUGE_MAX ? ' full' : ''}`;
-  el.setAttribute('aria-label', `เกจ ULT ของ ${s} ${n}/${GAUGE_MAX}`);
-  el.innerHTML = [0, 1, 2].map(k => `<i class="useg k${k}${k < n ? ' on' : ''}${k < n && k >= prev ? ' new' : ''}${k >= n && k < prev ? ' spent' : ''}"></i>`).join('') + `<b class="ulab">ULT ${n}/${GAUGE_MAX}</b>`;
+  const use = s === ME && ui.mode !== 'spec' && gaugeUsable(), unl = use && unlimitedNow(ui.g, ME);
+  el.className = `ult ${s.toLowerCase()}${n >= GAUGE_MAX ? ' full' : ''}${use ? ' use' : ''}`;
+  if (use) Object.assign(el.dataset, { act: 'gauge' }); else delete el.dataset.act;
+  el.setAttribute('role', use ? 'button' : 'img');
+  el.setAttribute('aria-label', `เกจ ULT ของ ${s} ${n}/${GAUGE_MAX}${use ? ' · แตะเพื่อใช้เกจ' : ''}`);
+  const tap = !use ? '' : `<span class="utap">${ui.gmenu ? 'ปิดเมนูเกจ' : unl ? `พลังเต็ม · แตะ: เปลี่ยนฟรี ${ui.g.p[ME].freeTr || 0}` : 'แตะเพื่อใช้เกจ'}</span>`;
+  el.innerHTML = [0, 1, 2].map(k => `<i class="useg k${k}${k < n ? ' on' : ''}${k < n && k >= prev ? ' new' : ''}${k >= n && k < prev ? ' spent' : ''}"></i>`).join('') + `<b class="ulab">ULT ${n}/${GAUGE_MAX}</b>${tap}`;
 }
 // ป้ายลอยข้างเกจ (+1 เกจ / ใช้เกจ) · หน้าผู้ชมลอยใต้เกจ ULT บนแถบ HP
 function gaugeFloat(s, text, delay = 0, html = '') {
@@ -5779,9 +5794,9 @@ function renderControls() {
     const n = ui.place.length, need = needPlace(), gn = g.p[ME].gauge;
     const gm = ui.gmenu;
     hint = gm === 'tr' || gm === 'ftr' ? 'แตะการ์ดบนมือที่จะเปลี่ยน'
-      : unlMe() ? `พลังเต็ม: วางกี่ใบก็ได้ (อย่างน้อย ${need}) · ตอนนี้ ${n} ใบ · ลากการ์ดบนมือทับใบชนิดเดียวกัน = ผสม · แตะลูกเกจ = เปลี่ยนฟรี (เหลือ ${g.p[ME].freeTr || 0}) · กด FIGHT! เมื่อพร้อม`
+      : unlMe() ? `พลังเต็ม: วางกี่ใบก็ได้ (อย่างน้อย ${need}) · ตอนนี้ ${n} ใบ · ลากการ์ดบนมือทับใบชนิดเดียวกัน = ผสม · แตะเกจ ULT = เปลี่ยนฟรี (เหลือ ${g.p[ME].freeTr || 0}) · กด FIGHT! เมื่อพร้อม`
       : n < need ? `แตะหรือลากการ์ดลงช่อง (${n}/${need}) · ลากทับชนิดเดียวกันในแผง = เลเวลอัป (Lv2 + Lv2 ได้ Lv1 คืน) · ต่างชนิด = สลับ · แตะการ์ดในแผงเพื่อเอาคืน` : 'ครบแล้ว — กด FIGHT! เพื่อเปิดปะทะ · ยังลากสลับ / ซ้อนในแผงได้';
-    if (gn && !ui.gmenu) hint += ` · มีเกจ ${gn} — แตะลูกเกจใต้แถบ HP เพื่อใช้`;
+    if (gn && !ui.gmenu) hint += ` · มีเกจ ${gn} — แตะเกจ ULT ที่แถบ HP เพื่อใช้`;
     main = `<button type="button" class="btn primary cta" data-act="confirmAction"${n >= need ? '' : ' disabled'}>FIGHT!</button>`;
     btns = `${undoBtn()}<button type="button" class="btn ghost" data-act="clearPlace"${n ? '' : ' disabled'}>ล้างช่อง</button>`;
   } else if (ui.phase === 'fight') hint = `กำลังเปิดช่อง ${Math.max(1, ui.shown + 1)} …`;
