@@ -571,6 +571,16 @@
    "title": "Announcer \"Winner\"",
    "author": "BytePlus Seed Audio 1.0 (AI voice · Siamshort Studio)",
    "note": "ตี้ 2026-11-02: แทน Red Win / Blue Win · เทค A (ดุแบบ Red Win เดิม) จาก audio-src/announcer/aud_v1_winner.wav (แนบ aud_v1_arcade เป็นเสียงต้นแบบ) · หั่นด้วย audio-src/build_winner_vo.py"
+  },
+  "spinTick": {
+   "file": "assets/audio/sfx-spinTick.mp3?v=20261102",
+   "gain": 1.0,
+   "dur": 0.58,
+   "source": 91468,
+   "title": "flipCard",
+   "author": "freesound_community",
+   "page": "https://pixabay.com/sound-effects/film-special-effects-flipcard-91468/",
+   "note": "ตี้ 2026-11-02: ฟึ่บทุกครึ่งรอบตอนการ์ดหมุนลุ้นก่อนเปิด (เลือก \"พลิกการ์ดกระดาษ\" จากต้นแบบ artifact 586wY8dN…) · ไฟล์ตัด/ปรับดังจากต้นแบบ (spinsnd_build.py) · เกมเล่นเร็ว 0.85→1.55 เท่า ดังขึ้นตามการหมุน"
   }
  },
  "bgm": {

@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793616411">
+<meta name="df-build" content="1793631293">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -1156,6 +1156,40 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 .vc-pop.fly{z-index:3;transition:transform .38s cubic-bezier(.55,0,.9,.55),opacity .1s ease .33s}
 .vc-pop.fly .vc-who{display:none}
 .vc-pop.gone{opacity:0}
+/* ตี้ 2026-11-02: การ์ดหมุนลุ้นก่อนเปิด (ต้นแบบ artifact 586wY8dNb6kYyRqaTkJhoZ) — การ์ดคว่ำเด้งขึ้นแล้วหมุนเร่งตาม LV ระหว่าง VDO สโล → เปิดพร้อมแฟลช
+   พลังตอนหมุนใช้สีฝั่ง (ไม่บอกชนิดการ์ด) · สีแฟลช/คลื่นตอนเปิด = สีชนิดการ์ด (t-*) */
+#vdoLayer #vdoSlo{transition:none} /* คลิปสโล B-roll ทับ VDO หลัก สลับทันทีไม่มีเฟด (เฟรมแรก = เฟรมที่ VDO หลักหยุด) */
+.vc-pop.red{--a1:rgba(255,195,195,.95);--a2:rgba(255,80,90,.6);--a3:rgba(255,61,69,.22);--pc:#ffe2e2}
+.vc-pop.blue{--a1:rgba(170,205,255,.95);--a2:rgba(80,145,255,.6);--a3:rgba(59,130,255,.22);--pc:#d8e8ff}
+.vc-pop.t-ATK{--t:rgba(255,120,130,.45);--tw:rgba(255,140,150,.95)}
+.vc-pop.t-ULT{--t:rgba(168,141,255,.5);--tw:rgba(190,170,255,.95)}
+.vc-pop.t-DODGE{--t:rgba(70,227,145,.45);--tw:rgba(120,240,170,.95)}
+.vc-pop.t-DEF{--t:rgba(198,214,238,.5);--tw:rgba(214,228,248,.95)}
+.vc-pop.t-EMPTY{--t:rgba(200,210,225,.35);--tw:rgba(220,228,240,.9)}
+.vs-persp{position:relative;width:146px;aspect-ratio:820/1302;perspective:900px}
+.vs-spin{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform}
+.vs-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.vs-face.bk{transform:rotateY(180deg)}
+.vs-face .card{width:146px}
+.vc-pop.spin .card{box-shadow:0 0 0 3px var(--k),0 0 calc(30px + var(--g,0)*70px) calc(var(--g,0)*14px) var(--k),0 16px 40px rgba(0,0,0,.7)}
+.vc-pop.spin.on .card{animation:none}
+.vs-spin.revealed{animation:vsSnap .45s cubic-bezier(.2,.9,.3,1.3)}
+.vs-spin.revealed .fr .card{animation:vcGlow 1s ease-out}
+@keyframes vsSnap{0%{transform:scale(1.32);filter:brightness(2.4)}40%{filter:brightness(1.5)}100%{transform:none;filter:none}}
+.vs-fx{position:absolute;left:73px;top:116px;width:0;height:0;pointer-events:none}
+.vs-fx i{position:absolute;display:block}
+.vs-aura{left:-310px;top:-310px;width:620px;height:620px;border-radius:50%;background:radial-gradient(circle,var(--a1) 0%,var(--a2) 24%,var(--a3) 46%,transparent 68%);opacity:0;mix-blend-mode:screen}
+.vs-ring{left:-170px;top:-170px;width:340px;height:340px;border-radius:50%;opacity:0;background:conic-gradient(from 0deg,transparent 0 20%,var(--a1) 25%,transparent 32% 52%,var(--a1) 58%,transparent 64% 80%,var(--a1) 86%,transparent 92%);-webkit-mask:radial-gradient(circle,transparent 56%,#000 59% 67%,transparent 70%);mask:radial-gradient(circle,transparent 56%,#000 59% 67%,transparent 70%);mix-blend-mode:screen}
+.vs-pts{left:0;top:0;opacity:0}
+.vs-pts b{position:absolute;left:-4px;top:-4px;width:8px;height:8px;border-radius:50%;background:var(--pc);box-shadow:0 0 12px 3px var(--k);animation:vsPin .8s cubic-bezier(.5,0,.9,.4) infinite;animation-delay:var(--dl)}
+@keyframes vsPin{0%{transform:rotate(var(--a)) translateX(var(--r));opacity:0}25%{opacity:1}100%{transform:rotate(var(--a)) translateX(14px);opacity:0}}
+.vs-flash{left:-260px;top:-260px;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,#fff 0%,rgba(255,255,255,.85) 18%,var(--t) 40%,transparent 68%);opacity:0;mix-blend-mode:screen}
+.vs-flash.go{animation:vsFlash .5s ease-out forwards}
+@keyframes vsFlash{0%{opacity:1;transform:scale(.25)}100%{opacity:0;transform:scale(1.6)}}
+.vs-wave{left:-120px;top:-120px;width:240px;height:240px;border-radius:50%;border:10px solid var(--tw);opacity:0;box-shadow:0 0 30px var(--tw)}
+.vs-wave.go{animation:vsWave .55s ease-out forwards}
+@keyframes vsWave{0%{opacity:1;transform:scale(.3)}100%{opacity:0;transform:scale(2.6);border-width:2px}}
+.vc-pop.fly .vs-fx,.vc-pop.moving .vs-fx{display:none}
 /* ช่องว่าง (ฝั่งนั้นไม่ได้ลงการ์ด) = กรอบการ์ดใส ๆ + "ว่างเปล่า" */
 .vc-empty{display:grid;place-items:center;width:100%;aspect-ratio:820/1302;border-radius:14px;border:3px dashed rgba(255,255,255,.6);background:rgba(255,255,255,.07);box-shadow:0 0 0 2px var(--k) inset,0 0 24px rgba(0,0,0,.35);backdrop-filter:blur(3px)}
 .vc-empty b{font-family:var(--font-disp);font-weight:700;font-size:26px;color:rgba(255,255,255,.9);text-shadow:0 2px 8px rgba(0,0,0,.8)}
@@ -1316,6 +1350,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
         <video id="vdoBgA" muted playsinline preload="auto" disablepictureinpicture></video>
         <video id="vdoBgB" muted playsinline preload="auto" disablepictureinpicture></video>
         <video id="vdoFight" playsinline preload="auto" disablepictureinpicture></video>
+        <video id="vdoSlo" muted playsinline preload="auto" disablepictureinpicture></video>
       </div>
       <div id="hud">
       <img class="ov-top" src="assets/overlay-top-v2.webp" alt="" draggable="false">
@@ -2290,9 +2325,9 @@ const sfx = (() => {
     } catch (e) { bankState = 'failed'; musicBank = false; }
     if (typeof bgm !== 'undefined') bgm.sync(); // เพลงพร้อมแล้ว → เริ่มเล่นถ้าอยู่ในเกม
   }
-  function playSample(name) {
+  function playSample(name, rate = 1, gain = 1) {
     const b = bank[name], s = ctx.createBufferSource(), g = ctx.createGain();
-    s.buffer = b.buf; g.gain.value = b.gain;
+    s.buffer = b.buf; s.playbackRate.value = rate; g.gain.value = b.gain * gain;
     s.connect(g); g.connect(dry);
     s.start();
     s.onended = () => { try { g.disconnect(); } catch (e) { /* ข้ามได้ */ } };
@@ -2442,9 +2477,10 @@ const sfx = (() => {
     get bankState() { return bankState; },
     get samples() { return Object.keys(bank); },
     get musicBank() { return musicBank === null && bankState !== 'failed' ? 'loading' : musicBank || null; },
-    play(name, delay = 0) {
+    // opt = { rate, gain } เฉพาะเสียงจากไฟล์ (เช่น ฟึ่บตอนการ์ดหมุน เร็ว/ดังขึ้นตามการหมุน)
+    play(name, delay = 0, opt = null) {
       if (!on || !ctx || (!SOUND[name] && !bank[name])) return;
-      const run = () => { try { if (bank[name]) playSample(name); else SOUND[name](); } catch (e) { lastError = `${name}: ${e.message}`; /* เสียงพังต้องไม่ทำให้เกมพัง */ } };
+      const run = () => { try { if (bank[name]) playSample(name, (opt || {}).rate, (opt || {}).gain); else SOUND[name](); } catch (e) { lastError = `${name}: ${e.message}`; /* เสียงพังต้องไม่ทำให้เกมพัง */ } };
       if (delay) setTimeout(run, ui.fast ? delay * 0.4 : delay); else run();
     },
   };
@@ -3164,6 +3200,12 @@ const VDO_FILES = {"atk1-blue":[2784391,14.38],"atk1-red":[2274480,12.31],"atk2-
 // ตี้ 2026-11-01: คู่ต่อสู้ใหม่ — คลิปต่อตัวละคร (กัน/หลบคลิปเดียวต่อตัว · มีคลิปเปิดตัว intro) อยู่ที่ assets/vdo/<คู่>/<ท่า>-<ฝั่ง>.mp4
 // + coming-soon.mp4 (เล่นแทนท่าที่คู่นั้นยังไม่มีวิดีโอ) — สร้างด้วย python3 vdo-src/build_pairs.py --js
 const VDO_PAIR_FILES = {"aun-chip":{"atk1-blue":[3085674,16.06],"atk1-red":[3450774,16.04],"atk2-blue":[3277422,16.04],"atk2-red":[4384263,16.06],"atk3-blue":[3357371,16.04],"atk3-red":[3595403,16.04],"def-blue":[3258016,16.04],"def-red":[3928426,16.04],"dod-blue":[3455292,16.04],"dod-red":[2840229,16.04],"idle-blue":[1907787,15.04],"idle-red":[1675012,15.04],"intro-blue":[1974385,14.0],"intro-red":[4452902,16.73],"ult1-blue":[2772175,18.04],"ult1-red":[3626872,18.04],"ult2-blue":[3530436,18.04],"ult2-red":[3603808,18.04],"ult3-blue":[4312094,18.04],"ult3-red":[4841446,20.0]},"night-jeng":{"atk1-blue":[3649696,18.04],"atk1-red":[3095000,17.04],"atk2-blue":[4346001,19.35],"atk2-red":[3764700,19.08],"atk3-blue":[4974753,23.47],"atk3-red":[4658521,23.04],"def-blue":[4402988,20.04],"def-red":[3746473,18.04],"dod-blue":[3647079,20.04],"dod-red":[3306151,19.04],"idle-blue":[2512379,30.04],"idle-red":[2971175,30.04],"intro-blue":[3063779,16.33],"intro-red":[3280291,20.54],"taunt-blue":[1942052,20.04],"ult1-blue":[4134842,19.05],"ult1-red":[3784149,19.04],"ult2-blue":[4518289,21.04],"ult2-red":[3642416,20.04],"ult3-blue":[5139703,24.04],"ult3-red":[5536911,25.04]},"_":{"coming-soon":[215992,5.0]}};
+// ตี้ 2026-11-02: การ์ดหมุนลุ้นก่อนเปิด — เวลาที่ตี้มาร์คเอง (หน้ามาร์คเวลา artifact 9KVngLbJ… · ต้นแบบ 586wY8dN… v12) ต่อไฟล์ของคู่
+// [a1, w1, a2, w2, ไบต์ s1, ไบต์ s2] · ① การ์ดฝั่งใช้สกิล สโลวินาที a1 ยาว w1 (ช่วงเห็นแค่เอฟเฟกต์ ก่อนสกิลโผล่) · ② การ์ดฝั่งที่จะโดน สโล a2 ยาว w2 (สกิลยังอยู่ไกลตัว)
+// กติกาตี้ "สโลก่อนมาร์ค 1 ได้ แต่อย่าเลยมาร์ค 2" → การ์ดเปิดที่ a + w = มาร์ค 2 เสมอ
+// คลิปสโล B-roll = assets/vdo/<คู่>/slo/s1|s2-<ไฟล์>.mp4 (ffmpeg minterpolate 480 fps ยืด 8 เท่า · เฟรมแรก = วินาที a · ท้าย = a + w ตรงกับ VDO หลักไม่เกิน 1 เฟรม)
+// คู่ที่ยังไม่ได้มาร์ค = การ์ดเด้งหงายตามเดิม (popAt)
+const VDO_SPIN = {"aun-chip":{"atk1-red":[1.542,0.958,6.0,0.375,1553365,457343],"atk2-red":[1,0.958,5.417,0.375,1599328,461425],"atk3-red":[1.917,0.666,4.167,0.5,1271623,772233],"ult1-red":[1.417,0.791,5.125,0.5,1343901,544832],"ult2-red":[1.25,0.625,5.083,0.667,1170504,879245],"ult3-red":[3.458,0.709,7.583,0.584,1205497,1178017],"def-red":[1.417,0.625,3.208,0.5,976925,1083357],"dod-red":[1.0,0.5,2.542,0.5,508624,803695],"atk1-blue":[0.833,0.5,5,0.583,725471,992609],"atk2-blue":[0,0.708,5,0.375,791028,652606],"atk3-blue":[2.958,0.584,5.417,0.416,962053,1187725],"ult1-blue":[0.583,0.625,6.667,0.5,796707,1086665],"ult2-blue":[0,0.75,6.417,0.416,993992,828901],"ult3-blue":[0,0.75,7.583,0.625,920968,1218203],"def-blue":[0,0.625,2.625,0.583,518467,1142986],"dod-blue":[0.0,0.417,3.208,0.542,409703,806463]}};
 /* ───────── คู่ต่อสู้ (ตี้ 2026-11-01 · ม็อกอัป artifact UGnn7DorHDDAGMG1He1GS7) ─────────
    เลือกเป็นคู่ ไม่เลือกตัวละครเดี่ยว · ทุกโหมด: ARCADE / BOT VS BOT เลือกในหน้าต่างก่อนเริ่ม · PVP เจ้าของห้องเลือกตอนสร้างห้อง (meta.pair)
    โหลด VDO เฉพาะคู่ที่ใช้อยู่ · ท่าไหนคู่นั้นยังไม่มีวิดีโอ = เล่น COMING SOON แทน (การ์ดยังเด้ง/พุ่งชนตามปกติ) */
@@ -3191,6 +3233,8 @@ const vdo = (() => {
   const list = id => {
     const f = pairFiles(id), out = Object.keys(f).map(k => ({ k: `${id}/${k}`, url: `${VDO_DIR}${id === 'og' ? '' : id + '/'}${k}.mp4`, b: f[k][0] }));
     if (id !== 'og' && cs()) out.push({ k: `_/${VDO_CS}`, url: `${VDO_DIR}${VDO_CS}.mp4`, b: cs()[0] });
+    // ตี้ 2026-11-02: คลิปสโล B-roll ของการ์ดหมุน (เฉพาะคู่ที่มาร์คเวลาแล้ว)
+    for (const [k, m] of Object.entries(VDO_SPIN[id] || {})) for (const n of [1, 2]) out.push({ k: `${id}/slo/s${n}-${k}`, url: `${VDO_DIR}${id}/slo/s${n}-${k}.mp4`, b: m[3 + n] });
     return out;
   };
   const total = () => list(pair).reduce((a, x) => a + x.b, 0);
@@ -3271,6 +3315,8 @@ const vdo = (() => {
     missing: name => !has(name), // คู่นี้ยังไม่มีวิดีโอท่านี้ (เล่น COMING SOON แทน)
     url: name => urls[`${pair}/${key(name)}`] || (pair !== 'og' && !has(name) && urls[`_/${VDO_CS}`]) || null,
     dur: name => { const f = pairFiles(pair)[key(name)] || cs(); return f ? f[1] : 5; },
+    spin: name => (has(name) && (VDO_SPIN[pair] || {})[key(name)]) || null, // เวลามาร์คการ์ดหมุน [a1, w1, a2, w2] (null = เด้งหงายตามเดิม)
+    slo: (name, n) => urls[`${pair}/slo/s${n}-${key(name)}`] || null,
     get state() { return st[pair] || 'idle'; },
     get error() { return err[pair] || null; },
     get ready() { return on && st[pair] === 'ready'; },
@@ -3466,19 +3512,136 @@ function vcAdd(cls, html, style) {
 // ตี้ 2026-11-02: คู่ที่มีชื่อตัวละคร (คู่ใหม่) → ใช้ชื่อตัวละครแทน เช่น เพื่อนไม่คบ / Elizent · คู่เดิมยังไม่มีชื่อตัวละคร ใช้ชื่อผู้เล่นเหมือนเดิม
 const charName = s => { const p = pairOf(vdo.pair); return p.id === 'og' ? null : s === 'RED' ? p.red : p.blue; };
 const sideName = s => charName(s) || (ui.mode === 'spec' ? ui.spec.nick[s] : s === ME ? 'คุณ' : ui.mode === 'pvp' ? (ui.pvp && ui.pvp.oppNick) || 'ผู้เล่น' : 'บอท');
-function vcPop(s, c) {
+// spin = เด้งเป็นการ์ดคว่ำไว้หมุนลุ้นก่อนเปิด (vcSpinUp) — ไฟ/เสียงพลิกรอตอนเปิด
+function vcPop(s, c, spin = false) {
   if (vc.pops[s]) return;
   // ตี้ 2026-10-28: ฝั่งที่ไม่ได้ลงการ์ด = กรอบใส "ว่างเปล่า"
   // ตี้ 2026-10-31: ชื่อผู้เล่น (เหมือนบนแถบ HP) เหนือการ์ด · ซ่อนตอนการ์ดพุ่งเข้าแถบ (.fly)
   const who = `<b class="vc-who"><span>${esc(sideName(s))}</span></b>`;
-  const d = c ? vcAdd(`vc-pop ${s.toLowerCase()}`, `${cardHTML({ type: c.type, lv: c.lv })}${who}`)
+  const d = spin ? vcAdd(`vc-pop spin ${s.toLowerCase()} t-${c ? c.type : 'EMPTY'}`, `${VS_FX()}<div class="vs-persp"><div class="vs-spin"><div class="vs-face fr">${backHTML()}</div><div class="vs-face bk">${backHTML()}</div></div></div>${who}`)
+    : c ? vcAdd(`vc-pop ${s.toLowerCase()}`, `${cardHTML({ type: c.type, lv: c.lv })}${who}`)
     : vcAdd(`vc-pop empty ${s.toLowerCase()}`, `<div class="vc-empty"><b>ว่างเปล่า</b></div>${who}`);
   vc.pops[s] = d;
   vc.at[s] = VC_POP[s];
   void d.offsetWidth;
   d.classList.add('on');
+  if (spin) return;
   if (c) vfxFire(s, c);
   sfx.play('flip');
+}
+/* ───────── การ์ดหมุนลุ้นก่อนเปิด (ตี้ 2026-11-02 · ต้นแบบ artifact 586wY8dNb6kYyRqaTkJhoZ v12) ─────────
+   VDO ที่มีเวลามาร์ค (VDO_SPIN) มี 2 จังหวะ: ① การ์ดฝั่งใช้สกิล ตอนพลังก่อตัว · ② การ์ดฝั่งที่จะโดน ตอนสกิลยังอยู่ไกลตัว
+   ถึงวินาที a → VDO สโลแบบ B-roll (สลับไปคลิปสโลที่เติมเฟรมไว้ ทับ VDO หลัก) → การ์ดคว่ำเด้ง หมุนเร่งตาม LV → เปิดตรง a + w (มาร์ค 2) + แฟลช/คลื่น/จอสั่น → VDO เล่นต่อปกติ
+   หมุน Lv1 1.1 วิ 4 รอบ · Lv2 1.7 วิ 6 รอบ · Lv3 2.2 วิ 8 รอบ (ตี้กำหนด · ช่องว่าง = Lv1) · เสียงฟึ่บ "พลิกการ์ดกระดาษ" ทุกครึ่งรอบ เร็ว/ดังขึ้นตามการหมุน
+   เวลาทั้งหมดคงที่ตาม LV (ไม่ใช้ตัวสุ่มเกม) → PVP ทุกเครื่องเห็นเท่ากัน · กด SKIP = เปิดการ์ดทันที */
+const SPIN_X = 8, SPIN_RAMP = 250, SPIN_IN = 380; // คลิปสโลยืด 8 เท่า (เล่น 8× = ปกติ) · ไล่ความเร็วลง 0.25 วิ · การ์ดเด้งเข้า 0.38 วิก่อนเริ่มหมุน
+const SPIN_LV = { 1: { n: 4, T: 1100 }, 2: { n: 6, T: 1700 }, 3: { n: 8, T: 2200 } };
+const spinCfg = c => SPIN_LV[c ? c.lv : 1] || SPIN_LV[1];
+// ความเร็วสโล (เท่าของปกติ) ที่ทำให้ช่วง w วินาทีของคลิปพอดีกับเวลา D ms: ไล่ 1 → s ใน SPIN_RAMP (ease-out) แล้วคงที่ s
+const spinSlow = (w, D) => Math.min(1, Math.max(0.065, (w - SPIN_RAMP / 3000) / (D / 1000 - SPIN_RAMP / 3000)));
+const VS_FX = () => `<div class="vs-fx" aria-hidden="true"><i class="vs-aura"></i><i class="vs-ring"></i><i class="vs-pts">${Array.from({ length: 18 }, (_, k) => `<b style="--a:${Math.round(k * 20 + Math.random() * 12)}deg;--r:${170 + Math.round(Math.random() * 90)}px;--dl:${(-Math.random() * 0.8).toFixed(2)}s"></b>`).join('')}</i><i class="vs-flash"></i><i class="vs-wave"></i></div>`;
+// รอเฟรมถัดไป (requestAnimationFrame) — แท็บเบื้องหลังที่ rAF ไม่เดิน ใช้ setTimeout 50 ms แทน (ความคืบหน้าคิดจากนาฬิกา ไม่ค้าง)
+const nextFrame = () => new Promise(res => { const t = setTimeout(res, 50); requestAnimationFrame(() => { clearTimeout(t); res(); }); });
+// ไล่ความเร็ว VDO แบบนุ่ม (ease-out) จาก a → b ใน ms
+async function spinRamp(el, a, b, ms, ok) {
+  const t0 = performance.now();
+  for (;;) {
+    const p = Math.min(1, (performance.now() - t0) / ms);
+    el.playbackRate = a + (b - a) * (1 - (1 - p) * (1 - p));
+    if (p >= 1 || !ok()) return;
+    await nextFrame();
+  }
+}
+// หมุนการ์ดคว่ำฝั่ง s: เริ่มด้านหลัง (180°) → เร่ง (p^2.3) → จบหน้าการ์ด (360n°) · ครึ่งรอบสุดท้ายค่อยเปลี่ยนด้านหน้าเป็นหน้าการ์ดจริง (ระหว่างหมุนไม่เห็นหน้าการ์ด)
+// ok() เป็นเท็จ (SKIP / จบเกม) = หยุดหมุนแล้วเปิดทันที
+async function vcSpinUp(s, c, ok) {
+  const d = vc.pops[s];
+  if (!d || !d.classList.contains('spin')) return;
+  const cfg = spinCfg(c), q = sel => d.querySelector(sel), sp = q('.vs-spin'), fr = q('.vs-face.fr'), faces = d.querySelectorAll('.vs-face');
+  const aura = q('.vs-aura'), ring = q('.vs-ring'), pts = q('.vs-pts'), total = 360 * cfg.n - 180, t0 = performance.now();
+  let prev = 180, swapped = false, half = 0;
+  while (ok()) {
+    await nextFrame();
+    if (!ok()) break;
+    const p = Math.min(1, (performance.now() - t0) / cfg.T), th = 180 + total * Math.pow(p, 2.3), hh = Math.floor((th - 180) / 180);
+    if (hh > half) { half = hh; sfx.play('spinTick', 0, { rate: 0.85 + 0.7 * p, gain: 0.45 + 0.55 * p }); } // ฟึ่บทุกครึ่งรอบ
+    if (!swapped && th >= total) { fr.innerHTML = vcFace(c); swapped = true; }
+    const vel = th - prev, jit = p > 0.7 ? (p - 0.7) * 22 : 0, dx = jit ? (Math.random() - 0.5) * jit : 0, dy = jit ? (Math.random() - 0.5) * jit : 0, blur = Math.min(3.5, vel / 22);
+    prev = th;
+    sp.style.transform = `translate(${dx}px,${-26 * p + dy}px) scale(${1 + 0.16 * p}) rotateY(${th}deg)`;
+    for (const f of faces) f.style.filter = blur > 0.4 ? `blur(${blur.toFixed(1)}px) brightness(${(1 + p * 0.5).toFixed(2)})` : '';
+    sp.style.setProperty('--g', p.toFixed(2));
+    aura.style.opacity = (0.15 + 0.85 * p).toFixed(2); aura.style.transform = `scale(${(0.7 + 0.6 * p).toFixed(2)})`;
+    ring.style.opacity = Math.min(1, p * 1.3).toFixed(2); ring.style.transform = `rotate(${(th * 0.6).toFixed(0)}deg) scale(${(1.15 - 0.3 * p).toFixed(2)})`;
+    pts.style.opacity = Math.min(1, p * 1.6).toFixed(2);
+    if (p >= 1) break;
+  }
+  vcReveal(s, c, ok());
+}
+const vcFace = c => (c ? cardHTML({ type: c.type, lv: c.lv }) : '<div class="vc-empty"><b>ว่างเปล่า</b></div>');
+// เปิดหน้าการ์ด: snap + แฟลช + คลื่นกระแทก + จอสั่น (fx = false ตอน SKIP → เปิดเงียบ ๆ)
+function vcReveal(s, c, fx = true) {
+  const d = vc.pops[s];
+  if (!d || d._shown) return;
+  d._shown = true;
+  const q = sel => d.querySelector(sel), sp = q('.vs-spin');
+  q('.vs-face.fr').innerHTML = vcFace(c);
+  sp.style.transform = '';
+  sp.style.setProperty('--g', 0);
+  for (const f of d.querySelectorAll('.vs-face')) f.style.filter = '';
+  for (const e of [q('.vs-ring'), q('.vs-pts')]) e.style.opacity = 0;
+  const aura = q('.vs-aura');
+  aura.style.transition = 'opacity .5s ease,transform .5s ease'; aura.style.opacity = 0; aura.style.transform = 'scale(1.6)';
+  if (!c) d.classList.add('empty');
+  if (c) vfxFire(s, c);
+  if (!fx) return;
+  void sp.offsetWidth; sp.classList.add('revealed');
+  q('.vs-flash').classList.add('go'); q('.vs-wave').classList.add('go');
+  quake();
+  sfx.play('flip');
+}
+// ลำดับการ์ดหมุนของ VDO หนึ่งไฟล์ · sides = ฝั่งที่เด้งใน VDO นี้ (popSides) · คืน [{ s, n, a, w }] (ว่าง = เด้งหงายตามเดิม)
+// ① = ฝั่งเจ้าของท่าตี (VDO กัน/หลบ = อีกฝั่ง) · ② = ฝั่งตรงข้าม — ตีกันทั้งคู่ 2 ไฟล์ แต่ละไฟล์มีแค่ ① (การ์ดอีกฝั่งหมุนในไฟล์ของมันเอง)
+function spinPlan(clip, sides) {
+  const m = vdo.spin(clip);
+  if (!m || !vdo.slo(clip, 1) || !vdo.slo(clip, 2)) return [];
+  const own = clipSide(clip), s1 = /^(def|dod)-/.test(clip) ? FOE[own] : own;
+  return [{ s: s1, n: 1, a: m[0], w: m[1] }, { s: FOE[s1], n: 2, a: m[2], w: m[3] }].filter(x => sides.includes(x.s));
+}
+// เล่นการ์ดหมุนทุกจังหวะของ VDO ที่กำลังเล่น (el) — ok() เป็นเท็จ = SKIP/จบเกม (เปิดการ์ดที่หมุนอยู่ทันที ไม่เล่น VDO ต่อ) · fail() = VDO เล่นต่อไม่ได้
+async function vcSpinClip(el, clip, moments, r, ok, fail) {
+  const slo = $('#vdoSlo');
+  try {
+    for (const m of moments) {
+      slo.src = vdo.slo(clip, m.n); slo.currentTime = 0; // เตรียมเฟรมแรกไว้ระหว่างรอ (blob ในหน่วยความจำ โหลดไว)
+      const t0 = performance.now();
+      while (ok() && slo.readyState < 2 && performance.now() - t0 < 1500) await nextFrame();
+      // รอจน VDO หลักเล่นถึงวินาที a (a = 0 ก็รอให้เริ่มเล่นจริงก่อน — หยุดก่อน play() สำเร็จ = play ถูกยกเลิก)
+      while (ok() && !el.ended && el.currentTime < Math.max(m.a, 0.01)) await nextFrame();
+      if (!ok() || el.ended) return;
+      const c = r[m.s].card, D = SPIN_IN + spinCfg(c).T, broll = slo.readyState >= 2;
+      const late = Math.min(Math.max(0, el.currentTime - m.a), m.w * 0.5), k = spinSlow(m.w - late, D);
+      if (broll) {
+        el.pause();
+        if (late > 0.03) slo.currentTime = late * SPIN_X; // ถึงช้ากว่า a (เฟรมหลุด) → เริ่มคลิปสโลตรงเฟรมเดียวกับ VDO หลัก
+        slo.playbackRate = SPIN_X; slo.classList.add('on'); slo.play().catch(() => {});
+        spinRamp(slo, SPIN_X, SPIN_X * k, SPIN_RAMP, ok);
+        el.currentTime = m.a + m.w; // VDO หลักรอตรงจุดที่การ์ดเปิด (ใต้คลิปสโล)
+      } else spinRamp(el, 1, k, SPIN_RAMP, ok); // คลิปสโลยังไม่พร้อม → สโลจาก VDO หลักแทน (ภาพกระตุกกว่า)
+      vcPop(m.s, c, true);
+      const t1 = performance.now();
+      while (ok() && performance.now() - t1 < SPIN_IN) await nextFrame();
+      await vcSpinUp(m.s, c, ok);
+      slo.pause(); slo.classList.remove('on');
+      if (!ok()) return;
+      if (broll) el.play().catch(() => { el.muted = true; el.play().catch(fail); });
+      else spinRamp(el, el.playbackRate, 1, 220, ok);
+    }
+  } finally {
+    for (const m of moments) if (vc.pops[m.s]) vcReveal(m.s, r[m.s].card, false);
+    slo.pause(); slo.classList.remove('on');
+    if (el.playbackRate !== 1) el.playbackRate = 1;
+  }
 }
 function vcReset() { vc.pops = {}; vc.at = {}; $('#vdoCards').innerHTML = ''; vfxStop(); ui.shPrev = null; }
 // ตี้ 2026-10-30: Defence ชนหลอดโล่ = โล่บนหลอดเพิ่มขึ้นก่อน (ชิลด์เดิม + ที่ได้ช่องนี้) ยังไม่หักดาเมจ — การ์ดตีชนทีหลังค่อยหัก (showResult ล้างค่านี้)
@@ -3977,6 +4140,7 @@ async function laneVdo(i, plan, gid, r, keep = false) {
   const apply = k => { if (!shown.has(k) && plan[k].hp) { shown.add(k); plan[k].hp(); } };
   const runFin = async k => {
     ran.add(k);
+    for (const s of SIDES) if (vc.pops[s] && vc.pops[s].classList.contains('spin')) vcReveal(s, r[s].card, false); // SKIP ระหว่างการ์ดหมุน → เปิดก่อนพุ่ง
     W.classList.add('vdo-hp');
     const anyHit = fin[k].some(a => a.fx === 'hit');
     await vcFinale(ui.g, r, fin[k], a => { if (twoHit) { if (a.fx === 'hit') apply(clipOf(a.s)); } else if (a.fx === 'hit' || !anyHit) apply(k); }, gone);
@@ -4001,7 +4165,11 @@ async function laneVdo(i, plan, gid, r, keep = false) {
       el.muted = !sfx.on;
       el.classList.add('on');
       el.play().catch(() => { el.muted = true; el.play().catch(() => { lv.failed = true; }); });
-      const tick = setInterval(() => { for (const s of popSides[k]) if (el.currentTime >= popAt(clips[k], s)) vcPop(s, r[s].card); }, 80);
+      // ตี้ 2026-11-02: VDO ที่มาร์คเวลาแล้ว = การ์ดหมุนลุ้นก่อนเปิด (ฝั่งที่หมุนไม่เด้งตาม popAt) · การ์ดพุ่ง/แถบ HP รอจนหมุนครบทุกจังหวะ
+      const moments = r ? spinPlan(clips[k], popSides[k]) : [], spun = new Set(moments.map(m => m.s));
+      let spinning = moments.length > 0;
+      if (spinning) vcSpinClip(el, clips[k], moments, r, () => !stop(), () => { lv.failed = true; }).catch(() => {}).finally(() => { spinning = false; });
+      const tick = setInterval(() => { for (const s of popSides[k]) if (!spun.has(s) && el.currentTime >= popAt(clips[k], s)) vcPop(s, r[s].card); }, 80);
       try {
         if (k === 0) {
           await until(() => stop() || Date.now() - t0 >= VDO_REVEAL_MS);
@@ -4013,7 +4181,7 @@ async function laneVdo(i, plan, gid, r, keep = false) {
           // ตี้ 2026-10-29: ช่องที่มีโล่ (Defence เจอการ์ดตี) ปะทะนานกว่าปกติ (รอโล่ขึ้น + ชน) ต้องเผื่อเวลาให้พอ ไม่งั้น VDO จบก่อนแล้วค้างเฟรม
           const lead = (fin[k].reduce((t, a) => t + vcMs(a), 0) + vcClashMs(r) + VC_PAD) / 1000;
           const at = Math.max(0, vdo.dur(clips[k]) - lead);
-          await until(() => stop() || el.ended || el.currentTime >= at);
+          await until(() => stop() || (!spinning && (el.ended || el.currentTime >= at)));
           // ถ้ายังพุ่งไม่จบแต่ VDO จบแล้ว = สลับเป็น Idle วนพื้นหลังแทนการค้างเฟรมสุดท้าย
           el.addEventListener('ended', () => { if (ui.vdo === lv && !koNow()) { el.classList.remove('on'); vdoBg.sync(true); } }, { once: true });
           if (gone()) return false;
@@ -4021,11 +4189,11 @@ async function laneVdo(i, plan, gid, r, keep = false) {
           if (gone()) return false;
         } else if (plan[k].hp && !twoHit) {
           const at = vdo.dur(clips[k]) - VDO_HP_LEAD;
-          await until(() => stop() || el.ended || el.currentTime >= at);
+          await until(() => stop() || (!spinning && (el.ended || el.currentTime >= at)));
           if (gone()) return false;
           await hpNow(k);
         }
-        await until(() => stop() || el.ended);
+        await until(() => stop() || (!spinning && el.ended));
         if (gone()) return false;
       } finally { clearInterval(tick); }
     }

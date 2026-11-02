@@ -25,6 +25,7 @@ Layered sounds list every source they use.
 | pick | `sfx-pick.mp3` | Taking playing card (522520) | OxidVideos | https://pixabay.com/sound-effects/film-special-effects-taking-playing-card-522520/ |
 | place | `sfx-place.mp3` | Placing playing card (522514) | OxidVideos | https://pixabay.com/sound-effects/film-special-effects-placing-playing-card-522514/ |
 | flip | `sfx-flip.mp3` | flipCard (91468) | freesound_community | https://pixabay.com/sound-effects/film-special-effects-flipcard-91468/ |
+| spinTick | `sfx-spinTick.mp3` | flipCard (91468) | freesound_community | https://pixabay.com/sound-effects/film-special-effects-flipcard-91468/ |
 | attack | `sfx-attack.mp3` | Sword Slash and Swing (185432) | DavidDumaisAudio | https://pixabay.com/sound-effects/film-special-effects-sword-slash-and-swing-185432/ |
 | ult | `sfx-ult.mp3` | Epic Spell Impact (478364) | DRAGON-STUDIO | https://pixabay.com/sound-effects/film-special-effects-epic-spell-impact-478364/ |
 | defend | `sfx-defend.mp3` | Sword Slash With Metal Shield Impact (185433) | DavidDumaisAudio | https://pixabay.com/sound-effects/film-special-effects-sword-slash-with-metal-shield-impact-185433/ |
@@ -103,3 +104,5 @@ Alex_Kizenkov, AlexGrohl, AudioPapkin, DavidDumaisAudio, DRAGON-STUDIO, florapho
 2026-10-30 (ต่อ 2): ตี้ขอ Round 4–10 → เจนด้วยเสียงต้นแบบ aud_v1_arcade.wav (@Audio1) ได้ `vo-round4..10.mp3` เสียงคนเดิม · เกมพากย์ ROUND ครบ 1–10
 
 2026-10-30 (ค่ำ): `title` = Whoosh Cinematic แทนเสียงติ๊กนาฬิกา (`tickHi`) ตอนป้าย ROUND / FIGHT / ACTION ขึ้น · ตี้เลือก A จากหน้าฟัง sfx-title.html · ตัด 0.64–1.47 วิ · max momentary −17 LUFS · ทำซ้ำด้วย `python3 audio-src/build_epic.py title`
+
+2026-11-02: `spinTick` = เสียงฟึ่บทุกครึ่งรอบตอนการ์ดหมุนลุ้นก่อนเปิด · ตี้เลือก "พลิกการ์ดกระดาษ" (flipCard 91468 · ไฟล์คนละช่วงตัดกับ `flip`) จากต้นแบบ artifact 586wY8dN… · เกมเล่นเร็ว 0.85→1.55 เท่า ดังขึ้นตามการหมุน
