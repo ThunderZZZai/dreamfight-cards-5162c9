@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793632986">
+<meta name="df-build" content="1793633968">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -6063,7 +6063,7 @@ document.addEventListener('keydown', e => {
    vdo = รอบที่เรากำลังดู VDO ฉากปะทะอยู่ (อีกฝ่ายหยุดนับเวลารอ) — ไม่มี = ไม่ได้ดู
    t0 = เวลาเริ่มแมตช์ (Date.now ของเรา) — ผู้ชมที่เข้ากลางเกมใช้ตั้งนาฬิกาแมตช์ · แสดงผลเท่านั้น
    inp เก็บทั้งแมตช์ (ผู้ชมที่เข้ากลางเกมย้อนคำนวณจากรอบ 1) · ผู้ชม: { watch: mid } อย่างเดียว ไม่ส่งอะไรให้ผู้เล่น */
-const PVP_V = 23; // เปลี่ยนกติกา/เอนจินเมื่อไหร่ต้องเพิ่มเลขนี้ — คนละเวอร์ชันจะไม่ถูกจับคู่ (เล่นคนละกติกา = ผลเพี้ยน) · 4 = Fight Phase เป็น VDO (ยาวขึ้นมาก + presence.vdo) · 5 = Dodge Lv3 มีเพดาน HP 10 + HP สูงสุด 100 → 150 (ตี้ 2026-10-22) · 6 = Lv2 + Lv2 คืนการ์ด Lv1 (validLock รับ id การ์ดคืน) · 7 = เกจ (การวางส่ง gauge ops ไปด้วย · newGame สุ่ม gseed) · 8 = Attack ทอยให้อีกฝ่ายทิ้งการ์ด (rollClash ใช้ตัวสุ่มเพิ่ม) · 9 = Dodge เจอ Ultimate หลบ 100% + Lv2-3 อีกฝ่ายทิ้ง/เสียเกจ · 10 = ชิลด์ (Defence) + Ultimate ใหม่ + เอาเกจชนะทางออก · 11 = Ultimate ดาเมจ 20/40/60 · 12 = Attack เจอ Defence ไม่ทอยทิ้ง (ตัวสุ่มหลักใช้น้อยลง) · 13 = มือว่างเสีย HP เฉพาะค่า Ultimate (Attack / Dodge บังคับทิ้งไม่เสีย HP) · 14 = Defence ชนะทาง Attack ชิลด์เพิ่ม 5/10/15 · 15 = รอบที่ใช้ 3 เกจ สะสมเกจไม่ได้ · 16 = ค่าจากตาราง: ดาเมจเพิ่มชนะทาง Attack/Ultimate 5/10/15 + มือว่าง 15 HP · 17 = Dodge หลบได้เฉพาะ Ultimate · Attack ไม่มีลดหลบ (ตัวสุ่มใช้น้อยลง) + มือว่างกลับเป็น 10 HP · 18 = Attack ดาเมจ 10/25/40 · 19 = Defence ชิลด์ 10/25/40 · 20 = Dodge จั่ว 1 + ขโมยการ์ด 0/1/2 (ตัวสุ่มหลักใช้ตอนขโมย) · เลิกทิ้ง/เสียเกจตอนเจอ Ultimate · 21 = 3 เกจใหม่: จั่วครบมือ + เปลี่ยนฟรี 2 + ผสมการ์ดบนมือ (op ftr / merge) · 22 = พลังเต็มเปลี่ยนฟรี 1 ใบเป็น Lv2 (MAX_FREE_TR) + ห้อง Bo (meta.bo · presence.ser) · 23 = ห้องมีคู่ต่อสู้ (meta.pair) + ที่นั่งผู้ชม + เริ่มแข่งเมื่อทั้งสองเครื่องโหลดคู่ของห้องครบ (presence.vp) — แท็บเวอร์ชันก่อนระบบคู่ไม่เข้าห้องเดียวกัน (ตี้ 2026-11-02: เพื่อนเห็นคนละคู่กับเจ้าของห้อง)
+const PVP_V = 24; // เปลี่ยนกติกา/เอนจินเมื่อไหร่ต้องเพิ่มเลขนี้ — คนละเวอร์ชันจะไม่ถูกจับคู่ (เล่นคนละกติกา = ผลเพี้ยน) · 4 = Fight Phase เป็น VDO (ยาวขึ้นมาก + presence.vdo) · 5 = Dodge Lv3 มีเพดาน HP 10 + HP สูงสุด 100 → 150 (ตี้ 2026-10-22) · 6 = Lv2 + Lv2 คืนการ์ด Lv1 (validLock รับ id การ์ดคืน) · 7 = เกจ (การวางส่ง gauge ops ไปด้วย · newGame สุ่ม gseed) · 8 = Attack ทอยให้อีกฝ่ายทิ้งการ์ด (rollClash ใช้ตัวสุ่มเพิ่ม) · 9 = Dodge เจอ Ultimate หลบ 100% + Lv2-3 อีกฝ่ายทิ้ง/เสียเกจ · 10 = ชิลด์ (Defence) + Ultimate ใหม่ + เอาเกจชนะทางออก · 11 = Ultimate ดาเมจ 20/40/60 · 12 = Attack เจอ Defence ไม่ทอยทิ้ง (ตัวสุ่มหลักใช้น้อยลง) · 13 = มือว่างเสีย HP เฉพาะค่า Ultimate (Attack / Dodge บังคับทิ้งไม่เสีย HP) · 14 = Defence ชนะทาง Attack ชิลด์เพิ่ม 5/10/15 · 15 = รอบที่ใช้ 3 เกจ สะสมเกจไม่ได้ · 16 = ค่าจากตาราง: ดาเมจเพิ่มชนะทาง Attack/Ultimate 5/10/15 + มือว่าง 15 HP · 17 = Dodge หลบได้เฉพาะ Ultimate · Attack ไม่มีลดหลบ (ตัวสุ่มใช้น้อยลง) + มือว่างกลับเป็น 10 HP · 18 = Attack ดาเมจ 10/25/40 · 19 = Defence ชิลด์ 10/25/40 · 20 = Dodge จั่ว 1 + ขโมยการ์ด 0/1/2 (ตัวสุ่มหลักใช้ตอนขโมย) · เลิกทิ้ง/เสียเกจตอนเจอ Ultimate · 21 = 3 เกจใหม่: จั่วครบมือ + เปลี่ยนฟรี 2 + ผสมการ์ดบนมือ (op ftr / merge) · 22 = พลังเต็มเปลี่ยนฟรี 1 ใบเป็น Lv2 (MAX_FREE_TR) + ห้อง Bo (meta.bo · presence.ser) · 23 = ห้องมีคู่ต่อสู้ (meta.pair) + ที่นั่งผู้ชม + เริ่มแข่งเมื่อทั้งสองเครื่องโหลดคู่ของห้องครบ (presence.vp) — แท็บเวอร์ชันก่อนระบบคู่ไม่เข้าห้องเดียวกัน (ตี้ 2026-11-02: เพื่อนเห็นคนละคู่กับเจ้าของห้อง) · 24 = ตัวกรอง presence เก็บ meta.pair / room.pair / vp / obs (เดิมตกหล่น → เพื่อนเข้าห้องได้คู่เดิม · เริ่มแข่งไม่ได้) — แยกห้องจากแท็บที่ยังไม่แก้ (ตี้ 2026-11-02)
 // ตี้ 2026-10-28: โชว์แมตช์อาจคุยกันนาน → ไม่จับเวลาเฟส (ไม่มีนาฬิกา ไม่ยืนยันให้อัตโนมัติ ไม่ตัดสิทธิ์เพราะช้า) · หลุดการเชื่อมต่อยังตัดสินตาม PVP_GONE_MS
 const PVP_TIMER = false;
 const PVP_SEC = 60, PVP_CUT = 30, PVP_GONE_MS = 8000, PVP_NEXT_MS = 10000, PVP_WAIT_MS = 90000, VDO_HOLD_MS = 240000;
@@ -6109,7 +6109,7 @@ function mockRoom(chName = 'df-mock-room') {
     const d = e.data;
     if (d.bye) { others.delete(d.peer); fire(); return; }
     if (d.hello) send();
-    if (d.presence) { others.set(d.peer, { presence: Object.freeze({ ...d.presence }), at: Date.now(), seen: Date.now() }); fire(); }
+    if (d.presence) { others.set(d.peer, { presence: cleanPresence(d.presence), at: Date.now(), seen: Date.now() }); fire(); } // ผ่านตัวกรองเดียวกับห้องจริง (ทดสอบในเครื่องจะได้เจอช่องที่ตกหล่น)
   };
   setInterval(() => { send(); const now = Date.now(); let gone = false; for (const [p, o] of others) if (now - o.seen > 4000) { others.delete(p); gone = true; } if (gone) fire(); }, 1000);
   addEventListener('pagehide', () => ch.postMessage({ peer: me, bye: true }));
@@ -6135,11 +6135,17 @@ function cleanPresence(p) {
   if (Number.isFinite(p.t0)) o.t0 = p.t0;
   if (Number.isFinite(p.j)) o.j = p.j;
   const hex = v => (typeof v === 'string' && /^[0-9a-f]{64}$/.test(v) ? v : '');
-  if (p.meta && typeof p.meta === 'object' && !Array.isArray(p.meta)) o.meta = Object.freeze({ name: str(p.meta.name, 30) || '', lock: hex(p.meta.lock), u: Number.isFinite(p.meta.u) ? p.meta.u : 0, bo: Number.isInteger(p.meta.bo) && p.meta.bo >= 1 && p.meta.bo <= 9 ? p.meta.bo : 1 });
+  // ตี้ 2026-11-02 (บั๊ก "เพื่อนเข้าห้องแล้วเป็นตัวละครอื่น"): ช่องที่เพิ่มทีหลังต้องผ่านตรงนี้ด้วย ไม่งั้นเครื่องอื่นไม่เห็น —
+  //   เดิมตกหล่น meta.pair / room.pair (คู่ของห้อง → เพื่อนได้คู่เดิม) · vp (โหลดคู่ครบ → เริ่มแข่งไม่ได้) · obs/obsAt (ที่นั่งผู้ชม)
+  const pid = v => (typeof v === 'string' && PAIRS.some(x => x.id === v) ? v : null);
+  if (p.meta && typeof p.meta === 'object' && !Array.isArray(p.meta)) o.meta = Object.freeze({ name: str(p.meta.name, 30) || '', lock: hex(p.meta.lock), u: Number.isFinite(p.meta.u) ? p.meta.u : 0, bo: Number.isInteger(p.meta.bo) && p.meta.bo >= 1 && p.meta.bo <= 9 ? p.meta.bo : 1, pair: pid(p.meta.pair) });
+  if (pid(p.vp)) o.vp = p.vp;
+  if (Number.isInteger(p.obs) && p.obs >= 0 && p.obs < OBS_N) o.obs = p.obs;
+  if (Number.isFinite(p.obsAt)) o.obsAt = p.obsAt;
   const R = p.room;
   if (R && typeof R === 'object' && !Array.isArray(R) && typeof R.id === 'string' && /^[a-z0-9_-]{1,24}$/.test(R.id)) {
     const int = (v, lo, hi, d) => (Number.isInteger(v) && v >= lo && v <= hi ? v : d);
-    o.room = Object.freeze({ id: R.id, name: str(R.name, 30) || '', lock: hex(R.lock), red: str(R.red, 16), blue: str(R.blue, 16), host: str(R.host, 16), live: int(R.live, 0, 999, 0), n: int(R.n, 1, 500, 1), bo: int(R.bo, 1, 9, 1) });
+    o.room = Object.freeze({ id: R.id, name: str(R.name, 30) || '', lock: hex(R.lock), red: str(R.red, 16), blue: str(R.blue, 16), host: str(R.host, 16), live: int(R.live, 0, 999, 0), n: int(R.n, 1, 500, 1), bo: int(R.bo, 1, 9, 1), pair: pid(R.pair) });
   }
   const S = p.ser, sid = v => typeof v === 'string' && /^[a-z0-9]{1,12}$/.test(v);
   if (S && typeof S === 'object' && !Array.isArray(S) && sid(S.s) && Number.isFinite(S.u)) {
