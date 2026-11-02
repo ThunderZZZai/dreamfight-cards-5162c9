@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793556493">
+<meta name="df-build" content="1793596310">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -528,6 +528,30 @@ body:not(.portrait) #rotateHint{display:none}
 .seat .seat-who.empty{color:var(--muted);font-weight:500}
 .seat .btn{min-width:250px}
 .seat.mine{box-shadow:0 0 0 3px var(--k),0 0 40px color-mix(in srgb,var(--k) 55%,transparent)}
+/* ตี้ 2026-11-02 (ม็อกอัป artifact FrKzdLS79GRFUXEF7FadBK): ที่นั่งมีรูปตัวละครของคู่ห้อง · บรรทัดใหญ่ = ชื่อตัวละคร · บรรทัดล่าง = ชื่อผู้เล่นที่ตั้งไว้ */
+.seat{width:560px;height:320px;display:grid;grid-template-columns:40% minmax(0,1fr);align-items:stretch;justify-content:stretch;gap:0;overflow:hidden;text-align:left}
+.seat.blue{grid-template-columns:minmax(0,1fr) 40%;text-align:right}
+.seat-por{position:relative} .seat.blue .seat-por{order:2}
+.seat-por img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 12%;-webkit-mask-image:linear-gradient(90deg,#000 70%,transparent);mask-image:linear-gradient(90deg,#000 70%,transparent)}
+.seat.blue .seat-por img{-webkit-mask-image:linear-gradient(270deg,#000 70%,transparent);mask-image:linear-gradient(270deg,#000 70%,transparent)}
+.seat-info{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:8px;padding:16px 22px;min-width:0}
+.seat .seat-who{font-size:21px;text-transform:none} /* ชื่อผู้เล่นตามที่ตั้ง (ไม่ทำเป็นตัวพิมพ์ใหญ่) */
+.seat.blue .seat-info{align-items:flex-end}
+.seat .seat-char{font-size:19px;color:#dfe5ee} .seat .seat-char b{font-size:26px;color:#fff;text-transform:none}
+.seat .seat-who small{display:block;font-size:14px;font-weight:500;letter-spacing:.06em;color:var(--muted)}
+.seat .btn{min-width:230px}
+.obs-seats{display:grid;gap:12px;width:1180px;margin:2px 0 6px}
+.obs-head{display:flex;justify-content:center;align-items:baseline;gap:14px;flex-wrap:wrap}
+.obs-head b{font-family:var(--font-disp);letter-spacing:.2em;font-size:18px;color:var(--gold)} .obs-head span{font-size:16px;color:var(--muted)}
+.obs-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.ob{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 14px;border-radius:16px;border:1px solid rgba(255,200,61,.35);background:rgba(255,200,61,.05);text-align:left}
+.ob.mine{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold)}
+.ob .ob-ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:#2a2410;border:1px solid #6b5a1f}
+.ob .ob-ic svg{width:24px;height:24px;fill:none;stroke:var(--gold);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ob .ob-t{min-width:0} .ob .ob-t small{display:block;font-family:var(--font-disp);font-size:13px;letter-spacing:.14em;color:var(--muted)}
+.ob .ob-t b{display:block;font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:none} .ob .ob-t b.empty{color:var(--muted);font-weight:500}
+.ob .btn{min-width:0;min-height:42px;height:42px;padding:0 16px;font-size:16px}
+.vc-win.still{top:540px} .vc-win.still .fxw{transform:scale(1.15)}
 .seat-vs{font-family:var(--font-disp);font-weight:700;font-size:48px;color:var(--gold)}
 .pvp-note{font-size:18px;color:var(--muted);max-width:1020px}
 .btn.team-red{background:linear-gradient(135deg,#ff434b,#b1111b);border-color:#ff7a80;color:#fff}
@@ -627,7 +651,8 @@ body:not(.portrait) #rotateHint{display:none}
 .pair-card .pmeta small{display:block;font-size:13.5px;color:#8a95a8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pair-who{font-size:16px;color:#c9d2de;text-transform:none} .pair-who b.r{color:#ff8a8f} .pair-who b.b{color:#8fb6ff}
 .pair-load{font-size:15px;color:var(--gold);min-height:20px}
-.room-pair{display:inline-flex;align-items:center;gap:6px} .room-pair img{width:20px;height:26px;object-fit:cover;object-position:50% 15%;border-radius:4px}
+.room-pair{display:inline-flex;align-items:center;gap:6px;text-transform:none}
+.nt{text-transform:none} .room-pair img{width:20px;height:26px;object-fit:cover;object-position:50% 15%;border-radius:4px}
 /* หน้าต่างสร้าง/ตั้งค่าห้องมีช่องอื่นเยอะ → การ์ดคู่เตี้ยลง ซ่อนบรรทัดรอง ให้ทั้งหน้าต่างพอดีจอ (เดิมสูง 1095 จาก 1080) */
 #rmForm:has(.pairs){padding-top:24px;padding-bottom:22px} #rmForm:has(.pairs) h3{font-size:30px;margin-bottom:4px}
 #rmForm .pair-card .duo{aspect-ratio:2/1} #rmForm .pair-card .duo img{object-position:50% 12%} #rmForm .pair-card .pmeta{padding:6px 10px 8px} #rmForm .pair-card .pmeta small{display:none}
@@ -1394,6 +1419,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
           <div class="seat-vs">VS</div>
           <div class="seat blue" id="seatBLUE"></div>
         </div>
+        <div class="obs-seats" id="obsSeats"></div>
         <div class="pvp-watch" id="pvpWatch" hidden></div>
         <p class="pvp-note" id="pvpNote">กด READY ฝั่งที่ต้องการ แล้วรออีกฝ่ายกดอีกฝั่ง · พร้อมทั้งคู่ = เริ่มเกมทันที · ไม่จับเวลา คุยกันได้เต็มที่ · คนที่เข้ามาหลังเริ่มแข่งแล้วเป็นผู้ชม</p>
         <div class="room-btns" id="roomBtns"></div>
@@ -4936,11 +4962,14 @@ async function runFight() {
     await koFx(verdict); // ตี้ 2026-10-28: KO ขึ้นทับจอ VDO เลย ไม่ผ่าน Idle / กระดาน
     if (verdict.winner !== 'DRAW' && vdo.ready) await winVdo(verdict.winner, gid);
   }
-  vdoUncover(); // ผู้ชม: เปิดกระดานหลังเปิดครบทุกช่อง (ระหว่างช่องค้างจอ VDO ไว้)
+  // ผู้ชมที่ไม่เห็นหน้าผล: ค้างภาพสุดท้ายของท่าชนะ + ป้าย WINNER ไว้ (ไม่เปิดกระดาน) แล้วกลับหน้าห้องเอง (specAutoBack)
+  if (verdict.winner && verdict.winner !== 'DRAW' && vdo.ready && specNoResult()) vcAdd('vc-win still', fxImg('winner', 260));
+  else vdoUncover(); // ผู้ชม: เปิดกระดานหลังเปิดครบทุกช่อง (ระหว่างช่องค้างจอ VDO ไว้)
   if (!verdict.winner) await wait(600);
   if (gid !== ui.gid) return;
   Object.assign(ui, { phase: 'end', busy: false, winner: verdict.winner, winReason: verdict.reason, oppHidden: 0 });
   if (ui.pvp) ui.pvp.endAt = Date.now();
+  if (ui.winner && specNoResult()) specAutoBack(gid);
   if (ui.winner && boLive()) boRecord(ui.pvp ? ui.pvp.mid : ui.spec ? ui.spec.mid : null, ui.winner); // ห้อง Bo: นับเกมที่ชนะ (ARCADE ไม่มี mid)
   if (net.mine.vdo) presence({ vdo: null });
   if (ui.pvp && ui.winner) presence({ seat: null, at: null, inp: {} }); // จบแมตช์ = ปล่อยที่นั่งให้คนอื่น (mid ยังอยู่จนกว่าจะออก)
@@ -5599,9 +5628,21 @@ function botStyleText(g, s) {
   const turns = log.length > 1 ? ` · เปลี่ยนแผน: ${log.map(([r, st]) => `รอบ ${r} ${BOT_STYLES[st].th}`).join(' → ')}` : ' · ไม่เปลี่ยนแผนเลย';
   return `บอท ${s} นิสัย "${pe.th}" (${pe.note})${turns}`;
 }
+// ตี้ 2026-11-02: ผู้ชม PVP (ที่นั่งผู้ชม + คนกด OBSERVE) ไม่เห็นหน้าผล ยกเว้นเจ้าของห้อง · BOT VS BOT คนเปิดดูเอง = เจ้าของห้อง เห็นตามเดิม
+const specNoResult = () => ui.mode === 'spec' && !!ui.spec && !ui.spec.bot && !(roomHost() && roomHost().peer === net.me);
+// จบเกมแล้วค้างภาพไว้แป๊บหนึ่ง แล้วกลับหน้าห้องเอง (ห้อง Bo ตามไปเกมต่อไป · ที่นั่งผู้ชมก็ตามเข้าเอง)
+function specAutoBack(gid) {
+  setTimeout(() => {
+    if (gid !== ui.gid || ui.screen !== 'game' || ui.mode !== 'spec' || !ui.winner) return;
+    if (boNextOpen()) ui.boFollow = true;
+    vcReset();
+    vdoUncover();
+    toStart('pvp');
+  }, 5000);
+}
 function renderWinner() {
   const el = $('#winner'), w = ui.winner, g = ui.g;
-  el.hidden = !w || ui.peek;
+  el.hidden = !w || ui.peek || specNoResult();
   if (el.hidden) return;
   const line = ui.mode === 'spec'
     ? `${w === 'DRAW' ? '' : `${esc(ui.spec.nick[w])} (${w}) ชนะ — `}${ui.winReason}`
@@ -5738,6 +5779,7 @@ document.addEventListener('click', e => {
     case 'bvbNext': bvbNext(); break;
     case 'pvpLobby': pvpOpen(); break;
     case 'seat': pvpSeat(t.dataset.i); break;
+    case 'obsSeat': pvpObs(Number(t.dataset.i)); break;
     case 'toLobby': toStart('lobby'); break;
     case 'toPvp': if (ui.mode === 'spec' && boNextOpen()) ui.boFollow = true; toStart('pvp'); break; // ผู้ชมห้อง Bo: ตามไปดูเกมถัดไปเอง
     case 'boNext': { const side = ME; toStart('pvp'); net.autoSeat = side; pvpOnPeers(); break; } // ห้อง Bo: กลับนั่งฝั่งเดิม → พร้อมทั้งคู่ = เริ่มเกมถัดไป
@@ -5804,7 +5846,7 @@ document.addEventListener('fullscreenchange', () => { renderFs(); fitStage(); })
 document.addEventListener('webkitfullscreenchange', () => { renderFs(); fitStage(); });
 renderFs();
 
-const VDO_GATED = new Set(['start', 'seat', 'watch']); // ตี้ 2026-11-01: ARCADE / BOT VS BOT / PVP รอโหลดในหน้าต่างเลือกคู่หรือในห้องแทน
+const VDO_GATED = new Set(['start', 'seat', 'watch', 'obsSeat']); // ตี้ 2026-11-01: ARCADE / BOT VS BOT / PVP รอโหลดในหน้าต่างเลือกคู่หรือในห้องแทน
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && ui.vdo) { ui.vdo.skip = true; return; }
   if (e.code === 'KeyP' && !e.ctrlKey && !e.metaKey && !e.altKey && bvbLive() && !(e.target.closest && e.target.closest('input,textarea,select'))) { e.preventDefault(); bvbPauseSet(!ui.bvbPause); return; } // ตี้ 2026-10-31: BOT VS BOT หยุด/เล่นต่อ
@@ -6291,7 +6333,7 @@ function pvpSeat(side) {
   const h = seatHolders();
   if (net.mine.seat === side) { presence({ seat: null, at: null }); sfx.play('pick'); renderPvp(); return; }
   if (h[side] && h[side].peer !== net.me) { toast(`ฝั่ง ${side} มีคนแล้ว`); return; }
-  presence({ seat: side, at: Date.now(), mid: null, over: null, inp: {} });
+  presence({ seat: side, at: Date.now(), mid: null, over: null, inp: {}, obs: null, obsAt: null }); // นั่งผู้เล่น = ลุกจากที่นั่งผู้ชม
   sfx.play('levelup');
   renderPvp();
 }
@@ -6300,7 +6342,7 @@ function renderPvp() {
   if (!st || ui.screen !== 'pvp') return;
   // หน้ารายการห้อง (ไม่มี ?room)
   for (const id of ['#pvpRooms']) $(id).hidden = !LIST_MODE;
-  for (const id of ['#pvpSeats', '#pvpNote']) $(id).hidden = LIST_MODE;
+  for (const id of ['#pvpSeats', '#obsSeats', '#pvpNote']) $(id).hidden = LIST_MODE;
   if (LIST_MODE) {
     $('#pvpEyebrow').textContent = 'PVP · ONLINE';
     $('#pvpTitle').textContent = 'เลือกห้อง หรือสร้างห้องใหม่';
@@ -6319,7 +6361,7 @@ function renderPvp() {
     $('#pvpEyebrow').textContent = 'PVP · ROOM';
     $('#pvpTitle').textContent = `${roomName()}${roomLock() ? ' 🔒' : ''}`;
     $('#roomChips').hidden = net.state !== 'on';
-    $('#roomChips').innerHTML = `${hp ? `<span>👑 เจ้าของห้อง ${isHost ? 'คุณ' : esc(nickOf(hp))}</span>` : ''}<span>คู่ ${pairOf(roomPair()).name}</span><span>ในห้อง ${net.peers.length} คน</span><span>ไม่จับเวลา</span>${boChip()}`;
+    $('#roomChips').innerHTML = `${hp ? `<span>👑 เจ้าของห้อง ${isHost ? 'คุณ' : esc(nickOf(hp))}</span>` : ''}<span class="nt">คู่ ${pairOf(roomPair()).name}</span><span>ในห้อง ${net.peers.length} คน</span><span>ไม่จับเวลา</span>${boChip()}`;
     $('#roomBtns').innerHTML = `${isHost && m ? '<button type="button" class="btn ghost" data-act="roomEdit">⚙ ตั้งค่าห้อง</button>' : ''}${isHost && boScore() && boScore().games ? '<button type="button" class="btn ghost" data-act="boReset">↺ เริ่มนับ Bo ใหม่</button>' : ''}<button type="button" class="btn ghost" data-act="copyRoom">🔗 คัดลอกลิงก์ห้อง</button><button type="button" class="btn ghost" data-act="roomLeave">← ออกจากห้อง</button>`;
     roomGate();
   } else $('#roomBtns').innerHTML = '<button type="button" class="btn ghost" data-act="toLobby">← กลับ LOBBY</button>';
@@ -6357,14 +6399,57 @@ function renderPvp() {
   for (const s of SIDES) {
     const el = $(`#seat${s}`), p = h[s], mine = p && p.peer === net.me, busy = p && p.presence.mid;
     el.classList.toggle('mine', !!mine);
-    const who = !p ? '<div class="seat-who empty">ว่าง · รอผู้เล่น</div>'
-      : `<div class="seat-who">${mine ? 'คุณ' : esc(nickOf(p))}${busy ? ' · กำลังแข่ง' : ' · พร้อมแล้ว ✓'}</div>`;
+    const who = !p ? '<div class="seat-who empty"><small>ผู้เล่น</small>ว่าง · รอผู้เล่น</div>'
+      : `<div class="seat-who"><small>ผู้เล่น</small>${esc(nickOf(p))}${mine ? ' (คุณ)' : ''}${busy ? ' · กำลังแข่ง' : ' · พร้อมแล้ว ✓'}</div>`;
     const btn = net.state !== 'on' || (!ON_CLAUDE && (!roomReady() || !roomAuthed())) ? `<button type="button" class="btn" disabled>${s} READY</button>`
       : mine ? `<button type="button" class="btn ghost" data-act="seat" data-i="${s}"${ui.pvpStarting ? ' disabled' : ''}>ยกเลิก</button>`
       : p ? '<button type="button" class="btn" disabled>มีคนแล้ว</button>'
       : `<button type="button" class="btn team-${s.toLowerCase()}" data-act="seat" data-i="${s}"${net.mine.seat ? ' disabled' : ''}>${s} READY</button>`;
-    el.innerHTML = `<div class="seat-team">${s}</div>${who}${btn}`;
+    const P = pairOf(roomPair()), cn = P.id === 'og' ? '' : s === 'RED' ? P.red : P.blue;
+    el.innerHTML = `<div class="seat-por"><img src="assets/pair/${P.id}-${s.toLowerCase()}.webp" alt="" draggable="false"></div><div class="seat-info"><div class="seat-team">${s}</div>${cn ? `<div class="seat-char">ตัวละคร <b>${esc(cn)}</b></div>` : ''}${who}${btn}</div>`;
   }
+  renderObs();
+}
+/* ───────── ที่นั่งผู้ชม (ตี้ 2026-11-02 · ม็อกอัป artifact FrKzdLS79GRFUXEF7FadBK) ─────────
+   เกมนี้ใช้สตรีมโชว์ในงาน (นักพากย์ · ผู้เล่น · คนดูในงาน) → ห้องมีที่นั่งผู้ชม 3 ที่ สำหรับเครื่องที่ยิงจอขึ้นสตรีม
+   presence.obs = ที่นั่ง 0–2 · obsAt = เวลากดนั่ง (นั่งชนกัน ใครก่อนได้ก่อนแบบเดียวกับ seat) · นั่งแล้วเริ่มแข่งเมื่อไหร่ เข้าจอผู้ชมเอง (pvpOnPeers)
+   ผู้เล่นที่นั่งแดง/ฟ้าอยู่นั่งที่ผู้ชมไม่ได้ (ลุกก่อน) · นั่งค้างได้ทั้งซีรีส์ Bo — จบเกมกลับหน้าห้องแล้วตามเข้าเกมต่อไปเอง */
+const OBS_N = 3;
+function obsHolders() {
+  const out = [];
+  for (let k = 0; k < OBS_N; k++) {
+    const c = net.peers.filter(p => p.presence && p.presence.v === PVP_V && p.presence.obs === k)
+      .sort((a, b) => ((a.presence.obsAt || 0) - (b.presence.obsAt || 0)) || (a.peer < b.peer ? -1 : a.peer > b.peer ? 1 : 0));
+    out.push(c[0] || null);
+  }
+  return out;
+}
+const obsMine = () => { const k = net.mine.obs, h = Number.isInteger(k) ? obsHolders()[k] : null; return !!h && h.peer === net.me; };
+function pvpObs(k) {
+  if (net.state !== 'on' || !(k >= 0 && k < OBS_N) || ui.pvpStarting) return;
+  if (!ON_CLAUDE && (!roomReady() || !roomAuthed())) { roomGate(); return; }
+  if (net.mine.seat) { toast('ลุกจากที่นั่งผู้เล่นก่อน แล้วค่อยนั่งที่ผู้ชม'); return; }
+  const h = obsHolders();
+  if (net.mine.obs === k) { presence({ obs: null, obsAt: null }); sfx.play('pick'); renderPvp(); return; }
+  if (h[k] && h[k].peer !== net.me) { toast(`ที่นั่งผู้ชม ${k + 1} มีคนแล้ว`); return; }
+  presence({ obs: k, obsAt: Date.now() });
+  sfx.play('levelup');
+  renderPvp();
+}
+function renderObs() {
+  const box = $('#obsSeats');
+  if (!box || LIST_MODE) return;
+  const h = obsHolders(), off = net.state !== 'on' || (!ON_CLAUDE && (!roomReady() || !roomAuthed()));
+  const eye = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+  box.innerHTML = `<div class="obs-head"><b>OBSERVER · ที่นั่งผู้ชม</b><span>นั่งแล้วรอได้เลย เริ่มแข่งเมื่อไหร่ เครื่องนี้เข้าจอผู้ชมเอง ไม่ต้องกด</span></div>
+    <div class="obs-row">${h.map((p, k) => {
+      const mine = p && p.peer === net.me;
+      const btn = off ? '<button type="button" class="btn" disabled>นั่งดู</button>'
+        : mine ? `<button type="button" class="btn ghost" data-act="obsSeat" data-i="${k}"${ui.pvpStarting ? ' disabled' : ''}>ลุก</button>`
+        : p ? '<button type="button" class="btn" disabled>มีคนแล้ว</button>'
+        : `<button type="button" class="btn gold" data-act="obsSeat" data-i="${k}"${net.mine.seat || obsMine() ? ' disabled' : ''}>นั่งดู</button>`;
+      return `<div class="ob${mine ? ' mine' : ''}"><span class="ob-ic">${eye}</span><span class="ob-t"><small>OBSERVER ${k + 1}${mine ? ' · รอเริ่มแข่ง' : ''}</small><b class="${p ? '' : 'empty'}">${p ? `${esc(nickOf(p))}${mine ? ' (คุณ)' : ''}` : 'ว่าง'}</b></span>${btn}</div>`;
+    }).join('')}</div>`;
 }
 // ทุกครั้งที่คนในห้องเปลี่ยน: แก้ที่นั่งชน · เริ่มเกมเมื่อพร้อมทั้งคู่ · ในเกม เช็กอีกฝ่ายยังอยู่ไหม
 function pvpOnPeers() {
@@ -6376,6 +6461,7 @@ function pvpOnPeers() {
     boHold();
     // ผู้ชมห้อง Bo ที่ออกมาจากเกมที่จบ → ตามไปดูเกมถัดไปเองเมื่อเริ่ม
     if (ui.boFollow && ui.screen === 'pvp' && roomAuthed() && watchable() && !vdoNeed()) { ui.boFollow = false; specStart(); }
+    if (obsMine() && ui.screen === 'pvp' && roomAuthed() && watchable() && !vdoNeed()) specStart(); // ตี้ 2026-11-02: ที่นั่งผู้ชมเข้าจอผู้ชมเองตอนเริ่มแข่ง
     if (net.autoSeat && roomReady() && ui.screen === 'pvp') {
       const want = net.autoSeat === 'any' ? SIDES[Math.random() < 0.5 ? 0 : 1] : net.autoSeat, h = seatHolders();
       net.autoSeat = null;
@@ -6735,6 +6821,17 @@ function specStart() {
   addLog(g.round > 1 ? `ย้อนดูรอบ 1-${g.round - 1} แล้ว — ดูสดตั้งแต่ Round ${g.round}` : 'ดูสดตั้งแต่ Round 1', 'sys');
   render();
   sfx.play('intro');
+  // ตี้ 2026-11-02: เข้าดูตั้งแต่ต้นเกม (ยังไม่มีใครเลือกการ์ดรอบ 1) = เห็นซีนเปิดตัว + ป้าย ROUND 1 เหมือนผู้เล่น (ระหว่างนี้ busy ไม่เดินตามผู้เล่น)
+  if (g.round === 1 && st.stage === 'pick' && !SIDES.some(s => specIn(s, '1p') !== undefined)) specOpening(ui.gid);
+}
+async function specOpening(gid) {
+  ui.busy = true;
+  if (introDue()) { await introVdo(gid); if (gid !== ui.gid) return; render(); }
+  sfx.play('voRound1');
+  await titleFx('round1');
+  if (gid !== ui.gid) return;
+  ui.busy = false;
+  render();
 }
 /* ═════════ BOT VS BOT (ตี้ 2026-10-27) ═════════
    บอทสองตัว (สุ่มนิสัยคนละแบบ) สู้กันเอง ดูจากมุมผู้ชม — ใช้หน้าจอและทางเดินเกมเดียวกับผู้ชม PVP
@@ -6911,6 +7008,7 @@ function specEnd(winner, reason) {
   addLog(`Winner Phase · ${winner === 'DRAW' ? 'ไม่มีผล' : `WINNER ${tagOf(winner)}`} — ${reason}`, 'sys');
   render();
   sfx.play(winner === 'DRAW' ? 'levelup' : 'win');
+  if (specNoResult()) specAutoBack(ui.gid);
 }
 // เดินเกมตามผู้เล่น (ทุก 250 ms และทุกครั้งที่ห้องเปลี่ยน)
 function specTick() {
