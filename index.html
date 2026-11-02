@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793631293">
+<meta name="df-build" content="1793632986">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -10,14 +10,22 @@
   if (mine === 'dev' || !window.fetch) return;
   const u = new URL(location.href);
   if (u.searchParams.has('v')) { u.searchParams.delete('v'); try { history.replaceState(history.state, '', u.pathname + u.search + u.hash); } catch (e) {} }
-  fetch(`${location.pathname}?cb=${Date.now()}`, { cache: 'no-store' }).then(r => (r.ok ? r.text() : '')).then(t => {
-    const m = t.match(/name="df-build" content="([^"]+)"/);
-    if (!m || m[1] === mine || m[1] === 'dev' || sessionStorage.getItem('df-build-jump') === m[1]) return;
-    sessionStorage.setItem('df-build-jump', m[1]); // กันวนโหลดซ้ำถ้าตัวใหม่ยังไม่มาถึงจริง
+  const latest = () => fetch(`${location.pathname}?cb=${Date.now()}`, { cache: 'no-store' }).then(r => (r.ok ? r.text() : '')).then(t => (t.match(/name="df-build" content="([^"]+)"/) || [])[1] || null).catch(() => null);
+  // กันวนโหลดซ้ำถ้าตัวใหม่ยังไม่มาถึงจริง (CDN ยังส่งตัวเก่า) — กระโดดไปบิลด์เดิมซ้ำได้อีกครั้งหลัง 3 นาที
+  const recent = b => { const j = sessionStorage.getItem('df-build-jump') || ''; const [jb, at] = j.split('@'); return jb === b && (!at || Date.now() - at < 180000); };
+  const jump = b => {
+    sessionStorage.setItem('df-build-jump', `${b}@${Date.now()}`);
     const w = new URL(location.href); // อ่าน URL ตอนนี้ (สคริปต์เกมอาจลบ ?go/?watch ไปแล้ว)
-    w.searchParams.set('v', m[1]);
+    w.searchParams.set('v', b);
     location.replace(w.pathname + w.search + w.hash);
-  }).catch(() => {});
+  };
+  latest().then(b => { if (b && b !== mine && b !== 'dev' && !recent(b)) jump(b); });
+  // ตี้ 2026-11-02 "ต่อให้เปิดเว็บค้างไว้ก็จะอัปเดตตามด้วย": เช็กซ้ำทุก 60 วิ + ตอนกลับมาที่แท็บ · เจอบิลด์ใหม่ = จดไว้ (__dfNewBuild)
+  // แล้วเกมเรียก __dfJump() เองตอนไม่ตัดใคร (หน้าแรก / LOBBY / ห้อง PVP ที่ยังไม่นั่งแข่ง) — กลางเกมรอจนออกจากเกม
+  const poll = () => latest().then(b => { if (b && b !== mine && b !== 'dev') window.__dfNewBuild = b; });
+  setInterval(poll, 60000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) poll(); });
+  window.__dfJump = () => { const b = window.__dfNewBuild; if (b && !recent(b)) jump(b); };
 })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -5488,7 +5496,8 @@ function renderGauge(s) {
   if (!el.firstElementChild) el.innerHTML = '<div class="gin"></div>';
   const P = g.p[s], n = P.gauge, prev = ui.gShown[s] == null ? n : ui.gShown[s];
   // ตี้ 2026-10-31: เกจ ULT บนแถบ HP — หน้าผู้ชม = ทั้งสองฝั่ง · โหมดผู้เล่น = เฉพาะฝั่งตรงข้าม (บนแถบเลือดของเขา) เกจของเราอยู่กรอบตั้งล่างที่เดิม
-  renderUlt(s, ui.mode === 'spec' || s !== ME, n, prev);
+  // ตี้ 2026-11-02: "ฝั่งคนเล่นเอาเกจพรไปอยู่ด้านบนที่หลอด HP ด้วย" → โหมดผู้เล่น (ARCADE / PVP) ขึ้นทั้งสองฝั่งเหมือนหน้าผู้ชม · กรอบตั้งล่างของเรายังอยู่ (มีปุ่มใช้เกจ 1 · 2 · 3)
+  renderUlt(s, true, n, prev);
   const usable = s === ME && gaugeUsable();
   const unl = unlimitedNow(g, s) && ui.phase === 'action' && (s === ME || ui.mode === 'spec' || !!P.lanes);
   const nogain = unlimitedNow(g, s) && ui.phase !== 'action' && !!P.lanes; // ระหว่างสู้รอบที่ใช้ 3 เกจ: สะสมไม่ได้
@@ -6003,6 +6012,15 @@ function renderFs() {
   b.setAttribute('aria-label', on ? 'ออกจากเต็มจอ' : 'เต็มจอ');
   b.title = on ? 'ออกจากเต็มจอ' : 'เต็มจอ';
 }
+// ตี้ 2026-11-02: เปิดเว็บค้างไว้ก็อัปเดตตาม — สคริปต์หัวไฟล์เจอบิลด์ใหม่ (window.__dfNewBuild) → โหลดตัวใหม่ทันทีถ้าไม่ตัดใคร
+//   ปลอดภัย = ไม่อยู่ในเกม · ไม่ได้นั่งที่นั่งแข่ง/อยู่ในแมตช์ · ไม่ได้กำลังเริ่ม PVP · ไม่มีหน้าต่างเลือกโหมด/สร้างห้องเปิดค้าง
+//   กลางเกม (รวมผู้ชม / BOT VS BOT) = รอจนออกจากเกม แล้วบอกครั้งเดียวว่าจะอัปเดตให้เอง
+const updateSafe = () => ui.screen !== 'game' && !net.mine.seat && !net.mine.mid && !ui.pvpStarting && [...document.querySelectorAll('.room-modal')].every(m => m.hidden);
+setInterval(() => {
+  if (!window.__dfNewBuild || !window.__dfJump) return;
+  if (updateSafe()) { window.__dfJump(); return; }
+  if (ui.updNote !== window.__dfNewBuild) { ui.updNote = window.__dfNewBuild; toast('มีเวอร์ชันใหม่ของเกม · จะอัปเดตให้เองเมื่อออกจากเกม'); }
+}, 2000);
 function toast(text) {
   const t = $('#toast');
   t.textContent = text;
