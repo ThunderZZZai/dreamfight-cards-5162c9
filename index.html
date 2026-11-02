@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793606519">
+<meta name="df-build" content="1793614584">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -3254,6 +3254,7 @@ const vdo = (() => {
     if (id === pair) { if (on && accessOk && (!st[id] || st[id] === 'idle' || st[id] === 'failed')) load(); return; }
     const prev = pair;
     pair = id;
+    vdoBg.reset();
     try { localStorage.setItem('df-pair', id); } catch (e) { /* ข้ามได้ */ }
     if (st[prev] === 'loading') st[prev] = 'idle';
     for (const k of Object.keys(urls)) if (!k.startsWith(`${id}/`) && !k.startsWith('_/')) { URL.revokeObjectURL(urls[k]); delete urls[k]; }
@@ -3346,6 +3347,8 @@ const vdoBg = (() => {
       else for (const e of els) { e.classList.remove('on'); e.pause(); }
     },
     get debug() { return { on, cur, n, src: els.map(e => e.getAttribute('src') ? name() : null), time: els.map(e => +e.currentTime.toFixed(2)), paused: els.map(e => e.paused) }; },
+    // ตี้ 2026-11-02: เปลี่ยนคู่ = ล้างคลิป Idle ของคู่ก่อน — เดิม sync(true) เล่น src เก่าต่อ (blob ที่ถูกคืนแล้ว ภาพค้างเฟรมแรก) → พื้นหลังเป็นคู่อื่นทั้งเกม แม้ฉากปะทะเป็นคู่ที่เลือก
+    reset() { on = false; cur = 0; n = 0; for (const e of els) { e.pause(); e.classList.remove('on'); e._swap = false; e.removeAttribute('src'); e.load(); } },
   };
 })();
 function duckMusic(down) {
@@ -5863,7 +5866,7 @@ document.addEventListener('keydown', e => {
    vdo = รอบที่เรากำลังดู VDO ฉากปะทะอยู่ (อีกฝ่ายหยุดนับเวลารอ) — ไม่มี = ไม่ได้ดู
    t0 = เวลาเริ่มแมตช์ (Date.now ของเรา) — ผู้ชมที่เข้ากลางเกมใช้ตั้งนาฬิกาแมตช์ · แสดงผลเท่านั้น
    inp เก็บทั้งแมตช์ (ผู้ชมที่เข้ากลางเกมย้อนคำนวณจากรอบ 1) · ผู้ชม: { watch: mid } อย่างเดียว ไม่ส่งอะไรให้ผู้เล่น */
-const PVP_V = 22; // เปลี่ยนกติกา/เอนจินเมื่อไหร่ต้องเพิ่มเลขนี้ — คนละเวอร์ชันจะไม่ถูกจับคู่ (เล่นคนละกติกา = ผลเพี้ยน) · 4 = Fight Phase เป็น VDO (ยาวขึ้นมาก + presence.vdo) · 5 = Dodge Lv3 มีเพดาน HP 10 + HP สูงสุด 100 → 150 (ตี้ 2026-10-22) · 6 = Lv2 + Lv2 คืนการ์ด Lv1 (validLock รับ id การ์ดคืน) · 7 = เกจ (การวางส่ง gauge ops ไปด้วย · newGame สุ่ม gseed) · 8 = Attack ทอยให้อีกฝ่ายทิ้งการ์ด (rollClash ใช้ตัวสุ่มเพิ่ม) · 9 = Dodge เจอ Ultimate หลบ 100% + Lv2-3 อีกฝ่ายทิ้ง/เสียเกจ · 10 = ชิลด์ (Defence) + Ultimate ใหม่ + เอาเกจชนะทางออก · 11 = Ultimate ดาเมจ 20/40/60 · 12 = Attack เจอ Defence ไม่ทอยทิ้ง (ตัวสุ่มหลักใช้น้อยลง) · 13 = มือว่างเสีย HP เฉพาะค่า Ultimate (Attack / Dodge บังคับทิ้งไม่เสีย HP) · 14 = Defence ชนะทาง Attack ชิลด์เพิ่ม 5/10/15 · 15 = รอบที่ใช้ 3 เกจ สะสมเกจไม่ได้ · 16 = ค่าจากตาราง: ดาเมจเพิ่มชนะทาง Attack/Ultimate 5/10/15 + มือว่าง 15 HP · 17 = Dodge หลบได้เฉพาะ Ultimate · Attack ไม่มีลดหลบ (ตัวสุ่มใช้น้อยลง) + มือว่างกลับเป็น 10 HP · 18 = Attack ดาเมจ 10/25/40 · 19 = Defence ชิลด์ 10/25/40 · 20 = Dodge จั่ว 1 + ขโมยการ์ด 0/1/2 (ตัวสุ่มหลักใช้ตอนขโมย) · เลิกทิ้ง/เสียเกจตอนเจอ Ultimate · 21 = 3 เกจใหม่: จั่วครบมือ + เปลี่ยนฟรี 2 + ผสมการ์ดบนมือ (op ftr / merge) · 22 = พลังเต็มเปลี่ยนฟรี 1 ใบเป็น Lv2 (MAX_FREE_TR) + ห้อง Bo (meta.bo · presence.ser)
+const PVP_V = 23; // เปลี่ยนกติกา/เอนจินเมื่อไหร่ต้องเพิ่มเลขนี้ — คนละเวอร์ชันจะไม่ถูกจับคู่ (เล่นคนละกติกา = ผลเพี้ยน) · 4 = Fight Phase เป็น VDO (ยาวขึ้นมาก + presence.vdo) · 5 = Dodge Lv3 มีเพดาน HP 10 + HP สูงสุด 100 → 150 (ตี้ 2026-10-22) · 6 = Lv2 + Lv2 คืนการ์ด Lv1 (validLock รับ id การ์ดคืน) · 7 = เกจ (การวางส่ง gauge ops ไปด้วย · newGame สุ่ม gseed) · 8 = Attack ทอยให้อีกฝ่ายทิ้งการ์ด (rollClash ใช้ตัวสุ่มเพิ่ม) · 9 = Dodge เจอ Ultimate หลบ 100% + Lv2-3 อีกฝ่ายทิ้ง/เสียเกจ · 10 = ชิลด์ (Defence) + Ultimate ใหม่ + เอาเกจชนะทางออก · 11 = Ultimate ดาเมจ 20/40/60 · 12 = Attack เจอ Defence ไม่ทอยทิ้ง (ตัวสุ่มหลักใช้น้อยลง) · 13 = มือว่างเสีย HP เฉพาะค่า Ultimate (Attack / Dodge บังคับทิ้งไม่เสีย HP) · 14 = Defence ชนะทาง Attack ชิลด์เพิ่ม 5/10/15 · 15 = รอบที่ใช้ 3 เกจ สะสมเกจไม่ได้ · 16 = ค่าจากตาราง: ดาเมจเพิ่มชนะทาง Attack/Ultimate 5/10/15 + มือว่าง 15 HP · 17 = Dodge หลบได้เฉพาะ Ultimate · Attack ไม่มีลดหลบ (ตัวสุ่มใช้น้อยลง) + มือว่างกลับเป็น 10 HP · 18 = Attack ดาเมจ 10/25/40 · 19 = Defence ชิลด์ 10/25/40 · 20 = Dodge จั่ว 1 + ขโมยการ์ด 0/1/2 (ตัวสุ่มหลักใช้ตอนขโมย) · เลิกทิ้ง/เสียเกจตอนเจอ Ultimate · 21 = 3 เกจใหม่: จั่วครบมือ + เปลี่ยนฟรี 2 + ผสมการ์ดบนมือ (op ftr / merge) · 22 = พลังเต็มเปลี่ยนฟรี 1 ใบเป็น Lv2 (MAX_FREE_TR) + ห้อง Bo (meta.bo · presence.ser) · 23 = ห้องมีคู่ต่อสู้ (meta.pair) + ที่นั่งผู้ชม + เริ่มแข่งเมื่อทั้งสองเครื่องโหลดคู่ของห้องครบ (presence.vp) — แท็บเวอร์ชันก่อนระบบคู่ไม่เข้าห้องเดียวกัน (ตี้ 2026-11-02: เพื่อนเห็นคนละคู่กับเจ้าของห้อง)
 // ตี้ 2026-10-28: โชว์แมตช์อาจคุยกันนาน → ไม่จับเวลาเฟส (ไม่มีนาฬิกา ไม่ยืนยันให้อัตโนมัติ ไม่ตัดสิทธิ์เพราะช้า) · หลุดการเชื่อมต่อยังตัดสินตาม PVP_GONE_MS
 const PVP_TIMER = false;
 const PVP_SEC = 60, PVP_CUT = 30, PVP_GONE_MS = 8000, PVP_NEXT_MS = 10000, PVP_WAIT_MS = 90000, VDO_HOLD_MS = 240000;
@@ -6047,7 +6050,7 @@ async function netInit() {
   const onErr = e => { if (dead.includes(e && e.code)) { net.state = 'off'; renderPvp(); } };
   room.onConnection(c => {
     if (net.state !== 'off') net.state = c ? 'on' : 'connecting';
-    if (c && !net.onAt) { net.onAt = Date.now(); setTimeout(() => { pvpOnPeers(); renderPvp(); }, 2600); } // รอเห็นชื่อ/รหัสห้อง
+    if (c && !net.onAt) { net.onAt = Date.now(); setTimeout(() => { pvpOnPeers(); renderPvp(); }, 5100); } // รอเห็นชื่อ/รหัส/คู่ของห้อง (heartbeat 2.5 วิ — 2.6 วิเดิมเฉียดเกินไป)
     if (!c) net.downAt = net.downAt || Date.now();
     else {
       // หลุดนานเกิน 12 วิ (เช่นปิดจอมือถือ) ขณะรอในห้อง: คนอื่นเห็นเราหายไปแล้ว → ปล่อยที่นั่ง ไม่เอาเวลา READY เก่ากลับมาแย่งที่
@@ -6107,7 +6110,10 @@ const roomName = () => (roomMeta() && roomMeta().name) || (ROOM.id === 'lobby' ?
 const roomLock = () => (roomMeta() && roomMeta().lock) || '';
 const roomPair = () => pairOf((roomMeta() || {}).pair).id; // ตี้ 2026-11-01: คู่ต่อสู้ของห้อง (เจ้าของห้องเลือก)
 const roomAuthed = () => !roomLock() || ssGet(`df-key-${ROOM.id}`) === roomLock();
-const roomReady = () => net.state === 'on' && (!!roomMeta() || (net.onAt && Date.now() - net.onAt > 2500)); // รอเห็นชื่อ/รหัสห้องก่อน กันกด READY ห้องที่ล็อก
+const roomReady = () => net.state === 'on' && (!!roomMeta() || (net.onAt && Date.now() - net.onAt > 5000)); // รอเห็นชื่อ/รหัส/คู่ของห้องก่อน กันกด READY ห้องที่ล็อก หรือเล่นคู่ที่เครื่องจำไว้แทนคู่ของห้อง
+// ตี้ 2026-11-02: เครื่องนี้โหลด VDO คู่ไหนครบแล้ว (presence.vp · null = ยังโหลดไม่ครบ) — นับถอยหลังเริ่มแข่งเมื่อทั้งสองฝั่งพร้อมด้วยคู่ของห้องเท่านั้น
+const vpNow = () => (vdoNeed() ? null : vdo.pair);
+function vpSync() { if (net.room && (net.mine.vp || null) !== vpNow()) presence({ vp: vpNow() }); }
 /* ───────── ห้อง Bo (ตี้ 2026-10-30) ─────────
    ห้อง PVP ที่สร้างเองเลือกแข่งแบบ Bo 3 ได้ (ไว้จัดโชว์แมตช์) — ชนะ 2 ใน 3 เกม (ใครชนะครบ BO_WINS เกมก่อนชนะซีรีส์) · โหมดอื่นยังชนะเกมเดียว
    แต่ละเกมยังเป็น PVP ปกติ (จบเกม → ปล่อยที่นั่ง → READY ใหม่) · ปุ่ม "เกมต่อไป" พากลับนั่งฝั่งเดิมเอง ผู้ชมตามไปดูเกมถัดไปเอง
@@ -6340,6 +6346,7 @@ function pvpSeat(side) {
 function renderPvp() {
   const st = $('#pvpStatus');
   if (!st || ui.screen !== 'pvp') return;
+  vpSync();
   // หน้ารายการห้อง (ไม่มี ?room)
   for (const id of ['#pvpRooms']) $(id).hidden = !LIST_MODE;
   for (const id of ['#pvpSeats', '#obsSeats', '#pvpNote']) $(id).hidden = LIST_MODE;
@@ -6361,7 +6368,7 @@ function renderPvp() {
     $('#pvpEyebrow').textContent = 'PVP · ROOM';
     $('#pvpTitle').textContent = `${roomName()}${roomLock() ? ' 🔒' : ''}`;
     $('#roomChips').hidden = net.state !== 'on';
-    $('#roomChips').innerHTML = `${hp ? `<span>👑 เจ้าของห้อง ${isHost ? 'คุณ' : esc(nickOf(hp))}</span>` : ''}<span class="nt">คู่ ${pairOf(roomPair()).name}</span><span>ในห้อง ${net.peers.length} คน</span><span>ไม่จับเวลา</span>${boChip()}`;
+    $('#roomChips').innerHTML = `${hp ? `<span>👑 เจ้าของห้อง ${isHost ? 'คุณ' : esc(nickOf(hp))}</span>` : ''}<span class="nt">คู่ ${roomReady() ? pairOf(roomPair()).name : 'กำลังโหลด…'}</span><span>ในห้อง ${net.peers.length} คน</span><span>ไม่จับเวลา</span>${boChip()}`;
     $('#roomBtns').innerHTML = `${isHost && m ? '<button type="button" class="btn ghost" data-act="roomEdit">⚙ ตั้งค่าห้อง</button>' : ''}${isHost && boScore() && boScore().games ? '<button type="button" class="btn ghost" data-act="boReset">↺ เริ่มนับ Bo ใหม่</button>' : ''}<button type="button" class="btn ghost" data-act="copyRoom">🔗 คัดลอกลิงก์ห้อง</button><button type="button" class="btn ghost" data-act="roomLeave">← ออกจากห้อง</button>`;
     roomGate();
   } else $('#roomBtns').innerHTML = '<button type="button" class="btn ghost" data-act="toLobby">← กลับ LOBBY</button>';
@@ -6400,13 +6407,13 @@ function renderPvp() {
     const el = $(`#seat${s}`), p = h[s], mine = p && p.peer === net.me, busy = p && p.presence.mid;
     el.classList.toggle('mine', !!mine);
     const who = !p ? '<div class="seat-who empty"><small>ผู้เล่น</small>ว่าง · รอผู้เล่น</div>'
-      : `<div class="seat-who"><small>ผู้เล่น</small>${esc(nickOf(p))}${mine ? ' (คุณ)' : ''}${busy ? ' · กำลังแข่ง' : ' · พร้อมแล้ว ✓'}</div>`;
+      : `<div class="seat-who"><small>ผู้เล่น</small>${esc(nickOf(p))}${mine ? ' (คุณ)' : ''}${busy ? ' · กำลังแข่ง' : p.presence.vp === roomPair() ? ' · พร้อมแล้ว ✓' : ' · กำลังโหลด VDO…'}</div>`;
     const btn = net.state !== 'on' || (!ON_CLAUDE && (!roomReady() || !roomAuthed())) ? `<button type="button" class="btn" disabled>${s} READY</button>`
       : mine ? `<button type="button" class="btn ghost" data-act="seat" data-i="${s}"${ui.pvpStarting ? ' disabled' : ''}>ยกเลิก</button>`
       : p ? '<button type="button" class="btn" disabled>มีคนแล้ว</button>'
       : `<button type="button" class="btn team-${s.toLowerCase()}" data-act="seat" data-i="${s}"${net.mine.seat ? ' disabled' : ''}>${s} READY</button>`;
-    const P = pairOf(roomPair()), cn = P.id === 'og' ? '' : s === 'RED' ? P.red : P.blue;
-    el.innerHTML = `<div class="seat-por"><img src="assets/pair/${P.id}-${s.toLowerCase()}.webp" alt="" draggable="false"></div><div class="seat-info"><div class="seat-team">${s}</div>${cn ? `<div class="seat-char">ตัวละคร <b>${esc(cn)}</b></div>` : ''}${who}${btn}</div>`;
+    const P = roomReady() ? pairOf(roomPair()) : null, cn = !P || P.id === 'og' ? '' : s === 'RED' ? P.red : P.blue; // ยังไม่เห็นคู่ของห้อง = ยังไม่โชว์รูป (เดิมโชว์คู่เดิมแวบหนึ่งก่อนเปลี่ยน)
+    el.innerHTML = `<div class="seat-por">${P ? `<img src="assets/pair/${P.id}-${s.toLowerCase()}.webp" alt="" draggable="false">` : ''}</div><div class="seat-info"><div class="seat-team">${s}</div>${cn ? `<div class="seat-char">ตัวละคร <b>${esc(cn)}</b></div>` : ''}${who}${btn}</div>`;
   }
   renderObs();
 }
@@ -6457,7 +6464,7 @@ function pvpOnPeers() {
     const m = roomMeta(), mine = net.mine.meta;
     // ช่วยถือชื่อ/รหัสห้องไว้ (เจ้าของออกไป ห้องก็ยังอยู่) — เฉพาะคนที่เข้าห้องถูกต้อง
     if (m && roomAuthed() && (!mine || mine.u < m.u)) presence({ meta: { name: m.name, lock: m.lock, u: m.u, bo: m.bo || 1, pair: pairOf(m.pair).id } });
-    if (m && roomAuthed() && ui.screen === 'pvp' && vdo.pair !== roomPair()) vdo.use(roomPair()); // ตี้ 2026-11-01: เข้าห้อง = โหลด VDO คู่ของห้อง (READY รอจนครบ)
+    if (roomReady() && roomAuthed() && ui.screen === 'pvp' && vdo.pair !== roomPair()) vdo.use(roomPair()); // ตี้ 2026-11-01: เข้าห้อง = โหลด VDO คู่ของห้อง (READY รอจนครบ) · 11-03: ห้องที่ไม่มี meta ใช้คู่เดิม (เหมือน roomPair)
     boHold();
     // ผู้ชมห้อง Bo ที่ออกมาจากเกมที่จบ → ตามไปดูเกมถัดไปเองเมื่อเริ่ม
     if (ui.boFollow && ui.screen === 'pvp' && roomAuthed() && watchable() && !vdoNeed()) { ui.boFollow = false; specStart(); }
@@ -6489,6 +6496,7 @@ function pvpCheckStart() {
   const me = h.RED.peer === net.me ? 'RED' : h.BLUE.peer === net.me ? 'BLUE' : null;
   if (!me) return;
   const opp = h[FOE[me]], mid = [h.RED.presence.nonce, h.RED.presence.at, h.BLUE.presence.nonce, h.BLUE.presence.at].join('.');
+  if (vpNow() !== roomPair() || opp.presence.vp !== roomPair()) return; // ตี้ 2026-11-02: สองเครื่องต้องโหลดคู่ของห้องครบก่อน — ไม่งั้นเพื่อนเล่นคู่ที่เครื่องจำไว้ (คนละคู่กับเจ้าของห้อง)
   if (opp.presence.mid && opp.presence.mid !== mid) return; // อีกฝ่ายยังค้างเกมเก่า
   if (ui.pvpNoAck === mid) return; // นับถอยหลังกับคู่นี้แล้วอีกฝ่ายไม่ตอบ — รอให้ใครกด READY ใหม่ก่อน
   ui.pvpStarting = { left: 3, mid, me, oppPeer: opp.peer, extra: 0 };
@@ -6788,6 +6796,7 @@ function specReplay() {
   }
 }
 function specStart() {
+  if (vdo.pair !== roomPair()) { vdo.use(roomPair()); toast('กำลังโหลด VDO คู่ของห้อง — ครบแล้วกดดูอีกครั้ง'); renderPvp(); return; } // ตี้ 2026-11-02: ผู้ชมต้องเห็นคู่เดียวกับผู้เล่น
   const w = watchable();
   if (!w) { toast('ตอนนี้ยังไม่มีการแข่งให้ดู'); renderPvp(); return; }
   const { mid, h } = w;
