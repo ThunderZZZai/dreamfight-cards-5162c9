@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793615090">
+<meta name="df-build" content="1793616411">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -3292,10 +3292,20 @@ const HIT_VDO = { ATK: 'atk', ULT: 'ult' };
 // ตี้ 2026-10-27: ตีกันทั้งคู่ Attack เจอ Ultimate → Attack ก่อนเสมอ ปิดด้วย Ultimate · ชนิดเดียวกัน → สุ่ม (ตัวสุ่มจาก gseed ทุกเครื่องได้เหมือนกัน)
 // ตี้ 2026-11-02 (แทนกติกาบน): ตีกันทั้งคู่ → ฝั่งที่การ์ด LV สูงกว่าเริ่มก่อน ไม่สนว่า Attack หรือ Ultimate (นับเฉพาะการ์ดที่ลด HP — หลบ/โล่ไม่เข้ากรณีนี้) · LV เท่ากัน → สุ่ม (gseed เดิม)
 // ไม่มีใครตีและใช้การ์ดทั้งคู่ → Taunt สลับฟันปลากับช่องก่อน (ช่องก่อนเริ่มฝั่งไหน ช่องนี้เริ่มอีกฝั่ง · ช่องแรกเริ่ม RED)
+// ตี้ 2026-11-02: ตีกันทั้งคู่แล้วช่องนี้ทำให้มีคน HP หมด (≤ 0) → เล่นแค่ VDO ของฝั่งที่ชนะ = ฝั่งที่ทำให้อีกฝ่ายเหลือ HP ต่ำกว่า (ตรงกับ judge)
+//   VDO ของฝั่งที่แพ้ไม่เล่น แต่ดาเมจที่ฝั่งแพ้ทำยังหักตามจริง · HP หมดทั้งคู่และเท่ากันพอดี → เล่นทั้งสองไฟล์ตามลำดับ LV
+// HP หลังหักดาเมจของช่องนี้ (ก่อนเสีย HP เพราะมือว่าง) — คิดบนสำเนา ไม่แตะเกมจริง
+function clashHp(g, r) {
+  const f = { p: Object.fromEntries(SIDES.map(s => [s, { hp: g.p[s].hp, shield: g.p[s].shield }])) };
+  applyDamage(f, Object.fromEntries(SIDES.map(s => [s, { ...r[s] }])));
+  return { RED: f.p.RED.hp, BLUE: f.p.BLUE.hp };
+}
 function vdoClips(r, g, i) {
   const tag = s => s.toLowerCase(), mv = c => HIT_VDO[c.type] + c.lv;
   const hitters = SIDES.filter(s => r[s].card && HIT_VDO[r[s].card.type]);
   if (hitters.length === 2) {
+    const hp = clashHp(g, r), w = hp.RED > 0 && hp.BLUE > 0 ? null : hp.RED > hp.BLUE ? 'RED' : hp.BLUE > hp.RED ? 'BLUE' : null;
+    if (w) return [`${mv(r[w].card)}-${tag(w)}`];
     const [a, b] = hitters, la = r[a].card.lv, lb = r[b].card.lv;
     const first = la !== lb ? (la > lb ? a : b) : hashStr(`${g.gseed}|vdo|${g.round}|${i}`) & 1 ? 'BLUE' : 'RED';
     return [first, FOE[first]].map(s => `${mv(r[s].card)}-${tag(s)}`);
@@ -3319,7 +3329,7 @@ function vdoPlan(g, r, i) {
   const hitters = SIDES.filter(s => r[s].card && HIT_VDO[r[s].card.type]);
   if (hitters.length === 1) ui.vdoFirst = hitters[0];
   else if (clips.length) ui.vdoFirst = clipSide(clips[0]);
-  if (hitters.length < 2) return clips.map(name => ({ name, hit: null }));
+  if (hitters.length < 2 || clips.length < 2) return clips.map(name => ({ name, hit: null })); // ตีกันทั้งคู่แต่ K.O. เหลือไฟล์เดียว = หัก HP ทั้งสองฝั่งพร้อมกันตอนการ์ดชน
   return clips.map(name => ({ name, hit: FOE[clipSide(name)] }));
 }
 // Idle วนเป็นพื้นหลัง (ไม่มีเสียง): ฝั่งเรา → อีกฝั่ง → … สลับด้วยครอสเฟดระหว่าง <video> 2 ตัว
