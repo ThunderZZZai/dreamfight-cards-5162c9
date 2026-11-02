@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793614584">
+<meta name="df-build" content="1793615090">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -3290,13 +3290,14 @@ const vdoNeed = () => vdo.on && vdo.state !== 'ready';
 // ไม่มีใครตี = Taunt ของฝั่งที่ใช้การ์ดป้องกัน · ว่างทั้งคู่ = ไม่มี VDO
 const HIT_VDO = { ATK: 'atk', ULT: 'ult' };
 // ตี้ 2026-10-27: ตีกันทั้งคู่ Attack เจอ Ultimate → Attack ก่อนเสมอ ปิดด้วย Ultimate · ชนิดเดียวกัน → สุ่ม (ตัวสุ่มจาก gseed ทุกเครื่องได้เหมือนกัน)
+// ตี้ 2026-11-02 (แทนกติกาบน): ตีกันทั้งคู่ → ฝั่งที่การ์ด LV สูงกว่าเริ่มก่อน ไม่สนว่า Attack หรือ Ultimate (นับเฉพาะการ์ดที่ลด HP — หลบ/โล่ไม่เข้ากรณีนี้) · LV เท่ากัน → สุ่ม (gseed เดิม)
 // ไม่มีใครตีและใช้การ์ดทั้งคู่ → Taunt สลับฟันปลากับช่องก่อน (ช่องก่อนเริ่มฝั่งไหน ช่องนี้เริ่มอีกฝั่ง · ช่องแรกเริ่ม RED)
 function vdoClips(r, g, i) {
   const tag = s => s.toLowerCase(), mv = c => HIT_VDO[c.type] + c.lv;
   const hitters = SIDES.filter(s => r[s].card && HIT_VDO[r[s].card.type]);
   if (hitters.length === 2) {
-    const [a, b] = hitters, ta = r[a].card.type, tb = r[b].card.type;
-    const first = ta !== tb ? (ta === 'ATK' ? a : b) : hashStr(`${g.gseed}|vdo|${g.round}|${i}`) & 1 ? 'BLUE' : 'RED';
+    const [a, b] = hitters, la = r[a].card.lv, lb = r[b].card.lv;
+    const first = la !== lb ? (la > lb ? a : b) : hashStr(`${g.gseed}|vdo|${g.round}|${i}`) & 1 ? 'BLUE' : 'RED';
     return [first, FOE[first]].map(s => `${mv(r[s].card)}-${tag(s)}`);
   }
   if (hitters.length === 1) {
