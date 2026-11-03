@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793636095">
+<meta name="df-build" content="1793704141">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -5824,6 +5824,7 @@ function renderControls() {
       hint += ready ? ` · รอ ${OPP} พร้อมรอบถัดไป…` : ` · ไปรอบถัดไปอัตโนมัติใน <b id="pvpNext">${pvpNextLeft()}</b> วิ`;
     }
   }
+  if (ui.mode === 'pvp' && !ui.winner && ui.pvpHold) hint = `⏸ ${holdIsHost() ? 'หยุดเกมอยู่ · กด P เพื่อเล่นต่อ' : 'หัวหน้าห้องหยุดเกมไว้ · รอเล่นต่อ'} · ${hint}`; // ตี้ 2026-11-03: หัวหน้าห้องกด P
   $('#controls').classList.remove('spec-mini');
   $('#controls').classList.toggle('has-clock', !!clock);
   $('#controls').innerHTML = `<div class="hint">${hint}</div><div class="btns-main">${clock}${main}</div><div class="btns">${btns}</div>`;
@@ -6065,6 +6066,7 @@ const VDO_GATED = new Set(['start', 'seat', 'watch', 'obsSeat']); // ตี้ 2
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && ui.vdo) { ui.vdo.skip = true; return; }
   if (e.code === 'KeyP' && !e.ctrlKey && !e.metaKey && !e.altKey && bvbLive() && !(e.target.closest && e.target.closest('input,textarea,select'))) { e.preventDefault(); bvbPauseSet(!ui.bvbPause); return; } // ตี้ 2026-10-31: BOT VS BOT หยุด/เล่นต่อ
+  if (e.code === 'KeyP' && !e.ctrlKey && !e.metaKey && !e.altKey && holdCan() && !(e.target.closest && e.target.closest('input,textarea,select'))) { e.preventDefault(); holdToggle(); return; } // ตี้ 2026-11-03: หัวหน้าห้อง PVP หยุด/เล่นต่อ
   if (e.key === 'Escape' && ui.drawer) { ui.drawer = null; renderDrawer(); }
   if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z' && canUndo()) { e.preventDefault(); undo(); }
 });
@@ -6143,7 +6145,7 @@ const loadScript = src => new Promise((ok, bad) => { const el = document.createE
 function cleanPresence(p) {
   const o = {}, str = (v, n) => (typeof v === 'string' && v ? v.slice(0, n) : null);
   if (Number.isFinite(p.v)) o.v = p.v;
-  for (const [k, n] of [['nick', 16], ['nonce', 16], ['mid', 96], ['over', 96], ['watch', 96]]) { const v = str(p[k], n); if (v) o[k] = v; }
+  for (const [k, n] of [['nick', 16], ['nonce', 16], ['mid', 96], ['over', 96], ['watch', 96], ['hold', 96]]) { const v = str(p[k], n); if (v) o[k] = v; }
   if (p.seat === 'RED' || p.seat === 'BLUE') o.seat = p.seat;
   if (Number.isFinite(p.at)) o.at = p.at;
   if (Number.isInteger(p.vdo) && p.vdo > 0 && p.vdo < 1000) o.vdo = p.vdo;
@@ -6763,7 +6765,7 @@ const pvpLeft = () => (ui.pvp && ui.pvp.deadline ? Math.max(0, Math.ceil((ui.pvp
 const clockCls = left => (left <= 10 ? ' danger' : left <= 20 ? ' warn' : '');
 const clockFrac = () => (ui.pvp && ui.pvp.deadline ? Math.max(0, Math.min(1, (ui.pvp.deadline - Date.now()) / (PVP_SEC * 1000))) : 1);
 const pvpClockHTML = () => { const left = pvpLeft(); return `<div class="pvp-clock${clockCls(left)}" id="pvpTimer" style="--p:${clockFrac().toFixed(3)}" role="timer" aria-label="เหลือเวลา ${left} วินาที"><b>${left}</b><small>SEC</small></div>`; };
-const pvpNextLeft = () => (ui.pvp && ui.pvp.endAt ? Math.max(0, Math.ceil((ui.pvp.endAt + PVP_NEXT_MS - Date.now()) / 1000)) : 10);
+const pvpNextLeft = () => (ui.pvp && ui.pvp.endAt ? Math.max(0, Math.ceil((ui.pvp.endAt + PVP_NEXT_MS - (ui.pvp.holdAt || Date.now())) / 1000)) : 10);
 const pvpWaiting = () => (ui.pvp && ui.pvp.submitted && ui.pvp.submitted === ui.pvp.phaseKey && ((ui.phase === 'pick' && !ui.pvp.applied) || (ui.phase === 'action' && !ui.pvp.fought)) ? ui.pvp.kind : null);
 // ลำดับการ์ดบนมือที่เราจัดไว้ (ใช้แค่หน้าตาของเรา): c<id> = ใบเดิม · p<k> = ใบที่เก็บมาใบที่ k
 function handOrderTokens() {
@@ -6883,7 +6885,7 @@ function pvpTick() {
     st.classList.toggle('done', !!(done || nextOk));
   }
   // จบรอบ: รอบถัดไปเริ่มเมื่อ "ทั้งคู่" พร้อม (กด NEXT ROUND หรือครบ 10 วิ) — เริ่มพร้อมกัน นาฬิกา 60 วิไม่เหลื่อมกัน
-  if (ui.phase === 'end' && !ui.winner && !ui.busy && P.endAt) {
+  if (ui.phase === 'end' && !ui.winner && !ui.busy && P.endAt && !ui.pvpHold) {
     const key = `${g.round}n`;
     if (P.nextReady !== key && now - P.endAt > PVP_NEXT_MS) pvpReadyNext();
     if (P.nextReady === key && oppInput(key) !== undefined) { Object.assign(P, { endAt: 0, nextReady: null, waitSince: 0 }); nextRound(); return; }
@@ -6916,7 +6918,7 @@ function pvpTick() {
     flyOppBacks(fanBefore);
   }
   // หมดเวลา → ยืนยันให้ทันที (Pick up: สุ่มใบที่ยังไม่ได้เก็บ · Action: ตามที่วางไว้)
-  if (P.submitted !== P.phaseKey && now >= P.deadline && !ui.busy) {
+  if (P.submitted !== P.phaseKey && now >= P.deadline && !ui.busy && !ui.pvpHold) {
     if (inPick) {
       while (ui.picks.length < PICK_N) {
         const free = [...Array(MARKET_N).keys()].filter(i => !ui.picks.some(p => p.i === i));
@@ -6928,7 +6930,7 @@ function pvpTick() {
     return;
   }
   // ทั้งคู่ยืนยันแล้ว → ไปต่อพร้อมกัน
-  if (P.submitted === P.phaseKey && theirs !== undefined) {
+  if (P.submitted === P.phaseKey && theirs !== undefined && !ui.pvpHold) { // หัวหน้าห้องหยุดเกม = รอจนเล่นต่อ
     if (inPick && P.applied !== P.phaseKey) {
       P.applied = P.phaseKey;
       const { res, inp } = pvpApplyPicks(P.myInput, theirs);
@@ -6941,7 +6943,35 @@ function pvpTick() {
     }
   }
 }
-setInterval(() => { pvpTick(); specTick(); }, 250);
+/* ───────── หัวหน้าห้องกด P หยุดเกม (ตี้ 2026-11-03) ─────────
+   หัวหน้าห้อง = roomHost() (อยู่ในห้องนานสุด · 👑) — จะเป็นผู้เล่นหรือผู้ชมในห้องก็ได้ · กด P ในจอแข่ง/จอผู้ชมแมตช์ของห้อง = presence.hold = mid ของแมตช์ (กดอีกที = null)
+   ทุกเครื่องในแมตช์ (ผู้เล่น 2 ฝั่ง + ผู้ชม) เห็น hold ของหัวหน้าห้อง → หยุดแบบเดียวกับ Pause ของ BOT VS BOT:
+   นาฬิกาหยุด · ไม่ไปจังหวะถัดไป (เก็บการ์ดเข้ามือ / เปิดปะทะ / รอบถัดไป · นับถอยหลังรอบถัดไปค้าง) · VDO ที่เล่นอยู่เล่นต่อจนจบ
+   ผู้เล่นยังเลือก/วาง/กดยืนยันได้ (ส่งไปก่อน) แต่เกมรอจนเล่นต่อ · หยุดแค่จังหวะ ไม่แตะผลเกม → สองเครื่องยังตรงกัน · หัวหน้าห้องออก = เล่นต่อเอง */
+const holdMid = () => (ui.screen !== 'game' || ui.winner ? null : ui.mode === 'pvp' && ui.pvp ? ui.pvp.mid : ui.mode === 'spec' && ui.spec && !ui.spec.bot ? ui.spec.mid : null);
+const holdIsHost = () => { const h = roomHost(); return !!h && h.peer === net.me; };
+const holdCan = () => !ON_CLAUDE && net.state === 'on' && !!holdMid() && holdIsHost();
+function holdToggle() {
+  const mid = holdMid();
+  if (!mid) return;
+  presence({ hold: net.mine.hold === mid ? null : mid });
+  holdSync();
+}
+function holdSync() {
+  const mid = holdMid(), h = mid ? roomHost() : null, on = !!(h && h.presence && h.presence.hold === mid);
+  if (!mid && net.mine.hold) presence({ hold: null }); // จบ/ออกจากแมตช์ = ปลดของเราเอง
+  if (on === !!ui.pvpHold) return;
+  ui.pvpHold = on;
+  clockHold(on);
+  const P = ui.pvp, now = Date.now();
+  if (P) {
+    if (on) P.holdAt = now;
+    else if (P.holdAt) { const d = now - P.holdAt; if (P.endAt) P.endAt += d; if (Number.isFinite(P.deadline)) P.deadline += d; P.holdAt = 0; }
+  }
+  if (ui.mode === 'pvp') toast(on ? (holdIsHost() ? 'หยุดเกมแล้ว · กด P อีกครั้งเพื่อเล่นต่อ' : 'หัวหน้าห้องหยุดเกมไว้') : 'เล่นต่อ');
+  render();
+}
+setInterval(() => { holdSync(); pvpTick(); specTick(); }, 250);
 function pvpReadyNext() {
   const P = ui.pvp;
   if (!P || ui.phase !== 'end' || ui.winner || ui.busy) return;
@@ -7257,7 +7287,7 @@ function specTick() {
     else if (!S.gone) S.gone = now;
     else if (now - S.gone > 15000) { specEnd('DRAW', 'ผู้เล่นออกจากห้องทั้งคู่ — จบการชม'); return; }
   }
-  if (!ui.winner && !ui.busy) {
+  if (!ui.winner && !ui.busy && !ui.pvpHold) { // หัวหน้าห้องหยุดเกม = ผู้ชมรอด้วย
     if (ui.phase === 'pick' && !ui.pickShown && specBoth(`${r}p`)) {
       const res = {}, idx = {};
       for (const s of SIDES) { idx[s] = cleanPicks(specIn(s, `${r}p`).picks); res[s] = doPick(g, s, idx[s]); for (const c of res[s].got) c.picked = r; }
