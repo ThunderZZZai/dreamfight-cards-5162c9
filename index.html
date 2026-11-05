@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793873567">
+<meta name="df-build" content="1793874014">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -3236,6 +3236,11 @@ const PAIRS = [
   { id: 'night-jeng', name: 'Gssspotted VS Genghiskhanz', sub: 'มีซีนเปิดตัว', red: 'Gssspotted', blue: 'Genghiskhanz' }, // ตี้ 2026-11-02: เปลี่ยนชื่อจากลุงไนท์ x พี่เจง
 ];
 const pairOf = id => PAIRS.find(p => p.id === id) || PAIRS[0];
+// night-jeng ATK clash data >>>
+// ตี้ 2026-11-05: คู่นี้โจมตีเจอโจมตี = คลิปเดียวจบทั้งสองฝั่ง (clash-n<แดง>-j<ฟ้า>) · ต้นทาง blender/night-jeng-matchups/ingame_test/clash_game.py
+const CLASH_POP = {"clash-n1-j1": {"RED": 1.15, "BLUE": 4.9}, "clash-n1-j2": {"BLUE": 1.15, "RED": 4.32}, "clash-n1-j3": {"BLUE": 1.15, "RED": 3.98}, "clash-n2-j1": {"RED": 1.15, "BLUE": 6.69}, "clash-n2-j2": {"BLUE": 1.15, "RED": 3.9}, "clash-n2-j3": {"BLUE": 1.11, "RED": 3.61}, "clash-n3-j1": {"RED": 1.15, "BLUE": 3.98}, "clash-n3-j2": {"RED": 1.15, "BLUE": 4.94}, "clash-n3-j3": {"RED": 1.15, "BLUE": 3.98}}; const CLASH_FILES = {"clash-n1-j1": [5464709, 28.042], "clash-n1-j2": [5647827, 27.125], "clash-n1-j3": [5776353, 27.25], "clash-n2-j1": [5186871, 28.542], "clash-n2-j2": [5435946, 28.417], "clash-n2-j3": [5453839, 28.583], "clash-n3-j1": [5921997, 28.208], "clash-n3-j2": [5796769, 28.708], "clash-n3-j3": [6009407, 28.0]}; const CLASH_FIRST = {"clash-n1-j1": "RED", "clash-n1-j2": "BLUE", "clash-n1-j3": "BLUE", "clash-n2-j1": "RED", "clash-n2-j2": "BLUE", "clash-n2-j3": "BLUE", "clash-n3-j1": "RED", "clash-n3-j2": "RED", "clash-n3-j3": "RED"};
+Object.assign(VDO_PAIR_FILES["night-jeng"], CLASH_FILES); VDO_SPIN["night-jeng"] = Object.assign(VDO_SPIN["night-jeng"] || {}, {"clash-n1-j1": [1.0, 1.0, 4.75, 1.0, 1302473, 692248], "clash-n1-j2": [1.0, 1.0, 4.167, 1.0, 1102018, 877053], "clash-n1-j3": [1.0, 1.0, 3.833, 1.0, 1445487, 1146604], "clash-n2-j1": [1.0, 1.0, 6.542, 1.0, 1122787, 903842], "clash-n2-j2": [1.0, 1.0, 3.75, 1.0, 796167, 799804], "clash-n2-j3": [0.958, 1.0, 3.458, 1.0, 739124, 1094415], "clash-n3-j1": [1.0, 1.0, 3.833, 1.0, 954050, 963484], "clash-n3-j2": [1.0, 1.0, 4.792, 1.0, 757862, 732311], "clash-n3-j3": [1.0, 1.0, 3.833, 1.0, 947355, 921531]});
+// <<< night-jeng ATK clash data
 const pairFiles = id => (id === 'og' ? VDO_FILES : VDO_PAIR_FILES[id] || {});
 // ชื่อคลิปที่เกมเรียก → ไฟล์ของคู่ · คู่ใหม่มีคลิปกัน/หลบคลิปเดียวต่อตัว (def-atk2-red → def-red)
 const pairKey = (id, name) => (id === 'og' ? name : name.replace(/^(def|dod)-(?:atk|ult)\d-/, '$1-'));
@@ -3374,6 +3379,7 @@ function vdoClips(r, g, i) {
   if (hitters.length === 2) {
     const hp = clashHp(g, r), w = hp.RED > 0 && hp.BLUE > 0 ? null : hp.RED > hp.BLUE ? 'RED' : hp.BLUE > hp.RED ? 'BLUE' : null;
     if (w) return [`${mv(r[w].card)}-${tag(w)}`];
+    if (vdo.pair === 'night-jeng' && r.RED.card.type === 'ATK' && r.BLUE.card.type === 'ATK') return [`clash-n${r.RED.card.lv}-j${r.BLUE.card.lv}`];
     // ตี้ 2026-11-05: อันติเจออันติ = คลิปปะทะคลิปเดียว (mx-ult<แดง>-ult<ฟ้า>) ถ้าคู่นี้มี · ช่อง K.O. ยังเล่นแค่ VDO ฝั่งชนะ (บรรทัดบน)
     const mx = `mx-${mv(r.RED.card)}-${mv(r.BLUE.card)}`;
     if (vdo.mx(mx)) return [mx];
@@ -3467,6 +3473,7 @@ const VDO_POP = {};
 function popAt(clip, side) {
   // ตี้ 2026-11-01: คลิป COMING SOON (คู่นี้ยังไม่มีวิดีโอท่านี้) → การ์ดเด้งทั้งสองฝั่งตั้งแต่ต้น · เวลาเป๊ะ (VDO_POP) ใช้กับคู่เดิมเท่านั้น
   if (vdo.missing(clip)) return 0.8;
+  if (CLASH_POP[clip]) return CLASH_POP[clip][side];
   const exact = vdo.pair === 'og' ? VDO_POP[`${clip}:${side}`] : null;
   if (exact != null) return exact;
   const m = clip.match(/^(?:(def|dod)-)?(atk|ult|taunt)\d?-(red|blue)$/);
@@ -3631,14 +3638,16 @@ function vcReveal(s, c, fx = true) {
 function spinPlan(clip, sides) {
   const m = vdo.spin(clip);
   if (!m || !vdo.slo(clip, 1) || !vdo.slo(clip, 2)) return [];
-  const own = clipSide(clip), s1 = /^(def|dod)-/.test(clip) ? FOE[own] : own;
+  const own = CLASH_FIRST[clip] || clipSide(clip), s1 = /^(def|dod)-/.test(clip) ? FOE[own] : own;
   return [{ s: s1, n: 1, a: m[0], w: m[1] }, { s: FOE[s1], n: 2, a: m[2], w: m[3] }].filter(x => sides.includes(x.s));
 }
 // เล่นการ์ดหมุนทุกจังหวะของ VDO ที่กำลังเล่น (el) — ok() เป็นเท็จ = SKIP/จบเกม (เปิดการ์ดที่หมุนอยู่ทันที ไม่เล่น VDO ต่อ) · fail() = VDO เล่นต่อไม่ได้
 async function vcSpinClip(el, clip, moments, r, ok, fail) {
-  const slo = $('#vdoSlo');
+  const slo = $('#vdoSlo'), SPIN_PRE = vdo.pair === 'night-jeng' ? 0.3 : 0;
+  if (SPIN_PRE) for (const m of moments) { const c0 = r[m.s].card, col0 = c0 && FIRE_COL[c0.type], k0 = `${m.s}:${col0}`; if (col0 && !vfx.fire[k0]) vfx.fire[k0] = vfxEl('vfx-fire off', `fire_${col0}.mp4`, true); }
   try {
     for (const m of moments) {
+      if (SPIN_PRE && m.n === 2) { const tw = performance.now(); while (ok() && performance.now() - tw < 400) await nextFrame(); }
       slo.src = vdo.slo(clip, m.n); slo.currentTime = 0; // เตรียมเฟรมแรกไว้ระหว่างรอ (blob ในหน่วยความจำ โหลดไว)
       const t0 = performance.now();
       while (ok() && slo.readyState < 2 && performance.now() - t0 < 1500) await nextFrame();
@@ -3652,15 +3661,17 @@ async function vcSpinClip(el, clip, moments, r, ok, fail) {
         if (late > 0.03) slo.currentTime = late * SPIN_X; // ถึงช้ากว่า a (เฟรมหลุด) → เริ่มคลิปสโลตรงเฟรมเดียวกับ VDO หลัก
         slo.playbackRate = SPIN_X; slo.classList.add('on'); slo.play().catch(() => {});
         spinRamp(slo, SPIN_X, SPIN_X * k, SPIN_RAMP, ok);
-        el.currentTime = m.a + m.w; // VDO หลักรอตรงจุดที่การ์ดเปิด (ใต้คลิปสโล)
+        el.currentTime = Math.max(0, m.a + m.w - SPIN_PRE); // VDO หลักรอตรงจุดที่การ์ดเปิด (ใต้คลิปสโล)
       } else spinRamp(el, 1, k, SPIN_RAMP, ok); // คลิปสโลยังไม่พร้อม → สโลจาก VDO หลักแทน (ภาพกระตุกกว่า)
       vcPop(m.s, c, true);
+      const preT = broll && SPIN_PRE ? setTimeout(() => { if (ok()) el.play().catch(() => { el.muted = true; el.play().catch(fail); }); }, Math.max(0, D - SPIN_PRE * 1000)) : 0;
       const t1 = performance.now();
       while (ok() && performance.now() - t1 < SPIN_IN) await nextFrame();
       await vcSpinUp(m.s, c, ok);
+      clearTimeout(preT);
       slo.pause(); slo.classList.remove('on');
       if (!ok()) return;
-      if (broll) el.play().catch(() => { el.muted = true; el.play().catch(fail); });
+      if (broll && el.paused) el.play().catch(() => { el.muted = true; el.play().catch(fail); });
       else spinRamp(el, el.playbackRate, 1, 220, ok);
     }
   } finally {
