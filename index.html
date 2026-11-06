@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1793891907">
+<meta name="df-build" content="1793969862">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -1016,6 +1016,10 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 #world.lay-player[data-phase="pick"] #controls .hint,#world.lay-player[data-phase="action"] #controls .hint{visibility:hidden}
 #world.lay-player #controls .hint{text-shadow:0 2px 6px rgba(0,0,0,.9),0 0 2px rgba(0,0,0,.9)}
 #world.lay-spec #controls.spec-mini{left:auto;right:16px;top:138px;width:auto;max-width:620px;height:36px;display:flex;gap:10px;padding:0 4px 0 12px;border-radius:999px;background:rgba(5,7,11,.42);border-color:rgba(255,255,255,.1)}
+#world.lay-spec #controls.spec-mini.obs-go{left:50%;right:auto;top:640px;transform:translateX(-50%);height:auto;max-width:none;padding:0;background:none;border-color:transparent;z-index:30;pointer-events:auto}
+#world.lay-spec #controls.spec-mini.obs-go .btn{min-height:84px;padding:0 56px;font-size:38px;border-radius:18px;box-shadow:0 0 0 3px #ffe9a8,0 0 40px rgba(255,200,61,.75),0 14px 40px rgba(0,0,0,.6);animation:obsGoPulse 1.1s ease-in-out infinite;text-transform:none}
+@keyframes obsGoPulse{50%{transform:scale(1.05);box-shadow:0 0 0 4px #fff4cf,0 0 64px rgba(255,200,61,.95),0 14px 40px rgba(0,0,0,.6)}}
+@media (prefers-reduced-motion:reduce){#world.lay-spec #controls.spec-mini.obs-go .btn{animation:none}}
 #world.lay-spec #controls.spec-mini:empty{display:none} /* ตี้ 2026-10-29: แถบชมว่าง = ซ่อน */
 #world.lay-spec #controls.spec-mini .hint{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#d6dde8}
 #world.lay-spec #controls.spec-mini .spec-badge{font-size:11px;padding:0 8px;margin-right:6px}
@@ -5827,7 +5831,10 @@ function renderControls() {
     $('#controls').classList.remove('has-clock');
     $('#controls').classList.toggle('spec-mini', !ui.winner);
     // ตี้ 2026-10-29: ระหว่างชมไม่ต้องมีแถบ OBSERVE + ปุ่มออกจากการชม (ออกได้ที่ ⚙ → ออกจากเกม) · จบเกมยังมีปุ่มดูอีกเกม/กลับห้อง
-    if (!ui.winner) { $('#controls').innerHTML = ''; return; }
+    // ตี้ 2026-11-06: OBSERVER กดเริ่มฉากต่อสู้ — ปุ่มใหญ่กลางจอ · ผู้ชมคนอื่นเห็นแค่ป้ายรอ
+    const go = !ui.winner && obsCanGo(), wait = !ui.winner && !go && ui.phase === 'action' && !ui.spec.bot && specBoth(`${g.round}a`) && obsWaitGo();
+    $('#controls').classList.toggle('obs-go', go);
+    if (!ui.winner) { $('#controls').innerHTML = go ? '<div class="btns-main"><button type="button" class="btn primary cta" data-act="obsGo">เริ่ม ACTION ▶</button></div>' : wait ? '<div class="hint">กด FIGHT! ครบทั้งคู่แล้ว · รอ OBSERVER กดเริ่ม</div>' : ''; return; }
     $('#controls').innerHTML = `<div class="hint"><span class="spec-badge">OBSERVE</span>${specStatus()}</div>
       <div class="btns-main">${ui.winner ? (ui.spec.bot ? `<button type="button" class="btn primary cta" data-act="bvbNext">${bvbNextLabel()}</button>` : `<button type="button" class="btn primary cta" data-act="toPvp">${boNextOpen() ? 'ดูเกมต่อไป →' : 'กลับห้อง PVP'}</button>`) : ''}</div>
       <div class="btns">${ui.winner ? '<button type="button" class="btn ghost" data-act="unpeek">ดูผลแพ้ชนะ</button>' : `<button type="button" class="btn ghost" data-act="${ui.spec.bot ? 'toLobby' : 'toPvp'}">ออกจากการชม</button>`}</div>`;
@@ -5869,9 +5876,10 @@ function renderControls() {
   if (ui.mode === 'pvp' && !ui.winner) {
     const w = pvpWaiting();
     if (w) {
-      hint = `รอ ${OPP} กด ${w === 'pick' ? 'PICK UP' : 'FIGHT!'}…`;
+      const obsW = w === 'action' && !!g.p[OPP].lanes && obsWaitGo(); // ป้าย .hint ถูกซ่อนในจอผู้เล่นช่วงวางการ์ด เลยบอกบนปุ่มแทน
+      hint = obsW ? 'กด FIGHT! ครบทั้งคู่แล้ว · รอ OBSERVER กดเริ่ม…' : `รอ ${OPP} กด ${w === 'pick' ? 'PICK UP' : 'FIGHT!'}…`;
       btns = '';
-      main = `<button type="button" class="btn primary cta" disabled>${w === 'pick' ? 'PICK UP' : 'FIGHT!'} ✓</button>`;
+      main = `<button type="button" class="btn primary cta" disabled>${obsW ? 'รอ OBSERVER กดเริ่ม…' : `${w === 'pick' ? 'PICK UP' : 'FIGHT!'} ✓`}</button>`;
     }
     if (PVP_TIMER && !w && ((ui.phase === 'pick' && !ui.pickShown) || (ui.phase === 'action' && !ui.busy))) clock = pvpClockHTML();
     if (ui.phase === 'end') {
@@ -6043,6 +6051,7 @@ document.addEventListener('click', e => {
     case 'pvpLobby': pvpOpen(); break;
     case 'seat': pvpSeat(t.dataset.i); break;
     case 'obsSeat': pvpObs(Number(t.dataset.i)); break;
+    case 'obsGo': obsGo(); break;
     case 'toLobby': toStart('lobby'); break;
     case 'toPvp': if (ui.mode === 'spec' && boNextOpen()) ui.boFollow = true; toStart('pvp'); break; // ผู้ชมห้อง Bo: ตามไปดูเกมถัดไปเอง
     case 'boNext': { const side = ME; toStart('pvp'); net.autoSeat = side; pvpOnPeers(); break; } // ห้อง Bo: กลับนั่งฝั่งเดิม → พร้อมทั้งคู่ = เริ่มเกมถัดไป
@@ -6123,6 +6132,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && ui.vdo) { ui.vdo.skip = true; return; }
   if (e.code === 'KeyP' && !e.ctrlKey && !e.metaKey && !e.altKey && bvbLive() && !(e.target.closest && e.target.closest('input,textarea,select'))) { e.preventDefault(); bvbPauseSet(!ui.bvbPause); return; } // ตี้ 2026-10-31: BOT VS BOT หยุด/เล่นต่อ
   if (e.code === 'KeyP' && !e.ctrlKey && !e.metaKey && !e.altKey && holdCan() && !(e.target.closest && e.target.closest('input,textarea,select'))) { e.preventDefault(); holdToggle(); return; } // ตี้ 2026-11-03: หัวหน้าห้อง PVP หยุด/เล่นต่อ
+  if ((e.code === 'Space' || e.key === 'Enter') && !e.repeat && obsCanGo() && !(e.target.closest && e.target.closest('input,textarea,select'))) { e.preventDefault(); obsGo(); return; } // ตี้ 2026-11-06: OBSERVER กด Space / Enter เริ่มฉากต่อสู้ได้
   if (e.key === 'Escape' && ui.drawer) { ui.drawer = null; renderDrawer(); }
   if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z' && canUndo()) { e.preventDefault(); undo(); }
 });
@@ -6136,7 +6146,7 @@ document.addEventListener('keydown', e => {
    vdo = รอบที่เรากำลังดู VDO ฉากปะทะอยู่ (อีกฝ่ายหยุดนับเวลารอ) — ไม่มี = ไม่ได้ดู
    t0 = เวลาเริ่มแมตช์ (Date.now ของเรา) — ผู้ชมที่เข้ากลางเกมใช้ตั้งนาฬิกาแมตช์ · แสดงผลเท่านั้น
    inp เก็บทั้งแมตช์ (ผู้ชมที่เข้ากลางเกมย้อนคำนวณจากรอบ 1) · ผู้ชม: { watch: mid } อย่างเดียว ไม่ส่งอะไรให้ผู้เล่น */
-const PVP_V = 24; // เปลี่ยนกติกา/เอนจินเมื่อไหร่ต้องเพิ่มเลขนี้ — คนละเวอร์ชันจะไม่ถูกจับคู่ (เล่นคนละกติกา = ผลเพี้ยน) · 4 = Fight Phase เป็น VDO (ยาวขึ้นมาก + presence.vdo) · 5 = Dodge Lv3 มีเพดาน HP 10 + HP สูงสุด 100 → 150 (ตี้ 2026-10-22) · 6 = Lv2 + Lv2 คืนการ์ด Lv1 (validLock รับ id การ์ดคืน) · 7 = เกจ (การวางส่ง gauge ops ไปด้วย · newGame สุ่ม gseed) · 8 = Attack ทอยให้อีกฝ่ายทิ้งการ์ด (rollClash ใช้ตัวสุ่มเพิ่ม) · 9 = Dodge เจอ Ultimate หลบ 100% + Lv2-3 อีกฝ่ายทิ้ง/เสียเกจ · 10 = ชิลด์ (Defence) + Ultimate ใหม่ + เอาเกจชนะทางออก · 11 = Ultimate ดาเมจ 20/40/60 · 12 = Attack เจอ Defence ไม่ทอยทิ้ง (ตัวสุ่มหลักใช้น้อยลง) · 13 = มือว่างเสีย HP เฉพาะค่า Ultimate (Attack / Dodge บังคับทิ้งไม่เสีย HP) · 14 = Defence ชนะทาง Attack ชิลด์เพิ่ม 5/10/15 · 15 = รอบที่ใช้ 3 เกจ สะสมเกจไม่ได้ · 16 = ค่าจากตาราง: ดาเมจเพิ่มชนะทาง Attack/Ultimate 5/10/15 + มือว่าง 15 HP · 17 = Dodge หลบได้เฉพาะ Ultimate · Attack ไม่มีลดหลบ (ตัวสุ่มใช้น้อยลง) + มือว่างกลับเป็น 10 HP · 18 = Attack ดาเมจ 10/25/40 · 19 = Defence ชิลด์ 10/25/40 · 20 = Dodge จั่ว 1 + ขโมยการ์ด 0/1/2 (ตัวสุ่มหลักใช้ตอนขโมย) · เลิกทิ้ง/เสียเกจตอนเจอ Ultimate · 21 = 3 เกจใหม่: จั่วครบมือ + เปลี่ยนฟรี 2 + ผสมการ์ดบนมือ (op ftr / merge) · 22 = พลังเต็มเปลี่ยนฟรี 1 ใบเป็น Lv2 (MAX_FREE_TR) + ห้อง Bo (meta.bo · presence.ser) · 23 = ห้องมีคู่ต่อสู้ (meta.pair) + ที่นั่งผู้ชม + เริ่มแข่งเมื่อทั้งสองเครื่องโหลดคู่ของห้องครบ (presence.vp) — แท็บเวอร์ชันก่อนระบบคู่ไม่เข้าห้องเดียวกัน (ตี้ 2026-11-02: เพื่อนเห็นคนละคู่กับเจ้าของห้อง) · 24 = ตัวกรอง presence เก็บ meta.pair / room.pair / vp / obs (เดิมตกหล่น → เพื่อนเข้าห้องได้คู่เดิม · เริ่มแข่งไม่ได้) — แยกห้องจากแท็บที่ยังไม่แก้ (ตี้ 2026-11-02)
+const PVP_V = 25; // เปลี่ยนกติกา/เอนจินเมื่อไหร่ต้องเพิ่มเลขนี้ — คนละเวอร์ชันจะไม่ถูกจับคู่ (เล่นคนละกติกา = ผลเพี้ยน) · 4 = Fight Phase เป็น VDO (ยาวขึ้นมาก + presence.vdo) · 5 = Dodge Lv3 มีเพดาน HP 10 + HP สูงสุด 100 → 150 (ตี้ 2026-10-22) · 6 = Lv2 + Lv2 คืนการ์ด Lv1 (validLock รับ id การ์ดคืน) · 7 = เกจ (การวางส่ง gauge ops ไปด้วย · newGame สุ่ม gseed) · 8 = Attack ทอยให้อีกฝ่ายทิ้งการ์ด (rollClash ใช้ตัวสุ่มเพิ่ม) · 9 = Dodge เจอ Ultimate หลบ 100% + Lv2-3 อีกฝ่ายทิ้ง/เสียเกจ · 10 = ชิลด์ (Defence) + Ultimate ใหม่ + เอาเกจชนะทางออก · 11 = Ultimate ดาเมจ 20/40/60 · 12 = Attack เจอ Defence ไม่ทอยทิ้ง (ตัวสุ่มหลักใช้น้อยลง) · 13 = มือว่างเสีย HP เฉพาะค่า Ultimate (Attack / Dodge บังคับทิ้งไม่เสีย HP) · 14 = Defence ชนะทาง Attack ชิลด์เพิ่ม 5/10/15 · 15 = รอบที่ใช้ 3 เกจ สะสมเกจไม่ได้ · 16 = ค่าจากตาราง: ดาเมจเพิ่มชนะทาง Attack/Ultimate 5/10/15 + มือว่าง 15 HP · 17 = Dodge หลบได้เฉพาะ Ultimate · Attack ไม่มีลดหลบ (ตัวสุ่มใช้น้อยลง) + มือว่างกลับเป็น 10 HP · 18 = Attack ดาเมจ 10/25/40 · 19 = Defence ชิลด์ 10/25/40 · 20 = Dodge จั่ว 1 + ขโมยการ์ด 0/1/2 (ตัวสุ่มหลักใช้ตอนขโมย) · เลิกทิ้ง/เสียเกจตอนเจอ Ultimate · 21 = 3 เกจใหม่: จั่วครบมือ + เปลี่ยนฟรี 2 + ผสมการ์ดบนมือ (op ftr / merge) · 22 = พลังเต็มเปลี่ยนฟรี 1 ใบเป็น Lv2 (MAX_FREE_TR) + ห้อง Bo (meta.bo · presence.ser) · 23 = ห้องมีคู่ต่อสู้ (meta.pair) + ที่นั่งผู้ชม + เริ่มแข่งเมื่อทั้งสองเครื่องโหลดคู่ของห้องครบ (presence.vp) — แท็บเวอร์ชันก่อนระบบคู่ไม่เข้าห้องเดียวกัน (ตี้ 2026-11-02: เพื่อนเห็นคนละคู่กับเจ้าของห้อง) · 24 = ตัวกรอง presence เก็บ meta.pair / room.pair / vp / obs (เดิมตกหล่น → เพื่อนเข้าห้องได้คู่เดิม · เริ่มแข่งไม่ได้) — แยกห้องจากแท็บที่ยังไม่แก้ (ตี้ 2026-11-02) · 25 = ห้องที่มี OBSERVER ต้องให้ OBSERVER กดเริ่มฉากต่อสู้ (presence.go · ตี้ 2026-11-06)
 // ตี้ 2026-10-28: โชว์แมตช์อาจคุยกันนาน → ไม่จับเวลาเฟส (ไม่มีนาฬิกา ไม่ยืนยันให้อัตโนมัติ ไม่ตัดสิทธิ์เพราะช้า) · หลุดการเชื่อมต่อยังตัดสินตาม PVP_GONE_MS
 const PVP_TIMER = false;
 const PVP_SEC = 60, PVP_CUT = 30, PVP_GONE_MS = 8000, PVP_NEXT_MS = 10000, PVP_WAIT_MS = 90000, VDO_HOLD_MS = 240000;
@@ -6205,6 +6215,7 @@ function cleanPresence(p) {
   if (p.seat === 'RED' || p.seat === 'BLUE') o.seat = p.seat;
   if (Number.isFinite(p.at)) o.at = p.at;
   if (Number.isInteger(p.vdo) && p.vdo > 0 && p.vdo < 1000) o.vdo = p.vdo;
+  if (p.go && typeof p.go.m === 'string' && Number.isInteger(p.go.r)) o.go = { m: p.go.m.slice(0, 96), r: p.go.r }; // OBSERVER กดเริ่มฉากต่อสู้
   if (Number.isFinite(p.t0)) o.t0 = p.t0;
   if (Number.isFinite(p.j)) o.j = p.j;
   const hex = v => (typeof v === 'string' && /^[0-9a-f]{64}$/.test(v) ? v : '');
@@ -6708,6 +6719,27 @@ function obsHolders() {
   return out;
 }
 const obsMine = () => { const k = net.mine.obs, h = Number.isInteger(k) ? obsHolders()[k] : null; return !!h && h.peer === net.me; };
+/* ตี้ 2026-11-06: ห้องที่มี OBSERVER นั่งอยู่ ผู้เล่นกด FIGHT! ครบแล้วยังไม่เปิดปะทะ ต้องให้ OBSERVER กดเริ่มก่อน ทุกรอบ
+   presence.go = { m: รหัสแมตช์, r: รอบ } ของ OBSERVER · OBSERVER คนไหนกดก็ได้ · ไม่มี OBSERVER นั่งอยู่ (ลุก / หลุด) = ไปต่อเองตามเดิม ไม่ค้าง
+   แค่รอจังหวะ ไม่แตะผลเกม (ทุกเครื่องคำนวณด้วยตัวสุ่มชุดเดียวกัน) · ไม่เกี่ยวกับ BOT VS BOT · ผู้ชมที่กด OBSERVE เองไม่มีสิทธิ์กด */
+function obsWaitGo() {
+  const mid = holdMid();
+  if (!mid || !ui.g) return false;
+  const r = ui.g.round, obs = obsHolders().filter(Boolean);
+  if (!obs.length || (ui.goSeen && ui.goSeen.m === mid && ui.goSeen.r >= r)) return false;
+  const by = obs.find(p => p.presence.go && p.presence.go.m === mid && p.presence.go.r >= r);
+  if (by) ui.goSeen = { m: mid, r }; // จำไว้ เผื่อ OBSERVER ลุกหลังกด เครื่องที่ช้ากว่าจะได้ไม่ค้างรอคนที่เหลือ
+  return !by;
+}
+const obsCanGo = () => ui.mode === 'spec' && !!ui.spec && !ui.spec.bot && !ui.winner && obsMine() && ui.phase === 'action' && !ui.busy && !!ui.g && !!ui.g.p.RED.lanes && !!ui.g.p.BLUE.lanes && obsWaitGo();
+function obsGo() {
+  if (!obsCanGo()) return;
+  const mid = holdMid(), r = ui.g.round;
+  presence({ go: { m: mid, r } });
+  ui.goSeen = { m: mid, r };
+  sfx.play('pick');
+  renderControls();
+}
 function pvpObs(k) {
   if (net.state !== 'on' || !(k >= 0 && k < OBS_N) || ui.pvpStarting) return;
   if (!ON_CLAUDE && (!roomReady() || !roomAuthed())) { roomGate(); return; }
@@ -6724,7 +6756,7 @@ function renderObs() {
   if (!box || LIST_MODE) return;
   const h = obsHolders(), off = net.state !== 'on' || (!ON_CLAUDE && (!roomReady() || !roomAuthed()));
   const eye = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
-  box.innerHTML = `<div class="obs-head"><b>OBSERVER · ที่นั่งผู้ชม</b><span>นั่งแล้วรอได้เลย เริ่มแข่งเมื่อไหร่ เครื่องนี้เข้าจอผู้ชมเอง ไม่ต้องกด</span></div>
+  box.innerHTML = `<div class="obs-head"><b>OBSERVER · ที่นั่งผู้ชม</b><span>นั่งแล้วรอได้เลย เริ่มแข่งเมื่อไหร่ เครื่องนี้เข้าจอผู้ชมเอง · ผู้เล่นกด FIGHT! ครบแล้ว OBSERVER เป็นคนกดเริ่มฉากต่อสู้</span></div>
     <div class="obs-row">${h.map((p, k) => {
       const mine = p && p.peer === net.me;
       const btn = off ? '<button type="button" class="btn" disabled>นั่งดู</button>'
@@ -6985,6 +7017,8 @@ function pvpTick() {
     } else pvpSubmit('action', true);
     return;
   }
+  const waitObs = inAct && P.submitted === P.phaseKey && !!g.p[OPP].lanes && !P.fought && obsWaitGo();
+  if (waitObs !== !!P.obsWait) { P.obsWait = waitObs; renderControls(); }
   // ทั้งคู่ยืนยันแล้ว → ไปต่อพร้อมกัน
   if (P.submitted === P.phaseKey && theirs !== undefined && !ui.pvpHold) { // หัวหน้าห้องหยุดเกม = รอจนเล่นต่อ
     if (inPick && P.applied !== P.phaseKey) {
@@ -6993,7 +7027,7 @@ function pvpTick() {
       // ใบที่เก็บเข้ามือเราแสดงอยู่แล้วตั้งแต่ตอนเลือก — แอนิเมชันเหลือแค่เลเวลอัป (เก็บตอนมือเต็ม)
       const mineFx = { got: [], ups: res[ME].ups, lost: res[ME].lost, steps: res[ME].steps.filter(st => !st.got) };
       afterPicks(mineFx, res[OPP], inp[ME], inp[ME].map((i, k) => k >= res[ME].got.length));
-    } else if (inAct && !P.fought && g.p[OPP].lanes) {
+    } else if (inAct && !P.fought && g.p[OPP].lanes && !obsWaitGo()) { // ตี้ 2026-11-06: ห้องที่มี OBSERVER = รอ OBSERVER กดเริ่มก่อน
       P.fought = true;
       runFight();
     }
@@ -7309,6 +7343,7 @@ function specStatus() {
   if (S.bot) return ui.phase === 'pick' && !ui.pickShown ? `${bvbTag()} · บอทกำลังเลือกการ์ด…` : ui.phase === 'action' ? `${bvbTag()} · บอทกำลังวางการ์ด…`
     : ui.phase === 'fight' ? `กำลังเปิดช่อง ${Math.max(1, ui.shown + 1)} …` : ui.phase === 'end' ? `จบรอบ ${r} · ไปรอบถัดไปอัตโนมัติ` : 'กำลังจั่วการ์ด…';
   if (ui.phase === 'pick' && !ui.pickShown) return SIDES.map(s => `${who(s)} ${specIn(s, `${r}p`) !== undefined ? '✓ PICK UP' : 'กำลังเลือก…'}`).join(' · ');
+  if (ui.phase === 'action' && specBoth(`${r}a`) && obsWaitGo()) return `กด FIGHT! ครบทั้งคู่แล้ว · ${obsMine() ? 'กดเริ่ม ACTION ได้เลย' : 'รอ OBSERVER กดเริ่ม'}`;
   if (ui.phase === 'action') return SIDES.map(s => `${who(s)} ${specIn(s, `${r}a`) !== undefined ? '✓ FIGHT!' : 'กำลังวาง…'}`).join(' · ');
   if (ui.phase === 'fight') return `กำลังเปิดช่อง ${Math.max(1, ui.shown + 1)} …`;
   if (ui.phase === 'end') return `จบรอบ ${r} · รอผู้เล่นไปรอบถัดไป (${SIDES.map(s => `${s} ${specIn(s, `${r}n`) !== undefined ? '✓' : '…'}`).join(' · ')}) · แตะเลข 1-3 ดูช่องอื่น`;
@@ -7356,7 +7391,7 @@ function specTick() {
       let locked = false;
       if (specBoth(`${r}a`)) for (const s of SIDES) if (!g.p[s].lanes) { applyGaugeOps(g, s, specIn(s, `${r}a`).gauge).forEach(res => gaugeFx(s, res)); doLock(g, s, validLock(g, s, specIn(s, `${r}a`).slots)); locked = true; }
       if (locked) { S.lockAt = now; ui.slotArrive = true; sfx.play('place'); render(); return; }
-      if (g.p.RED.lanes && g.p.BLUE.lanes && now - S.lockAt > 900) { runFight(); return; } // ให้เห็นการ์ดลงแผงก่อนเปิดปะทะ
+      if (g.p.RED.lanes && g.p.BLUE.lanes && now - S.lockAt > 900 && !obsWaitGo()) { runFight(); return; } // ให้เห็นการ์ดลงแผงก่อนเปิดปะทะ
     }
     if (ui.phase === 'end' && specBoth(`${r}n`)) { nextRound(); return; }
   }
