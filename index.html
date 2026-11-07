@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1794054376">
+<meta name="df-build" content="1794055622">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -1039,6 +1039,10 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 #world.lay-spec #controls.spec-mini{left:auto;right:16px;top:138px;width:auto;max-width:620px;height:36px;display:flex;gap:10px;padding:0 4px 0 12px;border-radius:999px;background:rgba(5,7,11,.42);border-color:rgba(255,255,255,.1)}
 #world.lay-spec #controls.spec-mini.obs-go{left:50%;right:auto;top:640px;transform:translateX(-50%);height:auto;max-width:none;padding:0;background:none;border-color:transparent;z-index:30;pointer-events:auto}
 #world.lay-spec #controls.spec-mini.obs-go .btn{min-height:84px;padding:0 56px;font-size:38px;border-radius:18px;box-shadow:0 0 0 3px #ffe9a8,0 0 40px rgba(255,200,61,.75),0 14px 40px rgba(0,0,0,.6);animation:obsGoPulse 1.1s ease-in-out infinite;text-transform:none}
+.ph.ph-go{position:absolute;right:100%;top:0;margin-right:12px;white-space:nowrap;appearance:none;cursor:pointer;border-color:#ffe9a8;background:linear-gradient(180deg,#ffd76a,#e8a82a);color:#1a1205;font-weight:700;box-shadow:0 0 12px rgba(255,200,61,.6);animation:phGoPulse 1.1s ease-in-out infinite;pointer-events:auto}
+.ph.ph-go:hover{filter:brightness(1.08)} .ph.ph-go:focus-visible{outline:2px solid #fff;outline-offset:2px}
+@keyframes phGoPulse{50%{box-shadow:0 0 0 2px #fff4cf,0 0 22px rgba(255,200,61,.9)}}
+@media (prefers-reduced-motion:reduce){.ph.ph-go{animation:none}}
 @keyframes obsGoPulse{50%{transform:scale(1.05);box-shadow:0 0 0 4px #fff4cf,0 0 64px rgba(255,200,61,.95),0 14px 40px rgba(0,0,0,.6)}}
 @media (prefers-reduced-motion:reduce){#world.lay-spec #controls.spec-mini.obs-go .btn{animation:none}}
 #world.lay-spec #controls.spec-mini:empty{display:none} /* ตี้ 2026-10-29: แถบชมว่าง = ซ่อน */
@@ -1501,7 +1505,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
         <div class="obs-seats" id="obsSeats"></div>
         <div class="pvp-watch" id="pvpWatch" hidden></div>
         <div class="pvp-start" id="pvpStart" hidden></div>
-        <p class="pvp-note" id="pvpNote">กด READY ฝั่งที่ต้องการ แล้วรออีกฝ่ายกดอีกฝั่ง · พร้อมทั้งคู่แล้ว เจ้าของห้อง 👑 เป็นคนกดเริ่มเกม · ไม่จับเวลา คุยกันได้เต็มที่ · คนที่เข้ามาหลังเริ่มแข่งแล้วเป็นผู้ชม</p>
+        <p class="pvp-note" id="pvpNote">กด READY ฝั่งที่ต้องการ แล้วรออีกฝ่ายกดอีกฝั่ง · พร้อมทั้งคู่แล้ว เจ้าของห้อง 👑 หรือ OBSERVER เป็นคนกดเริ่มเกม · ไม่จับเวลา คุยกันได้เต็มที่ · คนที่เข้ามาหลังเริ่มแข่งแล้วเป็นผู้ชม</p>
         <div class="room-btns" id="roomBtns"></div>
         <div class="room-modal" id="roomModal" hidden></div>
       </section>
@@ -5611,10 +5615,19 @@ function marketHTML() {
       ${capHTML(c.type, 1)}${tags ? `<div class="mk-tags">${tags}</div>` : ''}</div>`;
   }).join('')}</div>`;
 }
+// ปุ่มเล็ก "เริ่ม ACTION ▶" ของ OBSERVER ต่อท้ายแถบเฟส (กด Space / Enter ได้เหมือนเดิม)
+function phGo() {
+  const ph = $('#phases');
+  if (!ph) return;
+  const want = ui.mode === 'spec' && obsCanGo(), b = ph.querySelector('.ph-go');
+  if (want && !b) ph.insertAdjacentHTML('beforeend', '<button type="button" class="ph ph-go" data-act="obsGo" title="กด Space / Enter ก็ได้">เริ่ม ACTION ▶</button>');
+  else if (!want && b) b.remove();
+}
 const PHASES = [['draw', 'Draw'], ['pick', 'Pick up'], ['action', 'Action'], ['fight', 'Fight'], ['end', 'End']];
 function renderStrip() {
   const g = ui.g, cur = PHASES.findIndex(p => p[0] === ui.phase);
   $('#phases').innerHTML = PHASES.map(([, label], i) => `<span class="ph${i < cur ? ' done' : ''}${i === cur ? ' on' : ''}"${i === cur ? ' aria-current="step"' : ''}>${label}</span>`).join('');
+  phGo();
   const mid = ui.pvp ? ui.pvp.mid : ui.spec ? ui.spec.mid : null, nw = mid ? net.peers.filter(p => p.presence && p.presence.watch === mid).length : 0;
   $('#deckInfo').innerHTML = `<span class="deck-pile" id="deckPile" aria-hidden="true"><i></i><i></i><i></i></span><span>กองกลางเหลือ <b>${g.deck.length}</b> ใบ</span>${nw ? `<span class="watchers">👁 ผู้ชม ${nw}</span>` : ''}`;
 }
@@ -5946,8 +5959,10 @@ function renderControls() {
     // ตี้ 2026-10-29: ระหว่างชมไม่ต้องมีแถบ OBSERVE + ปุ่มออกจากการชม (ออกได้ที่ ⚙ → ออกจากเกม) · จบเกมยังมีปุ่มดูอีกเกม/กลับห้อง
     // ตี้ 2026-11-06: OBSERVER กดเริ่มฉากต่อสู้ — ปุ่มใหญ่กลางจอ · ผู้ชมคนอื่นเห็นแค่ป้ายรอ
     const go = !ui.winner && obsCanGo(), wait = !ui.winner && !go && ui.phase === 'action' && !ui.spec.bot && specBoth(`${g.round}a`) && obsWaitGo();
-    $('#controls').classList.toggle('obs-go', go);
-    if (!ui.winner) { $('#controls').innerHTML = go ? '<div class="btns-main"><button type="button" class="btn primary cta" data-act="obsGo">เริ่ม ACTION ▶</button></div>' : wait ? '<div class="hint">กด FIGHT! ครบทั้งคู่แล้ว · รอ OBSERVER กดเริ่ม</div>' : ''; return; }
+    // ตี้ 2026-11-07 "ปุ่มตรงนี้เอาไปวางเล็กๆหน่อย": ปุ่มเริ่ม ACTION ย้ายจากกลางจอไปเป็นปุ่มเล็กต่อท้ายแถบ PICK UP · ACTION · FIGHT (phGo)
+    $('#controls').classList.remove('obs-go');
+    phGo();
+    if (!ui.winner) { $('#controls').innerHTML = go ? '' : wait ? '<div class="hint">กด FIGHT! ครบทั้งคู่แล้ว · รอ OBSERVER กดเริ่ม</div>' : ''; return; }
     $('#controls').innerHTML = `<div class="hint"><span class="spec-badge">OBSERVE</span>${specStatus()}</div>
       <div class="btns-main">${ui.winner ? (ui.spec.bot ? `<button type="button" class="btn primary cta" data-act="bvbNext">${bvbNextLabel()}</button>` : `<button type="button" class="btn primary cta" data-act="toPvp">${boNextOpen() ? 'ดูเกมต่อไป →' : 'กลับห้อง PVP'}</button>`) : ''}</div>
       <div class="btns">${ui.winner ? '<button type="button" class="btn ghost" data-act="unpeek">ดูผลแพ้ชนะ</button>' : `<button type="button" class="btn ghost" data-act="${ui.spec.bot ? 'toLobby' : 'toPvp'}">ออกจากการชม</button>`}</div>`;
@@ -6130,7 +6145,7 @@ document.addEventListener('click', e => {
   if (!t || t.disabled) return;
   if (ui.mode === 'spec' && SPEC_BLOCKED.has(t.dataset.act)) return; // ผู้ชมแตะการ์ด/ปุ่มเล่นไม่ได้
   if (t.dataset.act === 'buildUpdate') { buildGate(true); return; }
-  if (PLAY_GATED.has(t.dataset.act) && buildOld()) { buildGate(); return; } // เวอร์ชันเก่า = เข้าเล่นไม่ได้
+  if (PLAY_GATED.has(t.dataset.act) && buildOld()) { buildGate(false, t.dataset.act === 'boNext' ? { side: ME } : null); return; } // เวอร์ชันเก่า = เข้าเล่นไม่ได้ (เกมต่อไปของ Bo = โหลดแล้วกลับนั่งฝั่งเดิม)
   // เข้าเกม/ห้อง PVP ได้เมื่อโหลด VDO ครบ (ตี้: "ต้องโหลดไฟล์ให้ครบ ก่อนเริ่มเกม") — หรือปิด VDO
   if (VDO_GATED.has(t.dataset.act) && !accessOk) { $('#gateCode').focus(); return; }
   if (VDO_GATED.has(t.dataset.act) && vdoNeed()) { toast(vdo.state === 'failed' ? 'โหลด VDO ไม่สำเร็จ — กลับหน้าแรกกดลองใหม่ หรือปิด VDO' : `รอโหลด VDO ให้ครบก่อน (${vdo.pct}%)`); return; }
@@ -6219,7 +6234,9 @@ const updateSafe = () => ui.screen !== 'game' && !net.mine.seat && !net.mine.mid
    เช็กไม่ได้ (เน็ตหลุด / เปิดในเครื่อง = dev / claude.ai) = ไม่บล็อก */
 const PLAY_GATED = new Set(['start', 'arcade', 'arcNext', 'bvb', 'bvbNext', 'pvpLobby', 'seat', 'obsSeat', 'watch', 'boNext', 'roomJoin', 'roomWatch', 'roomNew', 'hostStart']);
 const buildOld = () => !!window.__dfNewBuild;
-function buildGate(force = false) {
+// ตี้ 2026-11-07 "BO 3 กดเกมต่อไปแล้วหลุด": โหลดตัวใหม่กลางซีรีส์ = ที่นั่งหาย → จดไว้ก่อนโหลด (resume) แล้วกลับนั่งที่เดิมเองหลังโหลด (ภายใน 2 นาที ห้องเดิม)
+function buildGate(force = false, resume = null) {
+  if (resume && !LIST_MODE) ssSet('df-resume', JSON.stringify({ ...resume, room: ROOM.id, at: Date.now() }));
   if (window.__dfJump && window.__dfJump(force)) return;
   let el = document.getElementById('buildGate');
   if (!el) {
@@ -6236,7 +6253,10 @@ function buildGate(force = false) {
 }
 setInterval(() => {
   if (!buildOld()) return;
-  if (updateSafe()) { buildGate(); return; }
+  const obs = obsMine() ? { obs: net.mine.obs } : {}, follow = ui.boFollow ? { follow: 1 } : {};
+  if (updateSafe()) { buildGate(false, { ...obs, ...follow }); return; }
+  // นั่ง READY รออยู่ในห้อง (ยังไม่เริ่มแข่ง) ด้วยตัวเก่า = ห้ามเริ่มแข่ง → โหลดตัวใหม่แล้วกลับนั่งฝั่งเดิม
+  if (ui.screen === 'pvp' && net.mine.seat && !net.mine.mid && !ui.pvpStarting) { buildGate(false, { side: net.mine.seat }); return; }
   if (ui.updNote !== window.__dfNewBuild) { ui.updNote = window.__dfNewBuild; toast('มีเวอร์ชันใหม่ของเกม · เล่นเกมนี้จนจบได้ แล้วต้องอัปเดตก่อนเล่นต่อ'); }
 }, 2000);
 function toast(text) {
@@ -6314,6 +6334,13 @@ const listUrl = () => `${location.pathname}?go=1${MOCK ? '&mockroom' : ''}`;
 const roomLockHash = (id, pw) => sha256Hex(`dfroom|${id}|${pw}`);
 const ssGet = k => { try { return sessionStorage.getItem(k) || ''; } catch (e) { return ''; } };
 const ssSet = (k, v) => { try { if (v) sessionStorage.setItem(k, v); else sessionStorage.removeItem(k); } catch (e) { /* ข้ามได้ */ } };
+// กลับที่นั่งเดิมหลังโหลดเวอร์ชันใหม่ (buildGate จดไว้) · ใช้ครั้งเดียว · เฉพาะห้องเดิมภายใน 2 นาที
+const RESUME = (() => {
+  let r = null;
+  try { r = JSON.parse(ssGet('df-resume') || 'null'); } catch (e) { r = null; }
+  ssSet('df-resume', '');
+  return r && r.room === ROOM.id && Date.now() - r.at < 120000 ? r : null;
+})();
 const esc = t => String(t).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 const net = { room: null, kind: null, state: 'idle', since: 0, me: null, peers: [], mine: {}, nonce: Math.random().toString(36).slice(2, 10) };
 // ห้องจำลองสำหรับทดสอบบนเครื่อง (localhost?mockroom) — ใช้ BroadcastChannel คุยกันระหว่างแท็บ
@@ -6503,6 +6530,11 @@ async function netInit() {
       ssSet(`df-key-${ROOM.id}`, b.lock || '');
       net.autoSeat = b.side;
     } catch (e) { /* ข้ามได้ */ }
+  }
+  if (RESUME && !LIST_MODE) {
+    if (SIDES.includes(RESUME.side)) net.autoSeat = RESUME.side;
+    if (Number.isInteger(RESUME.obs)) net.autoObs = RESUME.obs;
+    if (RESUME.follow) ui.boFollow = true;
   }
   dirInit();
 }
@@ -6896,7 +6928,7 @@ function renderObs() {
   if (!box || LIST_MODE) return;
   const h = obsHolders(), off = net.state !== 'on' || (!ON_CLAUDE && (!roomReady() || !roomAuthed()));
   const eye = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
-  box.innerHTML = `<div class="obs-head"><b>OBSERVER · ที่นั่งผู้ชม</b><span>นั่งแล้วรอได้เลย เริ่มแข่งเมื่อไหร่ เครื่องนี้เข้าจอผู้ชมเอง · ผู้เล่นกด FIGHT! ครบแล้ว OBSERVER เป็นคนกดเริ่มฉากต่อสู้</span></div>
+  box.innerHTML = `<div class="obs-head"><b>OBSERVER · ที่นั่งผู้ชม</b><span>นั่งแล้วรอได้เลย · OBSERVER คนไหนก็กดเริ่มเกมได้ (เครื่องนี้เข้าจอผู้ชมเอง) · ผู้เล่นกด FIGHT! ครบแล้ว OBSERVER เป็นคนกดเริ่ม ACTION</span></div>
     <div class="obs-row">${h.map((p, k) => {
       const mine = p && p.peer === net.me;
       const btn = off ? '<button type="button" class="btn" disabled>นั่งดู</button>'
@@ -6921,6 +6953,11 @@ function pvpOnPeers() {
       const want = net.autoSeat === 'any' ? SIDES[Math.random() < 0.5 ? 0 : 1] : net.autoSeat, h = seatHolders();
       net.autoSeat = null;
       if (!net.mine.seat) pvpSeat(h[want] ? FOE[want] : want);
+    }
+    if (Number.isInteger(net.autoObs) && roomReady() && ui.screen === 'pvp') { // กลับที่นั่งผู้ชมเดิม (มีคนนั่งแล้ว = ที่ว่างที่เหลือ)
+      const k = net.autoObs, oh = obsHolders();
+      net.autoObs = null;
+      if (!net.mine.seat && !obsMine()) pvpObs(oh[k] ? oh.findIndex(x => !x) : k);
     }
     if (QS.has('watch') && !net.watchTried && ui.screen === 'pvp' && roomAuthed() && watchable() && !vdoNeed()) { net.watchTried = true; specStart(); }
     dirAnnounce();
@@ -6953,10 +6990,12 @@ function hostCanStart() {
   return mid;
 }
 const hostIsMe = () => { const hp = roomHost(); return !!hp && hp.peer === net.me; };
-const hostStarted = mid => { const hp = roomHost(); return !!mid && !!hp && presOf(hp).start === mid; };
+// ตี้ 2026-11-07: OBSERVER ที่นั่งอยู่กดเริ่มเกมได้ด้วย (กี่คนก็ได้ ใครกดก่อนก็เริ่ม) · เจ้าของห้องยังกดได้เหมือนเดิม
+const canStartGame = () => hostIsMe() || obsMine();
+const hostStarted = mid => { if (!mid) return false; const hp = roomHost(); return (!!hp && presOf(hp).start === mid) || obsHolders().some(p => p && presOf(p).start === mid); };
 function hostStart() {
   const mid = hostCanStart();
-  if (!mid || !hostIsMe() || ui.pvpStarting) return;
+  if (!mid || !canStartGame() || ui.pvpStarting) return;
   presence({ start: mid });
   sfx.play('levelup');
   pvpCheckStart();
@@ -6969,9 +7008,10 @@ function renderHostStart() {
   el.hidden = !mid || !hp;
   if (el.hidden) return;
   const ok = !!hostCanStart(), done = hostStarted(mid);
-  el.innerHTML = done ? '<span class="wait">เจ้าของห้องกดเริ่มแล้ว · กำลังเข้าเกม…</span>'
-    : hostIsMe() ? `<button type="button" class="btn gold big" data-act="hostStart"${ok ? '' : ' disabled'}>▶ เริ่มเกม</button><span>${ok ? 'ผู้เล่นพร้อมทั้งสองฝั่งแล้ว · คุณเป็นเจ้าของห้อง กดเริ่มได้เลย' : 'รอผู้เล่นโหลด VDO ให้ครบก่อน…'}</span>`
-    : ok ? `<span class="wait">⏳ ผู้เล่นพร้อมแล้ว · รอเจ้าของห้อง ${esc(nickOf(hp))} กดเริ่มเกม</span>` : '<span>รอผู้เล่นโหลด VDO ให้ครบ แล้วเจ้าของห้องกดเริ่มเกม</span>';
+  const who = obsHolders().some(Boolean) ? `เจ้าของห้อง ${esc(nickOf(hp))} หรือ OBSERVER` : `เจ้าของห้อง ${esc(nickOf(hp))}`;
+  el.innerHTML = done ? '<span class="wait">กดเริ่มแล้ว · กำลังเข้าเกม…</span>'
+    : canStartGame() ? `<button type="button" class="btn gold big" data-act="hostStart"${ok ? '' : ' disabled'}>▶ เริ่มเกม</button><span>${ok ? `ผู้เล่นพร้อมทั้งสองฝั่งแล้ว · คุณ${hostIsMe() ? 'เป็นเจ้าของห้อง' : 'นั่ง OBSERVER'} กดเริ่มได้เลย` : 'รอผู้เล่นโหลด VDO ให้ครบก่อน…'}</span>`
+    : ok ? `<span class="wait">⏳ ผู้เล่นพร้อมแล้ว · รอ${who} กดเริ่มเกม</span>` : `<span>รอผู้เล่นโหลด VDO ให้ครบ แล้ว${who} กดเริ่มเกม</span>`;
 }
 function pvpCheckStart() {
   if (ui.pvpStarting || net.state !== 'on') return;
@@ -7787,6 +7827,6 @@ fitStage();
 const stateHash = () => { const g = ui.g; return g ? JSON.stringify({ r: g.round, hp: SIDES.map(s => g.p[s].hp), sh: SIDES.map(s => g.p[s].shield), ga: SIDES.map(s => `${g.p[s].gauge}/${g.p[s].gStack}/${g.p[s].gDmg}`), h: SIDES.map(s => g.p[s].hand.map(c => `${c.id}${c.type[0]}${c.lv}`).join(',')), d: g.deck.length, m: g.market.map(c => c.type[0]).join('') }) : null; };
 window.__dreamfight = { bgm, vdo, vdoVol, vdoBg, vdoClips, vdoPlan, stateHash, ui: () => ui, simulate, stackLanes, pickOne, swapHand, botAction, newGame, doLock, clash, effText, gain, forceDiscard, judge, sfx, calcSideHTML, discardText, drawCount, fitStage, fx: { vcClash, vcPop, vcReset, vcFlyTo, coatShow, vfxShield, vfxImpact, titleFx, vcHand, runFight } }; // runFight: ใช้ทดสอบฉากปะทะที่ตั้งเอง
 render();
-if (accessOk && QS.has('go') && !ON_CLAUDE) pvpOpen(); // ระบบห้อง: ลิงก์ห้อง/ออกจากห้อง เปิดหน้า PVP เลยไม่ต้องกด START
+if (accessOk && (QS.has('go') || RESUME) && !ON_CLAUDE) pvpOpen(); // ระบบห้อง: ลิงก์ห้อง/ออกจากห้อง เปิดหน้า PVP เลยไม่ต้องกด START
 })();
 </script>
