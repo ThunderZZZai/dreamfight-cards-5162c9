@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1794051748">
+<meta name="df-build" content="1794054376">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -1461,6 +1461,7 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
             <h3>SETTINGS<button type="button" class="st-x" id="stSetX" aria-label="ปิดตั้งค่า">✕</button></h3>
             <label class="srow"><span>เสียงเพลง</span><input type="range" id="volMusic" min="0" max="100" step="5"><output for="volMusic"></output></label>
             <label class="srow"><span>เสียงเอฟเฟกต์</span><input type="range" id="volSfx" min="0" max="100" step="5"><output for="volSfx"></output></label>
+            <label class="srow"><span>เสียง VDO</span><input type="range" id="volVdo" min="0" max="200" step="10"><output for="volVdo"></output></label>
             <label class="srow"><span>VDO ฉากต่อสู้</span><small>ปิด = โหลดเร็ว ไม่มีวิดีโอ</small><input type="checkbox" class="sw" id="vdoSw" role="switch"></label>
             <label class="srow g-only"><span>เร่งความเร็ว</span><small>แอนิเมชันการ์ดเร็วขึ้น</small><input type="checkbox" class="sw" id="fastSw" role="switch"></label>
             <div class="srow g-only g-quit"><button type="button" class="btn ghost" data-act="quit">ออกจากเกม</button></div>
@@ -3488,13 +3489,49 @@ function duckMusic(down) {
   } catch (e) { /* เสียงพังต้องไม่ทำให้เกมพัง */ }
 }
 // iOS Safari: <video> ที่มีเสียงต้องเคยถูกเล่นจากการแตะของผู้ใช้ก่อน → แตะครั้งแรกหลังโหลดครบ เล่นแล้วหยุดทันที (เสียง 0)
+/* ตี้ 2026-11-07 "ขอระบบเพิ่มเสียงของ VDO": เสียงใน VDO ฉากต่อสู้แยกจากเสียงเอฟเฟกต์ ปรับได้ 0–200% (⚙ เสียง VDO)
+   เกิน 100% ทำผ่าน Web Audio: <video id="vdoFight"> → gain → ตัวกันเสียงแตก (limiter) → ลำโพง · ต่อสายตอนผู้เล่นคลิกครั้งแรก (เบราว์เซอร์ยอมให้เปิดเสียงหลังคลิก)
+   ปุ่ม "เสียง" ปิด = VDO เงียบเหมือนเดิม (muted) · เบราว์เซอร์ไม่มี Web Audio = ได้สูงสุด 100% */
+const vdoVol = (() => {
+  let v = 1, ctx = null, gain = null;
+  try { const x = parseFloat(localStorage.getItem('df-vol-vdo')); if (Number.isFinite(x)) v = Math.min(2, Math.max(0, x)); } catch (e) { /* ข้ามได้ */ }
+  return {
+    get v() { return v; },
+    set(x) { v = Math.min(2, Math.max(0, x)); try { localStorage.setItem('df-vol-vdo', String(v)); } catch (e) { /* ข้ามได้ */ } vdoVolApply($('#vdoFight')); },
+    get routed() { return !!gain; },
+    // เรียกจากการคลิกของผู้ใช้ (vdoPrime) · ต่อสายได้ครั้งเดียวต่อหน้า
+    wire() {
+      if (ctx) { if (ctx.state === 'suspended') ctx.resume().catch(() => {}); return; }
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      try {
+        ctx = new AC();
+        const src = ctx.createMediaElementSource($('#vdoFight'));
+        gain = ctx.createGain();
+        const lim = ctx.createDynamicsCompressor();
+        lim.threshold.value = -1; lim.knee.value = 0; lim.ratio.value = 20; lim.attack.value = 0.002; lim.release.value = 0.12;
+        src.connect(gain); gain.connect(lim); lim.connect(ctx.destination);
+        vdoVolApply($('#vdoFight'));
+      } catch (e) { gain = null; }
+    },
+    gain: () => gain,
+    ctx: () => ctx,
+  };
+})();
+function vdoVolApply(el) {
+  if (!el) return;
+  const g = el.id === 'vdoFight' ? vdoVol.gain() : null;
+  if (g) { el.volume = 1; g.gain.value = vdoVol.v; const c = vdoVol.ctx(); if (c && c.state === 'suspended') c.resume().catch(() => {}); }
+  else el.volume = Math.min(1, vdoVol.v);
+}
 let vdoPrimed = false;
 function vdoPrime() {
+  vdoVol.wire();
   if (vdoPrimed || !vdo.ready || ui.vdo) return;
   vdoPrimed = true;
   const el = $('#vdoFight');
   el.src = vdo.url('idle-red'); el.muted = false; el.volume = 0;
-  el.play().then(() => { el.pause(); el.volume = sfx.vol; }, () => { el.volume = sfx.vol; vdoPrimed = false; });
+  el.play().then(() => { el.pause(); vdoVolApply(el); }, () => { vdoVolApply(el); vdoPrimed = false; });
 }
 // setTimeout จริง (ไม่ผ่าน wait — โหมดเร่งความเร็วไม่ย่อเวลา VDO) · until = รอจนเงื่อนไขเป็นจริง (เช็กทุก 80 ms)
 const sleep = ms => new Promise(res => setTimeout(res, ms));
@@ -4254,7 +4291,7 @@ async function laneVdo(i, plan, gid, r, keep = false) {
       lv.failed = false;
       if (k) W.classList.remove('vdo-hp');
       el.src = vdo.url(clips[k]);
-      el.volume = sfx.vol;
+      vdoVolApply(el);
       el.muted = !sfx.on;
       el.classList.add('on');
       el.play().catch(() => { el.muted = true; el.play().catch(() => { lv.failed = true; }); });
@@ -4364,7 +4401,7 @@ async function winVdo(side, gid) {
     winVo(side);
   }, 30);
   el.src = vdo.url(name);
-  el.volume = sfx.vol;
+  vdoVolApply(el);
   el.muted = !sfx.on;
   el.classList.add('on');
   el.play().catch(() => { el.muted = true; el.play().catch(() => { lv.failed = true; }); });
@@ -4403,7 +4440,7 @@ async function introVdo(gid) {
       if (lv.skip || gid !== ui.gid) break;
       lv.failed = false;
       el.src = vdo.url(name);
-      el.volume = sfx.vol;
+      vdoVolApply(el);
       el.muted = !sfx.on;
       el.classList.add('on');
       el.play().catch(() => { el.muted = true; el.play().catch(() => { lv.failed = true; }); });
@@ -4439,10 +4476,11 @@ function renderStartScreen() {
   if (ui.screen !== lastScreen) { lastScreen = ui.screen; stSet(false); }
   renderSet();
 }
-function setRange(el, v) { el.value = Math.round(v * 100); el.style.setProperty('--p', `${el.value}%`); el.nextElementSibling.textContent = `${el.value}%`; }
+function setRange(el, v) { el.value = Math.round(v * 100); el.style.setProperty('--p', `${(el.value / (Number(el.max) || 100)) * 100}%`); el.nextElementSibling.textContent = `${el.value}%`; }
 function renderSet() {
   setRange($('#volMusic'), sfx.on && bgm.on ? sfx.musicVol : 0);
   setRange($('#volSfx'), sfx.on ? sfx.vol : 0);
+  setRange($('#volVdo'), sfx.on ? vdoVol.v : 0);
   $('#vdoSw').checked = vdo.on;
   $('#fastSw').checked = ui.fast;
 }
@@ -4460,10 +4498,13 @@ function setVol(kind, v) {
   sfx.unlock();
   if (!sfx.on) {
     sfx.on = true; $('#sound').checked = true; $('#vdoFight').muted = false;
-    if (kind === 'music') sfx.vol = 0; else { bgm.on = false; $('#music').checked = false; }
+    if (kind !== 'sfx') sfx.vol = 0; // อีกช่องที่เห็นเป็น 0 ก็ยังเป็น 0
+    if (kind !== 'music') { bgm.on = false; $('#music').checked = false; }
+    if (kind !== 'vdo') vdoVol.set(0);
   }
   if (kind === 'music') { sfx.musicVol = v; if (bgm.on !== v > 0) { bgm.on = v > 0; $('#music').checked = bgm.on; } }
-  else { sfx.vol = v; $('#vdoFight').volume = v; }
+  else if (kind === 'vdo') vdoVol.set(v);
+  else sfx.vol = v; // ตี้ 2026-11-07: เสียงใน VDO แยกไปอยู่แถบ เสียง VDO แล้ว
   renderSet();
 }
 // หน้าเริ่ม: แถบโหลด VDO · PLAY กดได้เมื่อโหลดครบ (หรือปิด VDO)
@@ -7736,6 +7777,7 @@ $('#fastSw').addEventListener('change', e => { $('#fast').checked = e.target.che
 $('#volMusic').addEventListener('input', e => setVol('music', e.target.value / 100));
 $('#volSfx').addEventListener('input', e => setVol('sfx', e.target.value / 100));
 $('#volSfx').addEventListener('change', () => sfx.play('pick')); // ปล่อยนิ้ว = ลองฟังระดับเสียง
+$('#volVdo').addEventListener('input', e => setVol('vdo', e.target.value / 100));
 $('#vdoSw').addEventListener('change', e => { vdo.on = e.target.checked; $('#vdoOn').checked = vdo.on; render(); });
 $('#rulesMini').innerHTML = `${rulesCompactHTML()}<p style="margin-top:18px">กติกาเต็มพร้อมตัวอย่าง: <a href="${MANUAL_URL}" target="_blank" rel="noopener">คู่มือวิธีเล่น DreamFight (PDF) ↗</a></p>`;
 addEventListener('resize', fitStage);
@@ -7743,7 +7785,7 @@ setInterval(clockTick, 250);
 fitStage();
 // ลายนิ้วมือสถานะเกม (ทดสอบว่า PVP สองเครื่องตรงกัน) — ลำดับการ์ดในมือตามอาร์เรย์ (ส่วนที่กระทบผลสุ่ม)
 const stateHash = () => { const g = ui.g; return g ? JSON.stringify({ r: g.round, hp: SIDES.map(s => g.p[s].hp), sh: SIDES.map(s => g.p[s].shield), ga: SIDES.map(s => `${g.p[s].gauge}/${g.p[s].gStack}/${g.p[s].gDmg}`), h: SIDES.map(s => g.p[s].hand.map(c => `${c.id}${c.type[0]}${c.lv}`).join(',')), d: g.deck.length, m: g.market.map(c => c.type[0]).join('') }) : null; };
-window.__dreamfight = { bgm, vdo, vdoBg, vdoClips, vdoPlan, stateHash, ui: () => ui, simulate, stackLanes, pickOne, swapHand, botAction, newGame, doLock, clash, effText, gain, forceDiscard, judge, sfx, calcSideHTML, discardText, drawCount, fitStage, fx: { vcClash, vcPop, vcReset, vcFlyTo, coatShow, vfxShield, vfxImpact, titleFx, vcHand, runFight } }; // runFight: ใช้ทดสอบฉากปะทะที่ตั้งเอง
+window.__dreamfight = { bgm, vdo, vdoVol, vdoBg, vdoClips, vdoPlan, stateHash, ui: () => ui, simulate, stackLanes, pickOne, swapHand, botAction, newGame, doLock, clash, effText, gain, forceDiscard, judge, sfx, calcSideHTML, discardText, drawCount, fitStage, fx: { vcClash, vcPop, vcReset, vcFlyTo, coatShow, vfxShield, vfxImpact, titleFx, vcHand, runFight } }; // runFight: ใช้ทดสอบฉากปะทะที่ตั้งเอง
 render();
 if (accessOk && QS.has('go') && !ON_CLAUDE) pvpOpen(); // ระบบห้อง: ลิงก์ห้อง/ออกจากห้อง เปิดหน้า PVP เลยไม่ต้องกด START
 })();
