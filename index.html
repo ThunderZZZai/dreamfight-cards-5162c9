@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1794075996">
+<meta name="df-build" content="1794077766">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -989,6 +989,9 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 #world.lay-spec #hand{left:0;top:700px;width:1920px;height:380px}
 #world.lay-spec .spec-hands{position:relative;display:block;height:100%}
 #world.lay-spec .spec-hand{position:absolute;bottom:0;width:640px;height:380px;padding:0;background:none}
+/* แก้บั๊ก 2026-11-08: #hand ของผู้ชมกว้างเต็มจอ (1920×380 · y 700–1080) และอยู่หลัง #strip ใน DOM เลยทับแถบเฟส + ปุ่ม FIGHT กลางล่าง → คลิกเมาส์ไม่โดน (Space/Enter ได้) · ที่ว่างในกล่องให้ทะลุคลิก รับเมาส์แค่มือ 2 ฝั่งเหมือนเดิม · ตอน VDO เต็มจอ มือไม่รับเมาส์เหมือนเดิม */
+#world.lay-spec #hand{pointer-events:none}
+#world.lay-spec:not(.vdo-full) .spec-hand{pointer-events:auto}
 #world.lay-spec .spec-hand.side-red{left:20px} #world.lay-spec .spec-hand.side-blue{right:20px}
 #world.lay-spec .spec-hand .hand-head{position:absolute;top:28px;z-index:3;height:auto;padding:2px 14px;border-radius:999px;background:rgba(5,7,11,.72)}
 #world.lay-spec .spec-hand.side-red .hand-head{left:330px} #world.lay-spec .spec-hand.side-blue .hand-head{right:308px}
