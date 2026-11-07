@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1794036639">
+<meta name="df-build" content="1794038958">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -779,6 +779,8 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 .flip3d{position:relative;display:grid;perspective:1000px}
 .flip3d > .fl{position:relative;display:grid;transform-style:preserve-3d;animation:flip3d calc(.42s*var(--spd)) cubic-bezier(.3,.7,.3,1) var(--d,0ms) backwards}
 .flip3d .fl > *{-webkit-backface-visibility:hidden;backface-visibility:hidden}
+.flip3d.mk-out > .fl{animation:none}
+.flip3d.mk-out .card.taken{filter:grayscale(1) brightness(.42)}
 .flip3d .fl > .card.back{position:absolute;inset:0;width:auto;height:auto;transform:rotateY(180deg)}
 @keyframes flip3d{0%{transform:rotateY(180deg) scale(.9)}60%{transform:rotateY(-14deg) scale(1.07)}100%{transform:none}}
 .mk.reveal .cap{animation:capIn calc(.25s*var(--spd)) ease calc(var(--d,0ms) + .3s*var(--spd)) backwards}
@@ -4693,6 +4695,39 @@ async function confirmPick() {
   const theirs = doPick(g, OPP, theirIdx);
   await afterPicks(mine, theirs, mineIdx, ui.picks.map(p => p.how === 'over'));
 }
+// ตี้ 2026-11-07: การ์ดกองกลางหายแบบมีแอนิเมชัน — พลิกคว่ำทีละใบ แล้วรวบเข้ากลางจางหาย · ทุกใบเล่นเหมือนกัน ไม่บอกว่าใครเก็บใบไหน
+// เล่นบนชั้นเอฟเฟกต์ (ไม่แตะเวลาเกม · render ซ้ำไม่กระทบ · PVP ไม่ต้องรอกัน)
+const MK_OUT_MS = 900, MK_OUT_GAP = 60;
+function marketOut() {
+  const box = $('#main .market'), fronts = box ? [...box.querySelectorAll('.mk .card:not(.back)')] : [];
+  if (!fronts.length || reduced()) return;
+  const k = ui.k || 1, rs = fronts.map(rectOf), mid = rs.reduce((a, r) => a + r.left + r.width / 2, 0) / rs.length;
+  fronts.forEach((c, i) => {
+    const g = ghost(`<div class="flip3d mk-out"><div class="fl">${c.outerHTML}${backHTML()}</div></div>`, rs[i]);
+    g.style.transformOrigin = '50% 50%';
+    const dx = (mid - rs[i].left - rs[i].width / 2) / k, o = { duration: MK_OUT_MS * spdK(), delay: i * MK_OUT_GAP * spdK(), fill: 'both' };
+    g.querySelector('.fl').animate([
+      { transform: 'rotateY(0deg)', offset: 0, easing: 'cubic-bezier(.4,0,.3,1)' },
+      { transform: 'rotateY(180deg)', offset: 0.42 },
+      { transform: 'rotateY(180deg)', offset: 1 },
+    ], o);
+    g.animate([
+      { transform: 'translate(0, 0) scale(1)', opacity: 1, offset: 0 },
+      { transform: 'translate(0, -14px) scale(1.06)', opacity: 1, offset: 0.24, easing: 'ease-out' },
+      { transform: 'translate(0, -6px) scale(1)', opacity: 1, offset: 0.46, easing: 'cubic-bezier(.5,0,.2,1)' },
+      { transform: `translate(${dx}px, -6px) scale(.9)`, opacity: 1, offset: 0.8, easing: 'ease-in' },
+      { transform: `translate(${dx}px, 12px) scale(.55)`, opacity: 0, offset: 1 },
+    ], o).onfinish = () => g.remove();
+  });
+  // คำอธิบายใต้การ์ด / ป้ายผู้เก็บ (จอผู้ชม) จางออกก่อนการ์ดเริ่มรวบ
+  box.querySelectorAll('.mk > .cap, .mk > .mk-tags').forEach(el => {
+    const r = rectOf(el);
+    if (!r || !r.width) return;
+    const g = ghost(`<div class="mk" style="width:100%">${el.outerHTML}</div>`, r);
+    g.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 240 * spdK(), easing: 'ease-out', fill: 'both' }).onfinish = () => g.remove();
+  });
+  box.style.visibility = 'hidden'; // ใบจริงซ่อนหลังวางใบแทนครบแล้ว ภาพไม่กระพริบ · render รอบถัดไปลบทิ้งเอง
+}
 // หลังเก็บครบทั้งสองฝ่าย: แอนิเมชันเข้ามือ → เฟส Action (ARCADE: บอทคว่ำการ์ดทันที · PVP: รออีกฝ่ายวางเอง)
 async function afterPicks(mine, theirs, mineIdx, overFlags, theirIdx = null) {
   const g = ui.g, gid = ui.gid;
@@ -4712,6 +4747,7 @@ async function afterPicks(mine, theirs, mineIdx, overFlags, theirIdx = null) {
   if (theirIdx) floatNote(OPP, `เก็บ ${names(theirIdx.map(i => g.market[i]))}`, 'gain', 200); // ผู้ชม
   await wait(1200);
   if (gid !== ui.gid) return;
+  marketOut();
   g.market = [];
   if (ui.mode === 'pvp' || ui.mode === 'spec') {
     Object.assign(ui, { phase: 'action', busy: false, undo: [] });
