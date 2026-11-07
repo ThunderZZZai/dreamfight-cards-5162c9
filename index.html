@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1794038958">
+<meta name="df-build" content="1794051748">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -10,22 +10,30 @@
   if (mine === 'dev' || !window.fetch) return;
   const u = new URL(location.href);
   if (u.searchParams.has('v')) { u.searchParams.delete('v'); try { history.replaceState(history.state, '', u.pathname + u.search + u.hash); } catch (e) {} }
-  const latest = () => fetch(`${location.pathname}?cb=${Date.now()}`, { cache: 'no-store' }).then(r => (r.ok ? r.text() : '')).then(t => (t.match(/name="df-build" content="([^"]+)"/) || [])[1] || null).catch(() => null);
-  // กันวนโหลดซ้ำถ้าตัวใหม่ยังไม่มาถึงจริง (CDN ยังส่งตัวเก่า) — กระโดดไปบิลด์เดิมซ้ำได้อีกครั้งหลัง 3 นาที
+  // ตี้ 2026-11-07: ถามเลขบิลด์จาก build.txt (ไฟล์เล็ก deploy_pages.sh เขียนให้) → เช็กถี่ได้ไม่เปลืองเน็ต · ไม่มีไฟล์ = อ่านจาก index.html แบบเดิม
+  const dir = location.pathname.replace(/[^/]*$/, '');
+  const fromTxt = () => fetch(`${dir}build.txt?cb=${Date.now()}`, { cache: 'no-store' }).then(r => (r.ok ? r.text() : '')).then(t => (/^\d{6,}$/.test(t.trim()) ? t.trim() : null)).catch(() => null);
+  const fromHtml = () => fetch(`${location.pathname}?cb=${Date.now()}`, { cache: 'no-store' }).then(r => (r.ok ? r.text() : '')).then(t => (t.match(/name="df-build" content="([^"]+)"/) || [])[1] || null).catch(() => null);
+  const latest = () => fromTxt().then(b => b || fromHtml());
+  // ใหม่กว่า = เลขมากกว่า (เลขบิลด์คือเวลา deploy) · เว็บส่งเลขเก่ากว่ามา (แคชค้าง) = ไม่นับ กันกระโดดถอยหลัง
+  const newer = b => !!b && b !== 'dev' && /^\d+$/.test(b) && /^\d+$/.test(mine) && Number(b) > Number(mine);
+  // กันวนโหลดซ้ำถ้าตัวใหม่ยังไม่มาถึงจริง (CDN ยังส่งตัวเก่า) — กระโดดไปบิลด์เดิมซ้ำได้อีกครั้งหลัง 3 นาที (หรือกดปุ่มอัปเดตเอง)
   const recent = b => { const j = sessionStorage.getItem('df-build-jump') || ''; const [jb, at] = j.split('@'); return jb === b && (!at || Date.now() - at < 180000); };
-  const jump = b => {
-    sessionStorage.setItem('df-build-jump', `${b}@${Date.now()}`);
+  const jump = (b, force) => {
+    try { sessionStorage.setItem('df-build-jump', `${b}@${Date.now()}`); } catch (e) {}
     const w = new URL(location.href); // อ่าน URL ตอนนี้ (สคริปต์เกมอาจลบ ?go/?watch ไปแล้ว)
-    w.searchParams.set('v', b);
+    w.searchParams.set('v', force ? `${b}.${Date.now().toString(36)}` : b); // กดเอง = URL ใหม่ทุกครั้ง ไม่ได้ตัวในแคช
     location.replace(w.pathname + w.search + w.hash);
   };
-  latest().then(b => { if (b && b !== mine && b !== 'dev' && !recent(b)) jump(b); });
-  // ตี้ 2026-11-02 "ต่อให้เปิดเว็บค้างไว้ก็จะอัปเดตตามด้วย": เช็กซ้ำทุก 60 วิ + ตอนกลับมาที่แท็บ · เจอบิลด์ใหม่ = จดไว้ (__dfNewBuild)
-  // แล้วเกมเรียก __dfJump() เองตอนไม่ตัดใคร (หน้าแรก / LOBBY / ห้อง PVP ที่ยังไม่นั่งแข่ง) — กลางเกมรอจนออกจากเกม
-  const poll = () => latest().then(b => { if (b && b !== mine && b !== 'dev') window.__dfNewBuild = b; });
-  setInterval(poll, 60000);
+  const seen = b => { if (newer(b)) window.__dfNewBuild = b; return window.__dfNewBuild || null; };
+  // ตี้ 2026-11-07 "ถ้าไม่ใช่เวอร์ชันปัจจุบันจะเล่นไม่ได้": เจอบิลด์ใหม่ = จดไว้ (__dfNewBuild) เสมอ → เกมบล็อกการเข้าเล่นจนกว่าจะโหลดตัวใหม่
+  latest().then(b => { if (seen(b) && !recent(b)) jump(b); });
+  // ตี้ 2026-11-02 "ต่อให้เปิดเว็บค้างไว้ก็จะอัปเดตตามด้วย": เช็กซ้ำทุก 15 วิ + ตอนกลับมาที่แท็บ
+  // เกมเรียก __dfJump() เองตอนไม่ตัดใคร (หน้าแรก / LOBBY / ห้อง PVP ที่ยังไม่นั่งแข่ง) — กลางเกมรอจนจบเกม แล้วห้ามเริ่มเกมใหม่จนกว่าจะอัปเดต
+  const poll = () => latest().then(seen);
+  setInterval(poll, 15000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) poll(); });
-  window.__dfJump = () => { const b = window.__dfNewBuild; if (b && !recent(b)) jump(b); };
+  window.__dfJump = force => { const b = window.__dfNewBuild; if (!b || (!force && recent(b))) return false; jump(b, force); return true; };
 })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -603,6 +611,17 @@ body:not(.portrait) #rotateHint{display:none}
 .mk-tag{padding:0 10px;border-radius:999px;font-family:var(--font-disp);font-weight:700;font-size:15px;line-height:1.5;color:#fff}
 .mk-tag.red{background:var(--red)} .mk-tag.blue{background:var(--blue)}
 .pvp-watch{display:flex;align-items:center;gap:16px;margin:4px 0 2px;font-size:18px;color:var(--muted)}
+/* ตี้ 2026-11-07: เจ้าของห้องกดเริ่มเกม (ผู้เล่นพร้อมทั้งคู่แล้วยังไม่นับถอยหลังเอง) */
+.pvp-start{display:flex;align-items:center;justify-content:center;gap:18px;margin:6px 0 2px;font-size:19px;color:var(--muted)}
+.pvp-start .wait{color:var(--gold);font-weight:600}
+/* ตี้ 2026-11-07: เวอร์ชันเก่า = เล่นไม่ได้ — หน้าบล็อกเต็มจอ (อยู่นอก #stage ไม่ย่อขยายตามกรอบ) */
+#buildGate{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(3,5,9,.94);font-family:Anuphan,system-ui,sans-serif;color:#eef1f6}
+#buildGate[hidden]{display:none}
+#buildGate .bg-card{max-width:560px;width:100%;text-align:center;padding:32px 28px;border:1px solid rgba(255,255,255,.14);border-radius:14px;background:#0d1119;display:flex;flex-direction:column;align-items:center;gap:14px}
+#buildGate h2{margin:0;font-size:30px}
+#buildGate p{margin:0;font-size:17px;line-height:1.55;color:#c9cfda}
+#buildGate .st-eyebrow{color:#f2c14e;letter-spacing:.14em;font-size:13px;font-weight:700}
+#buildGate small{font-size:13px;color:#8b93a3;line-height:1.5}
 /* ระบบห้อง PVP (ตี้ 2026-10-28 · ร่าง canvas X2iF5zKGwXLoa9nTpTDXUd แถวล่าง): รายการห้อง · สร้างห้อง (ชื่อ+รหัส+ฝั่ง) · ใส่รหัส · ในห้อง READY */
 .btn.gold{background:linear-gradient(180deg,#ffd76a,#e8a91b);color:#1a1204;border:0;box-shadow:0 0 18px rgba(255,200,61,.35)}
 .pvp-rooms{width:1320px;display:flex;flex-direction:column;gap:14px}
@@ -1480,7 +1499,8 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
         </div>
         <div class="obs-seats" id="obsSeats"></div>
         <div class="pvp-watch" id="pvpWatch" hidden></div>
-        <p class="pvp-note" id="pvpNote">กด READY ฝั่งที่ต้องการ แล้วรออีกฝ่ายกดอีกฝั่ง · พร้อมทั้งคู่ = เริ่มเกมทันที · ไม่จับเวลา คุยกันได้เต็มที่ · คนที่เข้ามาหลังเริ่มแข่งแล้วเป็นผู้ชม</p>
+        <div class="pvp-start" id="pvpStart" hidden></div>
+        <p class="pvp-note" id="pvpNote">กด READY ฝั่งที่ต้องการ แล้วรออีกฝ่ายกดอีกฝั่ง · พร้อมทั้งคู่แล้ว เจ้าของห้อง 👑 เป็นคนกดเริ่มเกม · ไม่จับเวลา คุยกันได้เต็มที่ · คนที่เข้ามาหลังเริ่มแข่งแล้วเป็นผู้ชม</p>
         <div class="room-btns" id="roomBtns"></div>
         <div class="room-modal" id="roomModal" hidden></div>
       </section>
@@ -6068,6 +6088,8 @@ document.addEventListener('click', e => {
   const t = e.target.closest('[data-act]');
   if (!t || t.disabled) return;
   if (ui.mode === 'spec' && SPEC_BLOCKED.has(t.dataset.act)) return; // ผู้ชมแตะการ์ด/ปุ่มเล่นไม่ได้
+  if (t.dataset.act === 'buildUpdate') { buildGate(true); return; }
+  if (PLAY_GATED.has(t.dataset.act) && buildOld()) { buildGate(); return; } // เวอร์ชันเก่า = เข้าเล่นไม่ได้
   // เข้าเกม/ห้อง PVP ได้เมื่อโหลด VDO ครบ (ตี้: "ต้องโหลดไฟล์ให้ครบ ก่อนเริ่มเกม") — หรือปิด VDO
   if (VDO_GATED.has(t.dataset.act) && !accessOk) { $('#gateCode').focus(); return; }
   if (VDO_GATED.has(t.dataset.act) && vdoNeed()) { toast(vdo.state === 'failed' ? 'โหลด VDO ไม่สำเร็จ — กลับหน้าแรกกดลองใหม่ หรือปิด VDO' : `รอโหลด VDO ให้ครบก่อน (${vdo.pct}%)`); return; }
@@ -6104,6 +6126,7 @@ document.addEventListener('click', e => {
     case 'seat': pvpSeat(t.dataset.i); break;
     case 'obsSeat': pvpObs(Number(t.dataset.i)); break;
     case 'obsGo': obsGo(); break;
+    case 'hostStart': hostStart(); break;
     case 'toLobby': toStart('lobby'); break;
     case 'toPvp': if (ui.mode === 'spec' && boNextOpen()) ui.boFollow = true; toStart('pvp'); break; // ผู้ชมห้อง Bo: ตามไปดูเกมถัดไปเอง
     case 'boNext': { const side = ME; toStart('pvp'); net.autoSeat = side; pvpOnPeers(); break; } // ห้อง Bo: กลับนั่งฝั่งเดิม → พร้อมทั้งคู่ = เริ่มเกมถัดไป
@@ -6149,10 +6172,31 @@ function renderFs() {
 //   ปลอดภัย = ไม่อยู่ในเกม · ไม่ได้นั่งที่นั่งแข่ง/อยู่ในแมตช์ · ไม่ได้กำลังเริ่ม PVP · ไม่มีหน้าต่างเลือกโหมด/สร้างห้องเปิดค้าง
 //   กลางเกม (รวมผู้ชม / BOT VS BOT) = รอจนออกจากเกม แล้วบอกครั้งเดียวว่าจะอัปเดตให้เอง
 const updateSafe = () => ui.screen !== 'game' && !net.mine.seat && !net.mine.mid && !ui.pvpStarting && [...document.querySelectorAll('.room-modal')].every(m => m.hidden);
+/* ตี้ 2026-11-07 "ถ้าไม่ใช่เวอร์ชันปัจจุบันจะเล่นไม่ได้": เจอบิลด์ใหม่บนเว็บแล้ว เครื่องนี้ยังเป็นตัวเก่า →
+   ห้ามเข้าเล่นทุกทาง (PLAY · ARCADE · BOT VS BOT · PVP · นั่งที่นั่ง · ดูการแข่ง · เกมต่อไป) · ที่ปลอดภัย = โหลดตัวใหม่ทันที
+   โหลดไม่ได้ (เพิ่งโหลดไปแล้วยังได้ตัวเก่า — แคชค้าง) = ขึ้นหน้าบล็อกเต็มจอ มีปุ่มอัปเดตเอง · กลางเกมเล่นจนจบเกมนั้นได้ (ไม่ตัดคู่แข่ง PVP)
+   เช็กไม่ได้ (เน็ตหลุด / เปิดในเครื่อง = dev / claude.ai) = ไม่บล็อก */
+const PLAY_GATED = new Set(['start', 'arcade', 'arcNext', 'bvb', 'bvbNext', 'pvpLobby', 'seat', 'obsSeat', 'watch', 'boNext', 'roomJoin', 'roomWatch', 'roomNew', 'hostStart']);
+const buildOld = () => !!window.__dfNewBuild;
+function buildGate(force = false) {
+  if (window.__dfJump && window.__dfJump(force)) return;
+  let el = document.getElementById('buildGate');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'buildGate';
+    el.setAttribute('role', 'alertdialog');
+    el.innerHTML = `<div class="bg-card"><p class="st-eyebrow">UPDATE REQUIRED</p><h2>เวอร์ชันนี้เก่าแล้ว</h2>
+      <p>เกมมีเวอร์ชันใหม่ — ต้องอัปเดตก่อนถึงจะเล่นได้ (ทุกคนต้องเล่นเวอร์ชันเดียวกัน)</p>
+      <button type="button" class="btn gold big" data-act="buildUpdate">อัปเดตเลย</button>
+      <small>กดแล้วยังเห็นหน้านี้ = เบราว์เซอร์ยังจำไฟล์เก่า · รอสักครู่แล้วกดใหม่ หรือปิดแท็บแล้วเปิดลิงก์ใหม่</small></div>`;
+    document.body.appendChild(el);
+  }
+  el.hidden = false;
+}
 setInterval(() => {
-  if (!window.__dfNewBuild || !window.__dfJump) return;
-  if (updateSafe()) { window.__dfJump(); return; }
-  if (ui.updNote !== window.__dfNewBuild) { ui.updNote = window.__dfNewBuild; toast('มีเวอร์ชันใหม่ของเกม · จะอัปเดตให้เองเมื่อออกจากเกม'); }
+  if (!buildOld()) return;
+  if (updateSafe()) { buildGate(); return; }
+  if (ui.updNote !== window.__dfNewBuild) { ui.updNote = window.__dfNewBuild; toast('มีเวอร์ชันใหม่ของเกม · เล่นเกมนี้จนจบได้ แล้วต้องอัปเดตก่อนเล่นต่อ'); }
 }, 2000);
 function toast(text) {
   const t = $('#toast');
@@ -6198,7 +6242,7 @@ document.addEventListener('keydown', e => {
    vdo = รอบที่เรากำลังดู VDO ฉากปะทะอยู่ (อีกฝ่ายหยุดนับเวลารอ) — ไม่มี = ไม่ได้ดู
    t0 = เวลาเริ่มแมตช์ (Date.now ของเรา) — ผู้ชมที่เข้ากลางเกมใช้ตั้งนาฬิกาแมตช์ · แสดงผลเท่านั้น
    inp เก็บทั้งแมตช์ (ผู้ชมที่เข้ากลางเกมย้อนคำนวณจากรอบ 1) · ผู้ชม: { watch: mid } อย่างเดียว ไม่ส่งอะไรให้ผู้เล่น */
-const PVP_V = 25; // เปลี่ยนกติกา/เอนจินเมื่อไหร่ต้องเพิ่มเลขนี้ — คนละเวอร์ชันจะไม่ถูกจับคู่ (เล่นคนละกติกา = ผลเพี้ยน) · 4 = Fight Phase เป็น VDO (ยาวขึ้นมาก + presence.vdo) · 5 = Dodge Lv3 มีเพดาน HP 10 + HP สูงสุด 100 → 150 (ตี้ 2026-10-22) · 6 = Lv2 + Lv2 คืนการ์ด Lv1 (validLock รับ id การ์ดคืน) · 7 = เกจ (การวางส่ง gauge ops ไปด้วย · newGame สุ่ม gseed) · 8 = Attack ทอยให้อีกฝ่ายทิ้งการ์ด (rollClash ใช้ตัวสุ่มเพิ่ม) · 9 = Dodge เจอ Ultimate หลบ 100% + Lv2-3 อีกฝ่ายทิ้ง/เสียเกจ · 10 = ชิลด์ (Defence) + Ultimate ใหม่ + เอาเกจชนะทางออก · 11 = Ultimate ดาเมจ 20/40/60 · 12 = Attack เจอ Defence ไม่ทอยทิ้ง (ตัวสุ่มหลักใช้น้อยลง) · 13 = มือว่างเสีย HP เฉพาะค่า Ultimate (Attack / Dodge บังคับทิ้งไม่เสีย HP) · 14 = Defence ชนะทาง Attack ชิลด์เพิ่ม 5/10/15 · 15 = รอบที่ใช้ 3 เกจ สะสมเกจไม่ได้ · 16 = ค่าจากตาราง: ดาเมจเพิ่มชนะทาง Attack/Ultimate 5/10/15 + มือว่าง 15 HP · 17 = Dodge หลบได้เฉพาะ Ultimate · Attack ไม่มีลดหลบ (ตัวสุ่มใช้น้อยลง) + มือว่างกลับเป็น 10 HP · 18 = Attack ดาเมจ 10/25/40 · 19 = Defence ชิลด์ 10/25/40 · 20 = Dodge จั่ว 1 + ขโมยการ์ด 0/1/2 (ตัวสุ่มหลักใช้ตอนขโมย) · เลิกทิ้ง/เสียเกจตอนเจอ Ultimate · 21 = 3 เกจใหม่: จั่วครบมือ + เปลี่ยนฟรี 2 + ผสมการ์ดบนมือ (op ftr / merge) · 22 = พลังเต็มเปลี่ยนฟรี 1 ใบเป็น Lv2 (MAX_FREE_TR) + ห้อง Bo (meta.bo · presence.ser) · 23 = ห้องมีคู่ต่อสู้ (meta.pair) + ที่นั่งผู้ชม + เริ่มแข่งเมื่อทั้งสองเครื่องโหลดคู่ของห้องครบ (presence.vp) — แท็บเวอร์ชันก่อนระบบคู่ไม่เข้าห้องเดียวกัน (ตี้ 2026-11-02: เพื่อนเห็นคนละคู่กับเจ้าของห้อง) · 24 = ตัวกรอง presence เก็บ meta.pair / room.pair / vp / obs (เดิมตกหล่น → เพื่อนเข้าห้องได้คู่เดิม · เริ่มแข่งไม่ได้) — แยกห้องจากแท็บที่ยังไม่แก้ (ตี้ 2026-11-02) · 25 = ห้องที่มี OBSERVER ต้องให้ OBSERVER กดเริ่มฉากต่อสู้ (presence.go · ตี้ 2026-11-06)
+const PVP_V = 26; // เปลี่ยนกติกา/เอนจินเมื่อไหร่ต้องเพิ่มเลขนี้ — คนละเวอร์ชันจะไม่ถูกจับคู่ (เล่นคนละกติกา = ผลเพี้ยน) · 4 = Fight Phase เป็น VDO (ยาวขึ้นมาก + presence.vdo) · 5 = Dodge Lv3 มีเพดาน HP 10 + HP สูงสุด 100 → 150 (ตี้ 2026-10-22) · 6 = Lv2 + Lv2 คืนการ์ด Lv1 (validLock รับ id การ์ดคืน) · 7 = เกจ (การวางส่ง gauge ops ไปด้วย · newGame สุ่ม gseed) · 8 = Attack ทอยให้อีกฝ่ายทิ้งการ์ด (rollClash ใช้ตัวสุ่มเพิ่ม) · 9 = Dodge เจอ Ultimate หลบ 100% + Lv2-3 อีกฝ่ายทิ้ง/เสียเกจ · 10 = ชิลด์ (Defence) + Ultimate ใหม่ + เอาเกจชนะทางออก · 11 = Ultimate ดาเมจ 20/40/60 · 12 = Attack เจอ Defence ไม่ทอยทิ้ง (ตัวสุ่มหลักใช้น้อยลง) · 13 = มือว่างเสีย HP เฉพาะค่า Ultimate (Attack / Dodge บังคับทิ้งไม่เสีย HP) · 14 = Defence ชนะทาง Attack ชิลด์เพิ่ม 5/10/15 · 15 = รอบที่ใช้ 3 เกจ สะสมเกจไม่ได้ · 16 = ค่าจากตาราง: ดาเมจเพิ่มชนะทาง Attack/Ultimate 5/10/15 + มือว่าง 15 HP · 17 = Dodge หลบได้เฉพาะ Ultimate · Attack ไม่มีลดหลบ (ตัวสุ่มใช้น้อยลง) + มือว่างกลับเป็น 10 HP · 18 = Attack ดาเมจ 10/25/40 · 19 = Defence ชิลด์ 10/25/40 · 20 = Dodge จั่ว 1 + ขโมยการ์ด 0/1/2 (ตัวสุ่มหลักใช้ตอนขโมย) · เลิกทิ้ง/เสียเกจตอนเจอ Ultimate · 21 = 3 เกจใหม่: จั่วครบมือ + เปลี่ยนฟรี 2 + ผสมการ์ดบนมือ (op ftr / merge) · 22 = พลังเต็มเปลี่ยนฟรี 1 ใบเป็น Lv2 (MAX_FREE_TR) + ห้อง Bo (meta.bo · presence.ser) · 23 = ห้องมีคู่ต่อสู้ (meta.pair) + ที่นั่งผู้ชม + เริ่มแข่งเมื่อทั้งสองเครื่องโหลดคู่ของห้องครบ (presence.vp) — แท็บเวอร์ชันก่อนระบบคู่ไม่เข้าห้องเดียวกัน (ตี้ 2026-11-02: เพื่อนเห็นคนละคู่กับเจ้าของห้อง) · 24 = ตัวกรอง presence เก็บ meta.pair / room.pair / vp / obs (เดิมตกหล่น → เพื่อนเข้าห้องได้คู่เดิม · เริ่มแข่งไม่ได้) — แยกห้องจากแท็บที่ยังไม่แก้ (ตี้ 2026-11-02) · 25 = ห้องที่มี OBSERVER ต้องให้ OBSERVER กดเริ่มฉากต่อสู้ (presence.go · ตี้ 2026-11-06) · 26 = เจ้าของห้องต้องกดเริ่มเกม (presence.start) — แท็บเวอร์ชันก่อนจะนับถอยหลังเองไม่รอ จึงแยกห้อง (ตี้ 2026-11-07)
 // ตี้ 2026-10-28: โชว์แมตช์อาจคุยกันนาน → ไม่จับเวลาเฟส (ไม่มีนาฬิกา ไม่ยืนยันให้อัตโนมัติ ไม่ตัดสิทธิ์เพราะช้า) · หลุดการเชื่อมต่อยังตัดสินตาม PVP_GONE_MS
 const PVP_TIMER = false;
 const PVP_SEC = 60, PVP_CUT = 30, PVP_GONE_MS = 8000, PVP_NEXT_MS = 10000, PVP_WAIT_MS = 90000, VDO_HOLD_MS = 240000;
@@ -6263,7 +6307,7 @@ const loadScript = src => new Promise((ok, bad) => { const el = document.createE
 function cleanPresence(p) {
   const o = {}, str = (v, n) => (typeof v === 'string' && v ? v.slice(0, n) : null);
   if (Number.isFinite(p.v)) o.v = p.v;
-  for (const [k, n] of [['nick', 16], ['nonce', 16], ['mid', 96], ['over', 96], ['watch', 96], ['hold', 96]]) { const v = str(p[k], n); if (v) o[k] = v; }
+  for (const [k, n] of [['nick', 16], ['nonce', 16], ['mid', 96], ['over', 96], ['watch', 96], ['hold', 96], ['start', 96]]) { const v = str(p[k], n); if (v) o[k] = v; }
   if (p.seat === 'RED' || p.seat === 'BLUE') o.seat = p.seat;
   if (Number.isFinite(p.at)) o.at = p.at;
   if (Number.isInteger(p.vdo) && p.vdo > 0 && p.vdo < 1000) o.vdo = p.vdo;
@@ -6444,7 +6488,7 @@ function roomMeta() {
   for (const p of net.peers) { const m = p.presence && p.presence.meta; if (m && (!best || m.u > best.u)) best = m; }
   return best;
 }
-const roomHost = () => net.peers.filter(p => p.presence && Number.isFinite(p.presence.j)).sort((a, b) => a.presence.j - b.presence.j || (a.peer < b.peer ? -1 : 1))[0] || null;
+const roomHost = () => net.peers.filter(p => p.presence && p.presence.v === PVP_V && Number.isFinite(p.presence.j)).sort((a, b) => a.presence.j - b.presence.j || (a.peer < b.peer ? -1 : 1))[0] || null;
 const roomName = () => (roomMeta() && roomMeta().name) || (ROOM.id === 'lobby' ? 'ห้องรวม' : ROOM.label);
 const roomLock = () => (roomMeta() && roomMeta().lock) || '';
 const roomPair = () => pairOf((roomMeta() || {}).pair).id; // ตี้ 2026-11-01: คู่ต่อสู้ของห้อง (เจ้าของห้องเลือก)
@@ -6595,7 +6639,7 @@ function roomModal(kind, id) {
   }
   box.hidden = false;
   if (kind !== 'pw') { $('#rmForm').style.width = '780px'; pairBind($('#rmForm'), 'rmPair', 'pvp', false); }
-  $('#rmForm').addEventListener('submit', e => { e.preventDefault(); roomSubmit(); });
+  $('#rmForm').addEventListener('submit', e => { e.preventDefault(); if (buildOld()) { buildGate(); return; } roomSubmit(); });
   const first = $('#rmForm input[type=text], #rmForm input[type=password]');
   if (first) first.focus();
 }
@@ -6755,6 +6799,7 @@ function renderPvp() {
     el.innerHTML = `<div class="seat-por">${P ? `<img src="assets/pair/${P.id}-${s.toLowerCase()}.webp" alt="" draggable="false">` : ''}</div><div class="seat-info"><div class="seat-team">${s}</div>${cn ? `<div class="seat-char">ตัวละคร <b>${esc(cn)}</b></div>` : ''}${who}${btn}</div>`;
   }
   renderObs();
+  renderHostStart();
 }
 /* ───────── ที่นั่งผู้ชม (ตี้ 2026-11-02 · ม็อกอัป artifact FrKzdLS79GRFUXEF7FadBK) ─────────
    เกมนี้ใช้สตรีมโชว์ในงาน (นักพากย์ · ผู้เล่น · คนดูในงาน) → ห้องมีที่นั่งผู้ชม 3 ที่ สำหรับเครื่องที่ยิงจอขึ้นสตรีม
@@ -6851,6 +6896,42 @@ function pvpOnPeers() {
   if (ui.screen === 'game' && ui.mode === 'pvp') { renderOppHand(); renderStrip(); pvpTick(); }
   if (ui.screen === 'game' && ui.mode === 'spec') { renderStrip(); specTick(); }
 }
+/* ตี้ 2026-11-07 "ห้อง PVP ต่อให้คนเข้าไปนั่งรอ ต้องให้หัวหน้าห้องกดเริ่มเท่านั้น"
+   RED / BLUE กด READY ครบ + โหลดคู่ของห้องครบแล้ว ยังไม่นับถอยหลังเอง — เจ้าของห้อง (👑 roomHost) ต้องกด "เริ่มเกม" ก่อน
+   presence.start = รหัสแมตช์ที่เจ้าของห้องสั่งเริ่ม · เจ้าของห้องจะนั่งเล่นเอง นั่งดู หรือแค่อยู่ในห้องก็กดได้
+   ลุก / นั่งใหม่ (รหัสแมตช์เปลี่ยน) = ต้องกดใหม่ · เจ้าของห้องออก = คนที่อยู่นานรองลงมาเป็นเจ้าของแทน (ปุ่มย้ายไปเอง ไม่ค้าง) */
+function seatMid(h = seatHolders()) {
+  return h.RED && h.BLUE && h.RED.peer !== h.BLUE.peer ? [h.RED.presence.nonce, h.RED.presence.at, h.BLUE.presence.nonce, h.BLUE.presence.at].join('.') : null;
+}
+const presOf = p => (p.peer === net.me ? net.mine : p.presence); // ของเราเองใช้ค่าล่าสุดในเครื่อง (ห้องส่งกลับมาช้ากว่า)
+// พร้อมให้เจ้าของห้องกดเริ่ม: นั่งครบสองฝั่ง · โหลดคู่ของห้องครบทั้งคู่ · ไม่มีใครค้างแมตช์เก่า
+function hostCanStart() {
+  const h = seatHolders(), mid = seatMid(h);
+  if (!mid) return null;
+  for (const s of SIDES) { const q = presOf(h[s]); if ((h[s].peer === net.me ? vpNow() : q.vp) !== roomPair() || (q.mid && q.mid !== mid)) return null; }
+  return mid;
+}
+const hostIsMe = () => { const hp = roomHost(); return !!hp && hp.peer === net.me; };
+const hostStarted = mid => { const hp = roomHost(); return !!mid && !!hp && presOf(hp).start === mid; };
+function hostStart() {
+  const mid = hostCanStart();
+  if (!mid || !hostIsMe() || ui.pvpStarting) return;
+  presence({ start: mid });
+  sfx.play('levelup');
+  pvpCheckStart();
+  renderPvp();
+}
+function renderHostStart() {
+  const el = $('#pvpStart');
+  if (!el) return;
+  const hp = roomHost(), mid = net.state === 'on' && !LIST_MODE && !ui.pvpStarting ? seatMid() : null;
+  el.hidden = !mid || !hp;
+  if (el.hidden) return;
+  const ok = !!hostCanStart(), done = hostStarted(mid);
+  el.innerHTML = done ? '<span class="wait">เจ้าของห้องกดเริ่มแล้ว · กำลังเข้าเกม…</span>'
+    : hostIsMe() ? `<button type="button" class="btn gold big" data-act="hostStart"${ok ? '' : ' disabled'}>▶ เริ่มเกม</button><span>${ok ? 'ผู้เล่นพร้อมทั้งสองฝั่งแล้ว · คุณเป็นเจ้าของห้อง กดเริ่มได้เลย' : 'รอผู้เล่นโหลด VDO ให้ครบก่อน…'}</span>`
+    : ok ? `<span class="wait">⏳ ผู้เล่นพร้อมแล้ว · รอเจ้าของห้อง ${esc(nickOf(hp))} กดเริ่มเกม</span>` : '<span>รอผู้เล่นโหลด VDO ให้ครบ แล้วเจ้าของห้องกดเริ่มเกม</span>';
+}
 function pvpCheckStart() {
   if (ui.pvpStarting || net.state !== 'on') return;
   const h = seatHolders();
@@ -6861,6 +6942,7 @@ function pvpCheckStart() {
   if (vpNow() !== roomPair() || opp.presence.vp !== roomPair()) return; // ตี้ 2026-11-02: สองเครื่องต้องโหลดคู่ของห้องครบก่อน — ไม่งั้นเพื่อนเล่นคู่ที่เครื่องจำไว้ (คนละคู่กับเจ้าของห้อง)
   if (opp.presence.mid && opp.presence.mid !== mid) return; // อีกฝ่ายยังค้างเกมเก่า
   if (ui.pvpNoAck === mid) return; // นับถอยหลังกับคู่นี้แล้วอีกฝ่ายไม่ตอบ — รอให้ใครกด READY ใหม่ก่อน
+  if (!hostStarted(mid)) return; // ตี้ 2026-11-07: รอเจ้าของห้องกดเริ่มเกม
   ui.pvpStarting = { left: 3, mid, me, oppPeer: opp.peer, extra: 0 };
   presence({ mid, inp: {} });
   sfx.play('tickHi');
@@ -7308,6 +7390,7 @@ function bvbPick() {
   pairBind($('#bvbForm'), 'bvbPair', 'bvb');
   $('#bvbForm').addEventListener('submit', e => {
     e.preventDefault();
+    if (buildOld()) { buildGate(); return; } // เวอร์ชันเก่า = เริ่มเกมไม่ได้
     const n = Number((box.querySelector('input[name=bvbBo]:checked') || {}).value) > 1 ? BO_WINS : 1;
     try { localStorage.setItem('df-bvb-bo', String(n)); } catch (err) { /* ข้ามได้ */ }
     ui.bvbBo = n > 1 ? { n, w: { RED: 0, BLUE: 0 }, games: 0, pe: null, gid: null } : null;
@@ -7336,6 +7419,7 @@ function arcPick() {
   pairBind($('#arcForm'), 'arcPair', 'arcade');
   $('#arcForm').addEventListener('submit', e => {
     e.preventDefault();
+    if (buildOld()) { buildGate(); return; } // เวอร์ชันเก่า = เริ่มเกมไม่ได้
     const n = Number((box.querySelector('input[name=arcBo]:checked') || {}).value) > 1 ? BO_WINS : 1;
     try { localStorage.setItem('df-arc-bo', String(n)); } catch (err) { /* ข้ามได้ */ }
     ui.arcBo = n > 1 ? { n, w: { RED: 0, BLUE: 0 }, games: 0, pe: null, gid: null } : null;
