@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1794055622">
+<meta name="df-build" content="1794057165">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -1039,8 +1039,8 @@ body.is-dragging,body.is-dragging *{cursor:grabbing!important}
 #world.lay-spec #controls.spec-mini{left:auto;right:16px;top:138px;width:auto;max-width:620px;height:36px;display:flex;gap:10px;padding:0 4px 0 12px;border-radius:999px;background:rgba(5,7,11,.42);border-color:rgba(255,255,255,.1)}
 #world.lay-spec #controls.spec-mini.obs-go{left:50%;right:auto;top:640px;transform:translateX(-50%);height:auto;max-width:none;padding:0;background:none;border-color:transparent;z-index:30;pointer-events:auto}
 #world.lay-spec #controls.spec-mini.obs-go .btn{min-height:84px;padding:0 56px;font-size:38px;border-radius:18px;box-shadow:0 0 0 3px #ffe9a8,0 0 40px rgba(255,200,61,.75),0 14px 40px rgba(0,0,0,.6);animation:obsGoPulse 1.1s ease-in-out infinite;text-transform:none}
-.ph.ph-go{position:absolute;right:100%;top:0;margin-right:12px;white-space:nowrap;appearance:none;cursor:pointer;border-color:#ffe9a8;background:linear-gradient(180deg,#ffd76a,#e8a82a);color:#1a1205;font-weight:700;box-shadow:0 0 12px rgba(255,200,61,.6);animation:phGoPulse 1.1s ease-in-out infinite;pointer-events:auto}
-.ph.ph-go:hover{filter:brightness(1.08)} .ph.ph-go:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.ph.ph-go{position:absolute;left:50%;top:100%;margin-top:12px;transform:translateX(-50%);white-space:nowrap;display:flex;align-items:center;gap:10px;appearance:none;cursor:pointer;border-color:#ffe9a8;background:linear-gradient(180deg,#ffd76a,#e8a82a);color:#1a1205;font-weight:700;box-shadow:0 0 12px rgba(255,200,61,.6);animation:phGoPulse 1.1s ease-in-out infinite;pointer-events:auto}
+.ph.ph-go:hover{filter:brightness(1.08)} .ph.ph-go kbd{font:inherit;font-size:13px;letter-spacing:.08em;padding:0 7px;border-radius:6px;border:1px solid rgba(26,18,5,.45);background:rgba(255,255,255,.35)} .ph.ph-go:focus-visible{outline:2px solid #fff;outline-offset:2px}
 @keyframes phGoPulse{50%{box-shadow:0 0 0 2px #fff4cf,0 0 22px rgba(255,200,61,.9)}}
 @media (prefers-reduced-motion:reduce){.ph.ph-go{animation:none}}
 @keyframes obsGoPulse{50%{transform:scale(1.05);box-shadow:0 0 0 4px #fff4cf,0 0 64px rgba(255,200,61,.95),0 14px 40px rgba(0,0,0,.6)}}
@@ -5615,12 +5615,12 @@ function marketHTML() {
       ${capHTML(c.type, 1)}${tags ? `<div class="mk-tags">${tags}</div>` : ''}</div>`;
   }).join('')}</div>`;
 }
-// ปุ่มเล็ก "เริ่ม ACTION ▶" ของ OBSERVER ต่อท้ายแถบเฟส (กด Space / Enter ได้เหมือนเดิม)
+// ปุ่มเล็กของ OBSERVER ใต้แถบเฟส เขียนแค่ FIGHT (ตี้ 2026-11-07) · กด Space / Enter แทนการคลิกได้
 function phGo() {
   const ph = $('#phases');
   if (!ph) return;
   const want = ui.mode === 'spec' && obsCanGo(), b = ph.querySelector('.ph-go');
-  if (want && !b) ph.insertAdjacentHTML('beforeend', '<button type="button" class="ph ph-go" data-act="obsGo" title="กด Space / Enter ก็ได้">เริ่ม ACTION ▶</button>');
+  if (want && !b) ph.insertAdjacentHTML('beforeend', '<button type="button" class="ph ph-go" data-act="obsGo" title="กด Space / Enter ก็ได้" aria-label="FIGHT — เริ่มฉากต่อสู้ (กด Space ก็ได้)">FIGHT</button>');
   else if (!want && b) b.remove();
 }
 const PHASES = [['draw', 'Draw'], ['pick', 'Pick up'], ['action', 'Action'], ['fight', 'Fight'], ['end', 'End']];
