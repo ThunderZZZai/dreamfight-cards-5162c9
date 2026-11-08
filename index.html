@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DreamFight Cards</title>
-<meta name="df-build" content="1794079221">
+<meta name="df-build" content="1794106484">
 <script>
 /* ตี้ 2026-10-28: GitHub Pages ให้เบราว์เซอร์จำหน้าเว็บ 10 นาที (max-age=600) → รีเฟรชแล้วยังได้ตัวเก่า
    เปิดหน้าแล้วถามไฟล์ล่าสุดแบบไม่ใช้แคช · เลขบิลด์ไม่ตรง = โหลดตัวใหม่ทันที (deploy_pages.sh ใส่เลขบิลด์ให้ · ในเครื่อง = dev ไม่เช็ก) */
@@ -3287,6 +3287,7 @@ const pairKey = (id, name) => (id === 'og' || (VDO_PAIR_FILES[id] || {})[name] ?
 const VDO_CS = 'coming-soon';
 const VDO_REVEAL_MS = 0;    // เปิด VDO แล้วโชว์การ์ดสองฝั่งก่อนเก็บ UI ลง (ตี้ 2026-10-27: 0 = เข้า VDO เลย การ์ดไปเด้งบน VDO แทน)
 const VDO_HP_LEAD = 3;      // แถบ HP กลับลงมาโชว์ผลก่อน VDO จบกี่วินาที
+const EMPTY_IDLE_S = 5.5;   // ตี้ 2026-11-08: ช่องว่างเจอว่าง เล่น Idle กี่วินาที (การ์ดว่างเด้ง 1 วิ + หมุน Lv1 1.1 วิ · แถบ HP ลงก่อนจบ VDO_HP_LEAD)
 const VDO_DUCK = 0.15;      // ระหว่าง VDO เพลงประกอบเบาลงเหลือเท่านี้ (เสียงใน VDO นำ)
 const vdo = (() => {
   // urls['<คู่>/<ไฟล์>'] = blob URL · st[คู่] = idle | loading | ready | failed (ทีละคู่ — เปลี่ยนคู่ = หยุดคู่เดิมแล้วโหลดคู่ใหม่)
@@ -3400,7 +3401,9 @@ const vdo = (() => {
 const vdoNeed = () => vdo.on && vdo.state !== 'ready';
 // เลือก VDO ของช่องนี้ (ชื่อตามไฟล์ใน Drive): ATKn/ULTn-<ฝั่งที่ตี> · Def|Dod ATKn/ULTn-<ฝั่งที่กัน/หลบ> (เลข = เลเวลการ์ดที่ตีเข้ามา)
 // ตีกันทั้งคู่ = 2 VDO ต่อกัน · หลบไม่พ้น = VDO ของฝั่งที่ตี (โดนเต็ม ๆ) · ตีฝั่งเดียว = VDO ไฟล์เดียว (มีทั้งสองตัวละคร)
-// ไม่มีใครตี = Taunt ของฝั่งที่ใช้การ์ดป้องกัน · ว่างทั้งคู่ = ไม่มี VDO
+// ไม่มีใครตี = Taunt ของฝั่งที่ใช้การ์ดป้องกัน · ว่างทั้งคู่ = Idle ของฝั่งที่ถึงคิว (ตี้ 2026-11-08 เดิมไม่มี VDO)
+// ตี้ 2026-11-08: ว่างเจอว่าง "เป็น Idle แล้วขึ้นว่างกับว่างในช่องการ์ด เหมือนต่อสู้ปกติ · อย่าข้ามแบบไม่เล่นอะไรเลย"
+//   → Idle เต็มจอ สลับฝั่งฟันปลาเหมือน Taunt · การ์ด "ว่างเปล่า" เด้ง+หมุนทั้งสองฝั่ง · ตัดจบที่ EMPTY_IDLE_S (vdoPlan ใส่ end)
 const HIT_VDO = { ATK: 'atk', ULT: 'ult' };
 // ตี้ 2026-10-27: ตีกันทั้งคู่ Attack เจอ Ultimate → Attack ก่อนเสมอ ปิดด้วย Ultimate · ชนิดเดียวกัน → สุ่ม (ตัวสุ่มจาก gseed ทุกเครื่องได้เหมือนกัน)
 // ตี้ 2026-11-02 (แทนกติกาบน): ตีกันทั้งคู่ → ฝั่งที่การ์ด LV สูงกว่าเริ่มก่อน ไม่สนว่า Attack หรือ Ultimate (นับเฉพาะการ์ดที่ลด HP — หลบ/โล่ไม่เข้ากรณีนี้) · LV เท่ากัน → สุ่ม (gseed เดิม)
@@ -3440,8 +3443,9 @@ function vdoClips(r, g, i) {
     return [`${mv(c)}-${tag(s)}`];
   }
   const has = SIDES.filter(s => r[s].card);
-  if (has.length < 2) return has.map(s => tauntClip(s, g, i));
   const first = i && ui.vdoFirst ? FOE[ui.vdoFirst] : 'RED';
+  if (!has.length) return vdo.missing(`idle-${tag(first)}`) ? [] : [`idle-${tag(first)}`]; // ว่างเจอว่าง = Idle (ตี้ 2026-11-08)
+  if (has.length < 2) return has.map(s => tauntClip(s, g, i));
   return [first, FOE[first]].map(s => tauntClip(s, g, i));
 }
 // ลำดับ VDO ของช่อง i + ฝั่งที่ HP ลดใน VDO นั้น (hit) — ช่องที่ตีกันทั้งคู่: เล่น VDO ฝั่งไหน อีกฝั่งเสีย HP (ตี้ 2026-10-21)
@@ -3453,7 +3457,7 @@ function vdoPlan(g, r, i) {
   if (hitters.length === 1) ui.vdoFirst = hitters[0];
   else if (clips.length) ui.vdoFirst = vdo.mx(clips[0]) ? vdo.mx(clips[0])[0] : clipSide(clips[0]);
   if (hitters.length === 2 && clips.length === 1 && vdo.mx(clips[0])) return [{ name: clips[0], hit: null, mx: true }]; // ไฟล์เดียว แต่เลือดลดทีละฝั่งตอนการ์ดแต่ละใบชน
-  if (hitters.length < 2 || clips.length < 2) return clips.map(name => ({ name, hit: null })); // ตีกันทั้งคู่แต่ K.O. เหลือไฟล์เดียว = หัก HP ทั้งสองฝั่งพร้อมกันตอนการ์ดชน
+  if (hitters.length < 2 || clips.length < 2) return clips.map(name => ({ name, hit: null, end: /^idle-/.test(name) ? EMPTY_IDLE_S : 0 })); // ตีกันทั้งคู่แต่ K.O. เหลือไฟล์เดียว = หัก HP ทั้งสองฝั่งพร้อมกันตอนการ์ดชน
   return clips.map(name => ({ name, hit: FOE[clipSide(name)] }));
 }
 // Idle วนเป็นพื้นหลัง (ไม่มีเสียง): ฝั่งเรา → อีกฝั่ง → … สลับด้วยครอสเฟดระหว่าง <video> 2 ตัว
@@ -4262,6 +4266,8 @@ async function laneVdo(i, plan, gid, r, keep = false) {
     if (!gone()) plan[k].hp();
   };
   const stop = () => lv.skip || gone() || lv.failed;
+  // ตี้ 2026-11-08: คลิปที่ตัดจบก่อนไฟล์จบ (Idle ของช่องว่างเจอว่าง · end = วินาทีที่ถือว่าจบ)
+  const over = k => el.ended || (plan[k].end > 0 && el.currentTime >= plan[k].end), durOf = k => plan[k].end || vdo.dur(clips[k]);
   // การ์ดพุ่งท้าย VDO สุดท้ายของช่องเสมอ (ตี้ 2026-10-27: ตีกันทั้งคู่ต้องรอตัวละครใช้สกิลครบทั้ง 2 ตัวก่อน — ตัวแรกจบแล้วก็ยังไม่ชน)
   // ตีกันทั้งคู่: พุ่งตามลำดับ VDO (เจ้าของ VDO แรกชนก่อน) · การ์ดชน = หัก HP ของ VDO เจ้าของการ์ดใบนั้น
   const acts = r ? vcActs(ui.g, r) : [], twoHit = clips.length === 2 && plan.every(p => p.hit), fin = clips.map(() => []);
@@ -4330,20 +4336,20 @@ async function laneVdo(i, plan, gid, r, keep = false) {
           // ตี้ 2026-10-29: ช่องที่มีโล่ (Defence เจอการ์ดตี) ปะทะนานกว่าปกติ (รอโล่ขึ้น + ชน) ต้องเผื่อเวลาให้พอ ไม่งั้น VDO จบก่อนแล้วค้างเฟรม
           // ตี้ 2026-11-05: คลิปอันติเจออันติ ยึดจังหวะต้นแบบที่ตี้ดู (เริ่ม 4.1 วิก่อนจบ · การ์ดชนก่อนคลิปจบ) ไม่บวกเวลาป้าย -n CARD — ไม่งั้นแถบ HP ลงมาบังหน้าในช็อตใกล้ก่อนภาพกว้างตอนจบ
           const lead = ((mxCard && clips[k].startsWith('mx-ult') ? fin[k].length * VC_GAP : fin[k].reduce((t, a) => t + vcMs(a), 0)) + vcClashMs(r) + VC_PAD) / 1000;
-          const at = Math.max(0, vdo.dur(clips[k]) - lead);
-          await until(() => stop() || (!spinning && !plainSpin && (el.ended || el.currentTime >= at)));
+          const at = Math.max(0, durOf(k) - lead);
+          await until(() => stop() || (!spinning && !plainSpin && (over(k) || el.currentTime >= at)));
           // ถ้ายังพุ่งไม่จบแต่ VDO จบแล้ว = สลับเป็น Idle วนพื้นหลังแทนการค้างเฟรมสุดท้าย
           el.addEventListener('ended', () => { if (ui.vdo === lv && !koNow()) { el.classList.remove('on'); vdoBg.sync(true); } }, { once: true });
           if (gone()) return false;
           await runFin(k);
           if (gone()) return false;
         } else if (plan[k].hp && !twoHit) {
-          const at = vdo.dur(clips[k]) - VDO_HP_LEAD;
-          await until(() => stop() || (!spinning && !plainSpin && (el.ended || el.currentTime >= at)));
+          const at = durOf(k) - VDO_HP_LEAD;
+          await until(() => stop() || (!spinning && !plainSpin && (over(k) || el.currentTime >= at)));
           if (gone()) return false;
           await hpNow(k);
         }
-        await until(() => stop() || (!spinning && !plainSpin && el.ended));
+        await until(() => stop() || (!spinning && !plainSpin && over(k)));
         if (gone()) return false;
       } finally { clearInterval(tick); }
     }
@@ -5292,6 +5298,7 @@ async function runFight() {
         name: p.name,
         hit: p.hit, // laneVdo ใช้แยกช่องตีกันทั้งคู่ (twoHit) — เดิมไม่ได้ส่งมา twoHit เลยเป็น false ตลอด
         mx: p.mx,
+        end: p.end, // ตี้ 2026-11-08: ว่างเจอว่าง = Idle ตัดจบที่ EMPTY_IDLE_S
         hpOf: s => { if (mxLeft.delete(s)) showResult([s], !mxLeft.size); },
         hp: p.mx ? () => { if (mxLeft.size) { const left = [...mxLeft]; mxLeft.clear(); showResult(left); } } : p.hit ? () => showResult([p.hit], k === last) : k === last ? () => showResult() : null,
       }));
@@ -5353,6 +5360,7 @@ async function runFight() {
   if (ui.winner && boLive()) boRecord(ui.pvp ? ui.pvp.mid : ui.spec ? ui.spec.mid : null, ui.winner); // ห้อง Bo: นับเกมที่ชนะ (ARCADE ไม่มี mid)
   if (net.mine.vdo) presence({ vdo: null });
   if (ui.pvp && ui.winner) presence({ seat: null, at: null, inp: {} }); // จบแมตช์ = ปล่อยที่นั่งให้คนอื่น (mid ยังอยู่จนกว่าจะออก)
+  if (ui.winner && ui.mode === 'pvp' && boNextOpen()) boAutoBack(gid); // ตี้ 2026-11-08: ห้อง Bo ซีรีส์ยังไม่จบ → ผู้เล่นกลับห้องเองแล้วนั่งฝั่งเดิม
   addLog(`End Phase · HP ${tagOf('RED')} ${hpDelta(ui.hpStart.RED, g.p.RED.hp)} · ${tagOf('BLUE')} ${hpDelta(ui.hpStart.BLUE, g.p.BLUE.hp)}`);
   if (ui.winner) addLog(`Winner Phase · ${ui.winner === 'DRAW' ? 'เสมอ!' : `WINNER ${tagOf(ui.winner)}`} — ${ui.winReason}`, 'sys');
   if (ui.winner && ui.mode === 'arcade') addLog(`เฉลย · ${botStyleText(g, OPP)}`, 'sys');
@@ -6042,6 +6050,18 @@ function specAutoBack(gid) {
     toStart('pvp');
   }, 5000);
 }
+// ตี้ 2026-11-08 "หลังจบแมตช์ใน Bo 3 กลับไปหน้าห้องเพื่อเริ่มรอบถัดไป ให้ทุกคนยังอยู่ที่นั่ง ไม่ต้องกดเข้าที่นั่งใหม่"
+//   ผู้เล่นห้อง Bo (ซีรีส์ยังไม่จบ) กลับหน้าห้องเองใน 5 วิหลังขึ้นหน้าผล (เท่าผู้ชม) แล้วนั่งฝั่งเดิมให้เอง = กด "เกมต่อไป" ให้
+//   กด "เกมต่อไป" / "กลับห้อง PVP" เองก่อนก็นั่งฝั่งเดิมเหมือนกัน · ที่นั่งผู้ชมค้างทั้งซีรีส์อยู่แล้ว · ซีรีส์จบ = แบบเดิม
+//   จบเกมยังปล่อยที่นั่งก่อน แล้วนั่งใหม่ด้วยเวลาใหม่ — รหัสแมตช์เกมถัดไปต้องไม่ซ้ำเกมเดิม (ไม่งั้นผล Bo ไม่นับ / เกมเริ่มเองโดยไม่มีคนกดเริ่ม)
+function boBack() { const side = ME; toStart('pvp'); net.autoSeat = side; pvpOnPeers(); }
+function boAutoBack(gid) {
+  setTimeout(() => {
+    if (gid !== ui.gid || ui.screen !== 'game' || ui.mode !== 'pvp' || !ui.winner || !boNextOpen()) return;
+    if (buildOld()) { buildGate(false, { side: ME }); return; } // เวอร์ชันเก่า = โหลดตัวใหม่แล้วกลับนั่งฝั่งเดิม (เหมือนกดเกมต่อไป)
+    boBack();
+  }, 5000);
+}
 function renderWinner() {
   const el = $('#winner'), w = ui.winner, g = ui.g;
   el.hidden = !w || ui.peek || specNoResult();
@@ -6187,7 +6207,7 @@ document.addEventListener('click', e => {
     case 'obsGo': obsGo(); break;
     case 'hostStart': hostStart(); break;
     case 'toLobby': toStart('lobby'); break;
-    case 'toPvp': if (ui.mode === 'spec' && boNextOpen()) ui.boFollow = true; toStart('pvp'); break; // ผู้ชมห้อง Bo: ตามไปดูเกมถัดไปเอง
+    case 'toPvp': if (ui.mode === 'pvp' && boNextOpen()) { boBack(); break; } if (ui.mode === 'spec' && boNextOpen()) ui.boFollow = true; toStart('pvp'); break; // ผู้ชมห้อง Bo: ตามไปดูเกมถัดไปเอง · ผู้เล่นห้อง Bo: นั่งฝั่งเดิม (ตี้ 2026-11-08)
     case 'boNext': { const side = ME; toStart('pvp'); net.autoSeat = side; pvpOnPeers(); break; } // ห้อง Bo: กลับนั่งฝั่งเดิม → พร้อมทั้งคู่ = เริ่มเกมถัดไป
     case 'boReset': presence({ ser: { s: Math.random().toString(36).slice(2, 10), u: Date.now(), g: [] } }); toast('เริ่มนับ Bo ใหม่แล้ว'); renderPvp(); break;
     case 'pick': takeMarket(i); break;
@@ -6639,7 +6659,7 @@ function boChip() {
 function boWinHTML() {
   const b = boLive() ? boScore() : null;
   if (!b) return '';
-  return `<p class="win-bo"><b>${boLabel(b.n)}</b>RED ${b.w.RED} – ${b.w.BLUE} BLUE · ${b.done ? `${b.done} ชนะซีรีส์!` : `ต่อเกมที่ ${b.games + 1}`}</p>`;
+  return `<p class="win-bo"><b>${boLabel(b.n)}</b>RED ${b.w.RED} – ${b.w.BLUE} BLUE · ${b.done ? `${b.done} ชนะซีรีส์!` : `ต่อเกมที่ ${b.games + 1}${ui.mode === 'pvp' ? ' · กลับห้องเองใน 5 วิ นั่งฝั่งเดิม' : ''}`}</p>`;
 }
 function boWinBtns() {
   if (!boNextOpen()) return '<button type="button" class="btn primary big" data-act="toPvp">กลับห้อง PVP</button>';
